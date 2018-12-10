@@ -272,15 +272,21 @@ class DC_OT_boolean_apply(bpy.types.Operator):
                         orphaned_objects.remove(orphaned_objects[i])
 
         DC.trace(1, "Removing {} orphaned objects", len(orphaned_objects))
-        bpy.ops.object.select_all(action='DESELECT')
-        for obj in orphaned_objects:
-            obj.select_set(True)
+        if len(orphaned_objects) > 0:
+            bpy.ops.object.select_all(action='DESELECT')
+            for obj in orphaned_objects:
+                obj.select_set(True)
 
-        bpy.ops.object.delete(use_global=False, confirm=False)
+            bpy.ops.object.delete(use_global=False, confirm=False)
 
-        DC.trace(1, "Removing collection: {}", collection_name)
-        context.scene.collection.children.unlink(bpy.data.collections[collection_name])
-        bpy.data.collections.remove(bpy.data.collections[collection_name])
+        if collection_name in bpy.data.collections:
+            col = bpy.data.collections[collection_name]
+            if len(col.all_objects) == 0:
+                DC.trace(1, "Removing collection: {}", collection_name)
+                context.scene.collection.children.unlink(col)
+                bpy.data.collections.remove(col)
+            else:
+                DC.trace(1, "Collection still contains objects; not removing: {}", collection_name)
 
         base.select_set(True)
         return DC.trace_exit("DC_OT_boolean_apply.execute")
