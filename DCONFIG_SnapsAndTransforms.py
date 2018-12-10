@@ -39,7 +39,8 @@ class DC_MT_transforms_pie(bpy.types.Menu):
 
         # Left
         split = pie.split()
-        col = split.column()
+        col = split.column(align=True)
+        col.scale_y = 1.5
         col.prop_enum(context.scene.tool_settings, "transform_pivot_point", value='BOUNDING_BOX_CENTER')
         col.prop_enum(context.scene.tool_settings, "transform_pivot_point", value='CURSOR')
         col.prop_enum(context.scene.tool_settings, "transform_pivot_point", value='INDIVIDUAL_ORIGINS')
@@ -48,5 +49,6 @@ class DC_MT_transforms_pie(bpy.types.Menu):
 
         # Right
         split = pie.split()
-        col = split.column()
+        col = split.column(align=True)
+        col.scale_y = 1.5
         col.prop(context.scene, "transform_orientation", expand=True)

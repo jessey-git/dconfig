@@ -26,7 +26,7 @@ def trace_enter(message):
     trace(0, "ENTER " + message)
 
 
-def trace_exit(message):
-    trace(0, "EXIT  " + message)
+def trace_exit(message, result="FINISHED"):
+    trace(0, "EXIT  " + message + " : " + result)
     trace(0, "")
-    return {"FINISHED"}
+    return {result}

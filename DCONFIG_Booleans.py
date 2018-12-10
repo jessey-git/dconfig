@@ -24,12 +24,10 @@ class DC_MT_boolean_pie(bpy.types.Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        # Live Booleans
-        split = pie.split()
-        col = split.column(align=True)
-        col.scale_y = 1.5
-        col.operator("view3d.dc_boolean_apply", text="Apply")
+        # LEFT
+        pie.operator("view3d.dc_boolean_apply", text="Apply")
 
+        # RIGHT
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.5
@@ -59,10 +57,8 @@ class DC_MT_boolean_pie(bpy.types.Menu):
         prop.cutline = True
         prop.insetted = False
 
-        split = pie.split()
-        col = split.column(align=True)
-        col.scale_y = 1.5
-        col.operator("view3d.dc_boolean_toggle_cutters", text="Toggle Cutters")
+        # BOTTOM
+        pie.operator("view3d.dc_boolean_toggle_cutters", text="Toggle Cutters")
 
 
 class DC_OT_boolean_live(bpy.types.Operator):
@@ -235,6 +231,9 @@ class DC_OT_boolean_apply(bpy.types.Operator):
 
     def execute(self, context):
         DC.trace_enter("DC_OT_boolean_apply.execute")
+
+        if bpy.context.mode != "OBJECT":
+            return DC.trace_exit("DC_OT_boolean_apply.execute", result="CANCELLED")
 
         # Grab our main active object and validate it's actually a mesh...
         base = bpy.context.active_object

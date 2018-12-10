@@ -20,7 +20,7 @@ class DC_MT_add_primitive_pie(bpy.types.Menu):
 
         # Left
         split = pie.split()
-        col = split.column()
+        col = split.column(align=True)
         col.scale_y = 1.5
         col.scale_x = 1.5
         col.operator("view3d.dc_add_primitive", icon='MESH_CIRCLE', text="6").type = 'Circle_6'
@@ -30,7 +30,7 @@ class DC_MT_add_primitive_pie(bpy.types.Menu):
 
         # Right
         split = pie.split()
-        col = split.column()
+        col = split.column(align=True)
         col.scale_y = 1.5
         col.scale_x = 1.5
         col.operator("view3d.dc_add_primitive", icon='MESH_CYLINDER', text="6").type = 'Cylinder_6'
@@ -41,7 +41,7 @@ class DC_MT_add_primitive_pie(bpy.types.Menu):
 
         # Bottom
         split = pie.split()
-        col = split.column()
+        col = split.column(align=True)
         col.scale_y = 1.5
         col.scale_x = 1.5
         col.operator("view3d.dc_add_primitive", icon='MESH_UVSPHERE', text="12").type = 'Sphere_12'
@@ -50,7 +50,7 @@ class DC_MT_add_primitive_pie(bpy.types.Menu):
 
         # Top
         split = pie.split()
-        col = split.column()
+        col = split.column(align=True)
         col.scale_y = 1.5
         col.scale_x = 1.5
         col.operator("view3d.dc_add_primitive", icon='MESH_PLANE', text="Plane").type = 'Plane'
