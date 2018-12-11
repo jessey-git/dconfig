@@ -64,7 +64,7 @@ class DC_MT_boolean_pie(bpy.types.Menu):
 class DC_OT_boolean_live(bpy.types.Operator):
     bl_idname = "view3d.dc_boolean_live"
     bl_label = "DC Live Booleans"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER'}
 
     cutline: bpy.props.BoolProperty(name='Cutline', default=False)
     insetted: bpy.props.BoolProperty(name='Insetted', default=False)

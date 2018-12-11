@@ -65,19 +65,21 @@ class DC_OT_add_primitive(bpy.types.Operator):
     type: bpy.props.StringProperty(name="Type")
 
     def add_primitive(self):
+        is_ortho = not bpy.context.space_data.region_3d.is_perspective
+
         if self.type == 'Cube':
             bpy.ops.mesh.primitive_cube_add(size=1.0)
-
         elif self.type == 'Plane':
-            bpy.ops.mesh.primitive_plane_add()
+            bpy.ops.mesh.primitive_plane_add(view_align=is_ortho)
+
         elif self.type == 'Circle_6':
-            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=0.25, vertices=6)
+            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=0.25, vertices=6, view_align=is_ortho)
         elif self.type == 'Circle_8':
-            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=0.25, vertices=8)
+            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=0.25, vertices=8, view_align=is_ortho)
         elif self.type == 'Circle_16':
-            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=0.50, vertices=16)
+            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=0.50, vertices=16, view_align=is_ortho)
         elif self.type == 'Circle_32':
-            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=0.50, vertices=32)
+            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=0.50, vertices=32, view_align=is_ortho)
 
         elif self.type == 'Cylinder_6':
             bpy.ops.mesh.primitive_cylinder_add(radius=0.25, depth=0.25, vertices=6)
