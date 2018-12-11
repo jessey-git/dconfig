@@ -64,7 +64,7 @@ class DC_MT_boolean_pie(bpy.types.Menu):
 class DC_OT_boolean_live(bpy.types.Operator):
     bl_idname = "view3d.dc_boolean_live"
     bl_label = "DC Live Booleans"
-    bl_options = {'REGISTER'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     cutline: bpy.props.BoolProperty(name='Cutline', default=False)
     insetted: bpy.props.BoolProperty(name='Insetted', default=False)
@@ -112,7 +112,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
         boolean_obj.display_type = 'WIRE'
         boolean_move_list.append(boolean_obj)
 
-    def create_bool(self, base, boolean_obj):
+    def create_modifier(self, base, boolean_obj):
         DC.trace(2, "Adding boolean modifier to {}", DC.full_name(base))
         mod = base.modifiers.new(boolean_obj.name, "BOOLEAN")
         mod.object = boolean_obj
@@ -159,7 +159,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
         # Grab our main active object and validate it's actually a mesh...
         base = bpy.context.active_object
         if base.type != "MESH":
-            return DC.trace_exit("DC_OT_boolean_live.execute")
+            return DC.trace_exit("DC_OT_boolean_live.execute", result="CANCELLED")
 
         DC.trace(1, "Base: {}", DC.full_name(base))
 
@@ -179,7 +179,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
             if obj != base:
                 DC.trace(1, "Found boolean obj: {}", DC.full_name(obj))
                 self.create_cutter(base, obj, boolean_move_list, inset_move_list)
-                self.create_bool(base, obj)
+                self.create_modifier(base, obj)
 
         # Place everything in the right collection...
         DC.trace(1, "Boolean Move list: {}", boolean_move_list)
@@ -211,7 +211,7 @@ class DC_OT_toggle_cutters(bpy.types.Operator):
         # Grab our main active object and validate it's actually a mesh...
         base = bpy.context.active_object
         if base.type != "MESH":
-            return DC.trace_exit("DC_OT_toggle_cutters.execute")
+            return DC.trace_exit("DC_OT_toggle_cutters.execute", result="CANCELLED")
 
         DC.trace(1, "Base: {}", DC.full_name(base))
 
@@ -238,12 +238,11 @@ class DC_OT_boolean_apply(bpy.types.Operator):
         # Grab our main active object and validate it's actually a mesh...
         base = bpy.context.active_object
         if base.type != "MESH":
-            return DC.trace_exit("DC_OT_boolean_apply.execute")
+            return DC.trace_exit("DC_OT_boolean_apply.execute", result="CANCELLED")
 
         DC.trace(1, "Base: {}", DC.full_name(base))
 
-        orphaned_objects = []
-
+        # We need to apply everything up until the last boolean modifier
         mod_count = len(base.modifiers)
         mod_apply_count = 0
         if len(base.modifiers) > 0:
@@ -254,6 +253,7 @@ class DC_OT_boolean_apply(bpy.types.Operator):
 
         DC.trace(1, "Applying {} of {} modifiers", mod_apply_count, mod_count)
 
+        orphaned_objects = []
         for i in range(mod_apply_count):
             modifier = base.modifiers[0]
             DC.trace(2, "Applying {}", modifier.type)
@@ -271,8 +271,8 @@ class DC_OT_boolean_apply(bpy.types.Operator):
                         DC.trace(2, "Object {} belongs to another collection called {}. Skipping...", orphaned_objects[i].name, col.name)
                         orphaned_objects.remove(orphaned_objects[i])
 
-        DC.trace(1, "Removing {} orphaned objects", len(orphaned_objects))
         if len(orphaned_objects) > 0:
+            DC.trace(1, "Removing {} orphaned objects", len(orphaned_objects))
             bpy.ops.object.select_all(action='DESELECT')
             for obj in orphaned_objects:
                 obj.select_set(True)
