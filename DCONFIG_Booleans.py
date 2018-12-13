@@ -12,9 +12,11 @@ import bpy
 import bmesh
 from . import DCONFIG_Utils as DC
 
+CollectionPrefix = "DC_boolean"
+
 
 def create_collection_name(base):
-    return "DC_boolean_" + base.name
+    return CollectionPrefix + base.name
 
 
 class DC_MT_boolean_pie(bpy.types.Menu):
@@ -129,12 +131,10 @@ class DC_OT_boolean_live(bpy.types.Operator):
         col_orig = None
         col_bool = None
 
-        for collection in bpy.data.collections:
-            if base.name in collection.all_objects and collection.name not in collection.objects:
-                col_orig = collection
-                break
-
-        if col_orig is None:
+        base_collections = base.users_collection
+        if len(base_collections) > 0:
+            col_orig = base_collections[0]
+        else:
             col_orig = bpy.context.scene.collection
 
         collection_name = create_collection_name(base)
@@ -142,7 +142,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
             col_bool = bpy.data.collections[collection_name]
         else:
             col_bool = bpy.data.collections.new(collection_name)
-            bpy.context.scene.collection.children.link(col_bool)
+            col_orig.children.link(col_bool)
 
         col_bool.hide_render = True
 
@@ -191,10 +191,15 @@ class DC_OT_boolean_live(bpy.types.Operator):
         base.select_set(state=False)
         for item in boolean_move_list:
             item.select_set(state=False)
+
+            # Link it to the new boolean collection
             if item.name not in col_bool.objects:
                 col_bool.objects.link(item)
-            if item.name in col_orig.objects:
-                col_orig.objects.unlink(item)
+
+            # Remove it from its existing location IFF it's not already in another boolean collection
+            for col in item.users_collection:
+                if not col.name.startswith(CollectionPrefix) and item.name in col.objects:
+                    col.objects.unlink(item)
 
         for item in inset_move_list:
             if item.name not in col_orig.objects:
@@ -267,7 +272,7 @@ class DC_OT_boolean_apply(bpy.types.Operator):
         for col in bpy.data.collections:
             if col.name != collection_name:
                 for i in range(len(orphaned_objects) - 1, -1, -1):
-                    if orphaned_objects[i].name in col.all_objects:
+                    if orphaned_objects[i].name in col.objects:
                         DC.trace(2, "Object {} belongs to another collection called {}. Skipping...", orphaned_objects[i].name, col.name)
                         orphaned_objects.remove(orphaned_objects[i])
                         skip_count = skip_count + 1
@@ -281,11 +286,22 @@ class DC_OT_boolean_apply(bpy.types.Operator):
             bpy.ops.object.delete(use_global=False, confirm=False)
 
         if collection_name in bpy.data.collections:
-            col = bpy.data.collections[collection_name]
-            if len(col.all_objects) - skip_count == 0:
+            col_bool = bpy.data.collections[collection_name]
+            if len(col_bool.all_objects) - skip_count == 0:
                 DC.trace(1, "Removing collection: {}", collection_name)
-                context.scene.collection.children.unlink(col)
-                bpy.data.collections.remove(col)
+
+                # Find correct parent collection to delete from...
+                parent_col = None
+                for col in bpy.data.collections:
+                    if collection_name in col.children:
+                        parent_col = col
+                        break
+
+                if parent_col is None:
+                    parent_col = context.scene.collection
+
+                parent_col.children.unlink(col_bool)
+                bpy.data.collections.remove(col_bool)
             else:
                 DC.trace(1, "Collection still contains objects; not removing: {}", collection_name)
 
