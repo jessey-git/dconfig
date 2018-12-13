@@ -101,12 +101,12 @@ class DC_OT_boolean_live(bpy.types.Operator):
                 inset = bpy.context.active_object
                 DC.rename(inset, base.name + "_inset")
 
-                bpy.ops.object.editmode_toggle()
+                bpy.ops.object.mode_set(mode='EDIT', toggle=False)
                 bpy.ops.mesh.select_all(action='SELECT')
                 bpy.context.scene.tool_settings.transform_pivot_point = 'INDIVIDUAL_ORIGINS'
                 bpy.ops.transform.resize(value=(0.92, 0.92, 0.92), constraint_axis=(False, False, False), mirror=False, proportional='DISABLED')
                 bpy.context.scene.tool_settings.transform_pivot_point = 'MEDIAN_POINT'
-                bpy.ops.object.editmode_toggle()
+                bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
                 bpy.context.view_layer.objects.active = boolean_obj
                 bpy.ops.object.constraint_add(type='COPY_TRANSFORMS')
@@ -152,7 +152,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
             bpy.ops.mesh.normals_make_consistent(inside=False)
             bpy.ops.mesh.separate(type='SELECTED')
         else:
-            bpy.ops.object.editmode_toggle()
+            bpy.ops.object.mode_set(mode='EDIT', toggle=False)
             bpy.ops.mesh.select_all()
             bpy.ops.mesh.normals_make_consistent(inside=False)
 
@@ -167,7 +167,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
         self.prepare_objects()
         col_orig, col_bool = self.prepare_collections(base)
 
-        bpy.ops.object.editmode_toggle()
+        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         selected = bpy.context.selected_objects
 
         DC.trace(1, "Current selection: {}", DC.full_names(selected))
@@ -257,9 +257,12 @@ class DC_OT_boolean_apply(bpy.types.Operator):
         for i in range(mod_apply_count):
             modifier = base.modifiers[0]
             DC.trace(2, "Applying {}", modifier.type)
-            if modifier.type == 'BOOLEAN':
+            if modifier.type == 'BOOLEAN' and modifier.object is not None:
                 orphaned_objects.append(modifier.object)
-            bpy.ops.object.modifier_apply(apply_as='DATA', modifier=modifier.name)
+            try:
+                bpy.ops.object.modifier_apply(apply_as='DATA', modifier=modifier.name)
+            except RuntimeError:
+                bpy.ops.object.modifier_remove(modifier=modifier.name)
 
         # Only delete boolean objects that are not linked anywhere else...
         DC.trace(1, "Processing orphaned objects: {}", DC.full_names(orphaned_objects))
