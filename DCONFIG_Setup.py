@@ -35,14 +35,14 @@ def setup_hotkeys():
         ("Object Non-modal",    "EMPTY",    "WINDOW",    "wm.call_menu_pie",        "BUTTON4MOUSE",     "PRESS",    True,   False,  False,  (("name", "DC_MT_transforms_pie"),)),
         ("Object Non-modal",    "EMPTY",    "WINDOW",    "object.origin_set",       "BUTTON5MOUSE",     "PRESS",    True,   False,  False,  ()),
 
-        ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.view_center_cursor",    "HOME",         "PRESS",    False, False,  True,   ()),
-        ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.toggle_shading",        "Z",            "PRESS",    False, False,  False,  (("type", "WIREFRAME"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Z",            "PRESS",    True,  False,  False,  (("name", "VIEW3D_MT_shading_ex_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Q",            "PRESS",    True,  False,  False,  (("name", "DC_MT_boolean_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "W",            "PRESS",    False,  False,  False, (("name", "DC_MT_add_primitive_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.view_center_cursor",    "HOME",         "PRESS",    False,  False,  True,   ()),
+        ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.toggle_shading",        "Z",            "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Z",            "PRESS",    True,   False,  False,  (("name", "VIEW3D_MT_shading_ex_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Q",            "PRESS",    True,   False,  False,  (("name", "DC_MT_boolean_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "W",            "PRESS",    False,  False,  False,  (("name", "DC_MT_add_primitive_pie"),)),
 
-        ("Mesh",                "EMPTY",    "WINDOW",   "mesh.select_linked_pick",  "LEFTMOUSE",        "DOUBLE_CLICK", False,  False,  False,  (("deselect", False),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   "mesh.select_linked_pick",  "LEFTMOUSE",        "DOUBLE_CLICK", True,   False,  False,  (("deselect", True),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   "mesh.select_linked",       "LEFTMOUSE",        "DOUBLE_CLICK", False,  False,  False,  (("delimit", {'SEAM'}),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   "mesh.select_linked",       "LEFTMOUSE",        "DOUBLE_CLICK", True,   False,  False,  (("delimit", {'SEAM'}),)),
         ("Mesh",                "EMPTY",    "WINDOW",   "wm.call_menu",             "BUTTON4MOUSE",     "PRESS",        False,  False,  False,  (("name", "VIEW3D_MT_edit_mesh_select_mode"),)),
     )
 
