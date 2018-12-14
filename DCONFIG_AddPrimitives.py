@@ -99,33 +99,33 @@ class DC_OT_add_primitive(bpy.types.Operator):
         elif self.type == 'Sphere_32':
             bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, radius=0.50)
 
-    def invoke(self, context, event):
-        cur = bpy.context.scene.cursor_location
-        cur = list(cur)
+    def execute(self, context):
+        cursor_location = tuple(bpy.context.scene.cursor_location)
 
-        t_axis = bpy.context.scene.transform_orientation
-
-        if bpy.context.object.data.total_vert_sel == 0:
+        if bpy.context.object is None or bpy.context.object.data.total_vert_sel == 0:
             self.add_primitive()
         elif tuple(bpy.context.scene.tool_settings.mesh_select_mode) == (False, False, True):
             active = bpy.context.view_layer.objects.active
+            saved_orientation = bpy.context.scene.transform_orientation
+
             bpy.ops.view3d.snap_cursor_to_selected()
             bpy.ops.transform.create_orientation(name="AddAxis", use=True, overwrite=True)
             bpy.ops.mesh.select_all(action='DESELECT')
-            bpy.ops.object.editmode_toggle()
+            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
             self.add_primitive()
 
             bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
-                False, False, False), constraint_orientation='AddAxis', mirror=False, proportional='DISABLED', proportional_edit_falloff='SMOOTH', proportional_size=1.0)
+                False, False, False), constraint_orientation='AddAxis', mirror=False, proportional='DISABLED')
             active.select_set(state=True)
             bpy.context.view_layer.objects.active = active
             bpy.ops.object.join()
-            bpy.ops.object.editmode_toggle()
+            bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+
+            bpy.context.scene.transform_orientation = saved_orientation
         else:
             bpy.ops.view3d.snap_cursor_to_selected()
             self.add_primitive()
 
-        bpy.context.scene.cursor_location = cur
-        bpy.data.scenes[0].transform_orientation = t_axis
+        bpy.context.scene.cursor_location = cursor_location
         return {'FINISHED'}
