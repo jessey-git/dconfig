@@ -20,23 +20,6 @@ bl_info = {
     "tracker_url": "",
     "category": "Scene"}
 
-if "DCONFIG_Setup" in locals():
-    import importlib
-
-    importlib.reload(DCONFIG_Setup)
-    importlib.reload(DCONFIG_AddPrimitives)
-    importlib.reload(DCONFIG_Booleans)
-    importlib.reload(DCONFIG_SnapsAndTransforms)
-else:
-    from . import DCONFIG_Setup
-    from . import DCONFIG_AddPrimitives
-    from . import DCONFIG_Booleans
-    from . import DCONFIG_SnapsAndTransforms
-
-#
-# Addon registration
-#
-
 
 class Preferences(bpy.types.AddonPreferences):
     bl_idname = __name__
@@ -48,6 +31,10 @@ class Preferences(bpy.types.AddonPreferences):
         layout = self.layout
         layout.operator("dconfig.install_theme", text="Load Theme")
 
+
+#
+# Addon registration
+#
 
 auto_load.init()
 
