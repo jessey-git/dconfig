@@ -105,3 +105,13 @@ class DC_OT_install_theme(bpy.types.Operator):
     def makedir(self, target):
         if not os.path.exists(target):
             os.makedirs(target)
+
+
+def register():
+    setup_hotkeys()
+    setup_userpreferences()
+    setup_addons()
+
+
+def unregister():
+    remove_hotkeys()

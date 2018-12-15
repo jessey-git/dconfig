@@ -60,6 +60,7 @@ class DC_MT_add_primitive_pie(bpy.types.Menu):
 class DC_OT_add_primitive(bpy.types.Operator):
     bl_idname = "view3d.dc_add_primitive"
     bl_label = "DC Add Primitive"
+    bl_description = "Add pre-configured primitives and align to currently selected geometry"
     bl_options = {'REGISTER', 'UNDO'}
 
     type: bpy.props.StringProperty(name="Type")

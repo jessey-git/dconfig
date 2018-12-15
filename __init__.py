@@ -5,6 +5,9 @@
 # ------------------------------------------------------------
 
 import bpy
+from . import auto_load
+
+
 bl_info = {
     "name": "deadpin config",
     "author": "deadpin",
@@ -16,23 +19,6 @@ bl_info = {
     "wiki_url": "",
     "tracker_url": "",
     "category": "Scene"}
-
-if "DCONFIG_Setup" in locals():
-    import importlib
-
-    importlib.reload(DCONFIG_Setup)
-    importlib.reload(DCONFIG_AddPrimitives)
-    importlib.reload(DCONFIG_Booleans)
-    importlib.reload(DCONFIG_SnapsAndTransforms)
-else:
-    from . import DCONFIG_Setup
-    from . import DCONFIG_AddPrimitives
-    from . import DCONFIG_Booleans
-    from . import DCONFIG_SnapsAndTransforms
-
-#
-# Addon registration
-#
 
 
 class Preferences(bpy.types.AddonPreferences):
@@ -46,39 +32,25 @@ class Preferences(bpy.types.AddonPreferences):
         layout.operator("dconfig.install_theme", text="Load Theme")
 
 
-classes = (
-    Preferences,
+#
+# Addon registration
+#
 
-    DCONFIG_Setup.DC_OT_install_theme,
-
-    DCONFIG_AddPrimitives.DC_MT_add_primitive_pie,
-    DCONFIG_AddPrimitives.DC_OT_add_primitive,
-
-    DCONFIG_Booleans.DC_MT_boolean_pie,
-    DCONFIG_Booleans.DC_OT_toggle_cutters,
-    DCONFIG_Booleans.DC_OT_boolean_live,
-    DCONFIG_Booleans.DC_OT_boolean_apply,
-
-    DCONFIG_SnapsAndTransforms.DC_MT_snap,
-    DCONFIG_SnapsAndTransforms.DC_MT_transforms_pie,
-)
+auto_load.init()
 
 
 def register():
-    print('DCONFIG :: registration')
-    DCONFIG_Setup.setup_hotkeys()
-    DCONFIG_Setup.setup_userpreferences()
-    DCONFIG_Setup.setup_addons()
+    print('DCONFIG :: register')
 
-    for cls in classes:
-        bpy.utils.register_class(cls)
+    bpy.utils.register_class(Preferences)
+    auto_load.register()
 
 
 def unregister():
-    DCONFIG_Setup.remove_hotkeys()
+    print('DCONFIG :: unregister')
 
-    for cls in classes:
-        bpy.utils.unregister_class(cls)
+    auto_load.unregister()
+    bpy.utils.unregister_class(Preferences)
 
 
 if __name__ == '__main__':
