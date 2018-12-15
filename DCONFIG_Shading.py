@@ -15,6 +15,7 @@ from . import DCONFIG_Utils as DC
 class DC_OT_setup_shading(bpy.types.Operator):
     bl_idname = "view3d.dc_setup_shading"
     bl_label = "DC Setup Shading"
+    bl_description = "Set common shading and overlay parameters"
     bl_options = {'REGISTER'}
 
     def execute(self, context):
@@ -32,3 +33,16 @@ class DC_OT_setup_shading(bpy.types.Operator):
         bpy.context.space_data.overlay.wireframe_threshold = 0.86
 
         return DC.trace_exit("DC_OT_setup_shading.execute")
+
+
+def menu_func(self, context):
+    self.layout.operator("view3d.dc_setup_shading", text="DC Setup Shading")
+    self.layout.separator()
+
+
+def register():
+    bpy.types.VIEW3D_MT_view.prepend(menu_func)
+
+
+def unregister():
+    bpy.types.VIEW3D_MT_view.remove(menu_func)

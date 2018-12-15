@@ -73,6 +73,7 @@ class DC_MT_boolean_pie(bpy.types.Menu):
 class DC_OT_boolean_live(bpy.types.Operator):
     bl_idname = "view3d.dc_boolean_live"
     bl_label = "DC Live Booleans"
+    bl_description = "Add selected geometry as a boolean to the active objects"
     bl_options = {'REGISTER'}
 
     cutline: bpy.props.BoolProperty(name='Cutline', default=False)
@@ -209,6 +210,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
 class DC_OT_toggle_cutters(bpy.types.Operator):
     bl_idname = "view3d.dc_boolean_toggle_cutters"
     bl_label = "DC Toggle Cutters"
+    bl_description = "Toggle boolean geometry viewport visability"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -230,6 +232,7 @@ class DC_OT_toggle_cutters(bpy.types.Operator):
 class DC_OT_boolean_apply(bpy.types.Operator):
     bl_idname = "view3d.dc_boolean_apply"
     bl_label = "DC Apply Booleans"
+    bl_description = "Apply all boolean modifiers for the active objects"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
