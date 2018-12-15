@@ -27,7 +27,8 @@ class DC_MT_boolean_pie(bpy.types.Menu):
 
     @classmethod
     def poll(self, context):
-        return bpy.context.active_object.type == "MESH"
+        active_object = context.active_object
+        return active_object is not None and active_object.type == "MESH"
 
     def draw(self, context):
         layout = self.layout
