@@ -19,7 +19,7 @@ class DC_OT_setup_shading(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
-        DC.trace_enter("DC_OT_setup_shading.execute")
+        DC.trace_enter("DC_OT_setup_shading")
 
         context.space_data.shading.light = 'MATCAP'
         context.space_data.shading.show_shadows = True
@@ -32,7 +32,7 @@ class DC_OT_setup_shading(bpy.types.Operator):
 
         context.space_data.overlay.wireframe_threshold = 0.86
 
-        return DC.trace_exit("DC_OT_setup_shading.execute")
+        return DC.trace_exit("DC_OT_setup_shading")
 
 
 def menu_func(self, context):

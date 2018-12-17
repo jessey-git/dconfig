@@ -94,7 +94,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
 
     def make_bool_collection(self, item, parent_collection):
         collection_name = Constants.create_collection_name(item)
-        if collection_name in bpy.data.collections.keys():
+        if collection_name in bpy.data.collections:
             return bpy.data.collections[collection_name]
         else:
             bool_collection = bpy.data.collections.new(collection_name)
@@ -177,7 +177,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
         return bool_targets, bool_source
 
     def execute(self, context):
-        DC.trace_enter("DC_OT_boolean_live.execute")
+        DC.trace_enter("DC_OT_boolean_live")
 
         # Process and prepare all necessary data for the later operations
         # This supports multi-object editing by preparing data for every selected
@@ -185,7 +185,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
         # to apply to 1 or more targets...
         bool_targets, bool_source = self.prepare_data(context)
         if bool_targets is None or bool_source is None:
-            return DC.trace_exit("DC_OT_boolean_live.execute", 'CANCELLED')
+            return DC.trace_exit("DC_OT_boolean_live", 'CANCELLED')
 
         DC.trace(1, "Data:")
         for target in bool_targets:
@@ -223,7 +223,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
         bpy.ops.object.select_all(action='DESELECT')
         first_target.object.select_set(state=True)
 
-        return DC.trace_exit("DC_OT_boolean_live.execute")
+        return DC.trace_exit("DC_OT_boolean_live")
 
 
 class DC_OT_toggle_cutters(bpy.types.Operator):
@@ -233,7 +233,7 @@ class DC_OT_toggle_cutters(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        DC.trace_enter("DC_OT_toggle_cutters.execute")
+        DC.trace_enter("DC_OT_toggle_cutters")
 
         # Grab our main active object...
         active = context.active_object
@@ -241,11 +241,11 @@ class DC_OT_toggle_cutters(bpy.types.Operator):
 
         # Toggle viewport visibility on our special boolean collection for this object...
         collection_name = Constants.create_collection_name(active)
-        if collection_name in bpy.data.collections.keys():
+        if collection_name in bpy.data.collections:
             DC.trace(1, "Toggling visibility: {}", collection_name)
             bpy.data.collections[collection_name].hide_viewport = not bpy.data.collections[collection_name].hide_viewport
 
-        return DC.trace_exit("DC_OT_toggle_cutters.execute")
+        return DC.trace_exit("DC_OT_toggle_cutters")
 
 
 class DC_OT_boolean_apply(bpy.types.Operator):
@@ -255,10 +255,10 @@ class DC_OT_boolean_apply(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        DC.trace_enter("DC_OT_boolean_apply.execute")
+        DC.trace_enter("DC_OT_boolean_apply")
 
         if context.mode != "OBJECT":
-            return DC.trace_exit("DC_OT_boolean_apply.execute", result='CANCELLED')
+            return DC.trace_exit("DC_OT_boolean_apply", result='CANCELLED')
 
         # Process all selected objects...
         for current_object in context.selected_objects:
@@ -333,4 +333,4 @@ class DC_OT_boolean_apply(bpy.types.Operator):
                 else:
                     DC.trace(2, "Collection still contains objects; not removing: {}", collection_name)
 
-        return DC.trace_exit("DC_OT_boolean_apply.execute")
+        return DC.trace_exit("DC_OT_boolean_apply")
