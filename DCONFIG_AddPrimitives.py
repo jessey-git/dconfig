@@ -65,8 +65,8 @@ class DC_OT_add_primitive(bpy.types.Operator):
 
     type: bpy.props.StringProperty(name="Type")
 
-    def add_primitive(self):
-        is_ortho = not bpy.context.space_data.region_3d.is_perspective
+    def add_primitive(self, context):
+        is_ortho = not context.space_data.region_3d.is_perspective
 
         if self.type == 'Cube':
             bpy.ops.mesh.primitive_cube_add(size=1.0)
@@ -101,32 +101,32 @@ class DC_OT_add_primitive(bpy.types.Operator):
             bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, radius=0.50)
 
     def execute(self, context):
-        cursor_location = tuple(bpy.context.scene.cursor_location)
+        cursor_location = tuple(context.scene.cursor_location)
 
-        if bpy.context.object is None or bpy.context.object.data.total_vert_sel == 0:
-            self.add_primitive()
-        elif tuple(bpy.context.scene.tool_settings.mesh_select_mode) == (False, False, True):
-            active = bpy.context.view_layer.objects.active
-            saved_orientation = bpy.context.scene.transform_orientation
+        if context.object is None or context.object.data.total_vert_sel == 0:
+            self.add_primitive(context)
+        elif tuple(context.scene.tool_settings.mesh_select_mode) == (False, False, True):
+            active = context.view_layer.objects.active
+            saved_orientation = context.scene.transform_orientation
 
             bpy.ops.view3d.snap_cursor_to_selected()
             bpy.ops.transform.create_orientation(name="AddAxis", use=True, overwrite=True)
             bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
-            self.add_primitive()
+            self.add_primitive(context)
 
             bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
                 False, False, False), constraint_orientation='AddAxis', mirror=False, proportional='DISABLED')
             active.select_set(state=True)
-            bpy.context.view_layer.objects.active = active
+            context.view_layer.objects.active = active
             bpy.ops.object.join()
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
 
-            bpy.context.scene.transform_orientation = saved_orientation
+            context.scene.transform_orientation = saved_orientation
         else:
             bpy.ops.view3d.snap_cursor_to_selected()
-            self.add_primitive()
+            self.add_primitive(context)
 
-        bpy.context.scene.cursor_location = cursor_location
+        context.scene.cursor_location = cursor_location
         return {'FINISHED'}
