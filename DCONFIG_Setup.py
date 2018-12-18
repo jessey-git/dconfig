@@ -72,6 +72,8 @@ def setup_userpreferences():
         user_prefs.edit.undo_steps = 100
 
     user_prefs.view.show_tooltips_python = True
+    user_prefs.view.show_developer_ui = True
+
     user_prefs.view.mini_axis_type = 'MINIMAL'
     user_prefs.view.mini_axis_size = 40
 

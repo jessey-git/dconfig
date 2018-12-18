@@ -9,7 +9,6 @@
 #
 
 import bpy
-import bmesh
 from collections import namedtuple
 from . import DCONFIG_Utils as DC
 
