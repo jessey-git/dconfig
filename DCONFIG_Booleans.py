@@ -10,14 +10,14 @@
 
 import bpy
 from collections import namedtuple
-from . import DCONFIG_Utils as DC
+from . import DCONFIG_Utils as Utils
 
 
 TargetData = namedtuple('TargetData', ["object", "collection", "bool_collection"])
 SourceData = namedtuple("SourceData", ["object", "collection"])
 
 
-class Util:
+class Details:
     COLLECTION_PREFIX = "DC_boolean_"
     BOOLEAN_OBJECT_NAME = "dc_bool_obj"
 
@@ -96,7 +96,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
         return context.scene.collection
 
     def make_bool_collection(self, obj, parent_collection):
-        collection_name = Util.create_collection_name(obj)
+        collection_name = Details.create_collection_name(obj)
         if collection_name in bpy.data.collections:
             return bpy.data.collections[collection_name]
         else:
@@ -107,11 +107,11 @@ class DC_OT_boolean_live(bpy.types.Operator):
 
     def create_bool_obj(self, context, source, inset_move_list):
         def rename_boolean_obj(source):
-            old_name = DC.full_name(source.object)
-            DC.rename(source.object, Util.BOOLEAN_OBJECT_NAME)
-            DC.trace(2, "Renamed {} to {}", old_name, DC.full_name(source.object))
+            old_name = Utils.full_name(source.object)
+            Utils.rename(source.object, Details.BOOLEAN_OBJECT_NAME)
+            Utils.trace(2, "Renamed {} to {}", old_name, Utils.full_name(source.object))
 
-        if not source.object.name.startswith(Util.BOOLEAN_OBJECT_NAME):
+        if not source.object.name.startswith(Details.BOOLEAN_OBJECT_NAME):
             rename_boolean_obj(source)
 
             if self.cutline:
@@ -124,7 +124,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
 
                 bpy.ops.object.duplicate()
                 inset = context.active_object
-                DC.rename(inset, "DC_bool_inset")
+                Utils.rename(inset, "DC_bool_inset")
 
                 bpy.ops.object.mode_set(mode='EDIT', toggle=False)
                 bpy.ops.mesh.select_all(action='SELECT')
@@ -141,13 +141,13 @@ class DC_OT_boolean_live(bpy.types.Operator):
         source.object.display_type = 'WIRE'
 
     def create_bool_mod(self, target, source):
-        DC.trace(2, "Adding boolean modifier to {}", DC.full_name(target.object))
+        Utils.trace(2, "Adding boolean modifier to {}", Utils.full_name(target.object))
         mod = target.object.modifiers.new(source.object.name, 'BOOLEAN')
         mod.object = source.object
         mod.operation = self.bool_operation
 
     def prepare_objects(self, context):
-        if context.active_object.mode == 'EDIT':
+        if context.mode == 'EDIT_MESH':
             if context.object.data.total_vert_sel > 0:
                 bpy.ops.mesh.select_linked()
                 bpy.ops.mesh.normals_make_consistent(inside=False)
@@ -164,7 +164,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
         self.prepare_objects(context)
 
         # We should have at least 2 mesh objects (1 target, 1 source) at this point now...
-        selected = Util.get_selected_meshes(context)
+        selected = Details.get_selected_meshes(context)
         if len(selected) < 2:
             return None, None
 
@@ -180,7 +180,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
         return bool_targets, bool_source
 
     def execute(self, context):
-        DC.trace_enter("DC_OT_boolean_live")
+        Utils.trace_enter("DC_OT_boolean_live")
 
         # Process and prepare all necessary data for the later operations
         # This supports multi-object editing by preparing data for every selected
@@ -188,18 +188,18 @@ class DC_OT_boolean_live(bpy.types.Operator):
         # to apply to 1 or more targets...
         bool_targets, bool_source = self.prepare_data(context)
         if bool_targets is None or bool_source is None:
-            return DC.trace_exit("DC_OT_boolean_live", 'CANCELLED')
+            return Utils.trace_exit("DC_OT_boolean_live", 'CANCELLED')
 
-        DC.trace(1, "Data:")
+        Utils.trace(1, "Data:")
         for target in bool_targets:
-            DC.trace(2, "Target {}|{}|{}", DC.full_name(target.object), target.collection.name, target.bool_collection.name)
-        DC.trace(2, "Source {}|{}", DC.full_name(bool_source.object), bool_source.collection.name)
+            Utils.trace(2, "Target {}|{}|{}", Utils.full_name(target.object), target.collection.name, target.bool_collection.name)
+        Utils.trace(2, "Source {}|{}", Utils.full_name(bool_source.object), bool_source.collection.name)
 
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         bpy.ops.object.select_all(action='DESELECT')
 
         # Perform actual boolean operations (keeping track of the final set of geometry to move)...
-        DC.trace(1, "Processing:")
+        Utils.trace(1, "Processing:")
 
         inset_move_list = []
         self.create_bool_obj(context, bool_source, inset_move_list)
@@ -214,7 +214,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
                 target.bool_collection.objects.link(bool_source.object)
 
         # Remove it from its existing location IFF it's not already in a boolean collection
-        if not bool_source.collection.name.startswith(Util.COLLECTION_PREFIX):
+        if not bool_source.collection.name.startswith(Details.COLLECTION_PREFIX):
             bool_source.collection.objects.unlink(bool_source.object)
 
         # Pick the first target as the place to move the new inset geometry
@@ -226,7 +226,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
         bpy.ops.object.select_all(action='DESELECT')
         first_target.object.select_set(state=True)
 
-        return DC.trace_exit("DC_OT_boolean_live")
+        return Utils.trace_exit("DC_OT_boolean_live")
 
 
 class DC_OT_boolean_toggle(bpy.types.Operator):
@@ -236,19 +236,19 @@ class DC_OT_boolean_toggle(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        DC.trace_enter("DC_OT_boolean_toggle")
+        Utils.trace_enter("DC_OT_boolean_toggle")
 
         # Grab our main active object...
         active = context.active_object
-        DC.trace(1, "Active: {}", DC.full_name(active))
+        Utils.trace(1, "Active: {}", Utils.full_name(active))
 
         # Toggle viewport visibility on our special boolean collection for this object...
-        collection_name = Util.create_collection_name(active)
+        collection_name = Details.create_collection_name(active)
         if collection_name in bpy.data.collections:
-            DC.trace(1, "Toggling visibility: {}", collection_name)
+            Utils.trace(1, "Toggling visibility: {}", collection_name)
             bpy.data.collections[collection_name].hide_viewport = not bpy.data.collections[collection_name].hide_viewport
 
-        return DC.trace_exit("DC_OT_boolean_toggle")
+        return Utils.trace_exit("DC_OT_boolean_toggle")
 
 
 class DC_OT_boolean_apply(bpy.types.Operator):
@@ -258,14 +258,14 @@ class DC_OT_boolean_apply(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        DC.trace_enter("DC_OT_boolean_apply")
+        Utils.trace_enter("DC_OT_boolean_apply")
 
         if context.mode != "OBJECT":
-            return DC.trace_exit("DC_OT_boolean_apply", result='CANCELLED')
+            return Utils.trace_exit("DC_OT_boolean_apply", result='CANCELLED')
 
         # Process all selected objects...
-        for current_object in Util.get_selected_meshes(context):
-            DC.trace(1, "Processing: {}", DC.full_name(current_object))
+        for current_object in Details.get_selected_meshes(context):
+            Utils.trace(1, "Processing: {}", Utils.full_name(current_object))
 
             bpy.ops.object.select_all(action='DESELECT')
             context.view_layer.objects.active = current_object
@@ -279,12 +279,12 @@ class DC_OT_boolean_apply(bpy.types.Operator):
                         mod_apply_count = i + 1
                         break
 
-            DC.trace(2, "Applying {} of {} modifiers", mod_apply_count, mod_count)
+            Utils.trace(2, "Applying {} of {} modifiers", mod_apply_count, mod_count)
 
             orphaned_objects = []
             for i in range(mod_apply_count):
                 modifier = current_object.modifiers[0]
-                DC.trace(3, "Applying {}", modifier.type)
+                Utils.trace(3, "Applying {}", modifier.type)
 
                 if modifier.type == 'BOOLEAN' and modifier.object is not None:
                     orphaned_objects.append(modifier.object)
@@ -295,31 +295,31 @@ class DC_OT_boolean_apply(bpy.types.Operator):
                     bpy.ops.object.modifier_remove(modifier=modifier.name)
 
             # Only delete boolean objects that are not linked anywhere else...
-            DC.trace(2, "Processing orphaned objects: {}", DC.full_names(orphaned_objects))
+            Utils.trace(2, "Processing orphaned objects: {}", Utils.full_names(orphaned_objects))
             orphans_to_delete = [o for o in orphaned_objects if len(o.users_collection) < 2]
             orphans_to_unlink = [o for o in orphaned_objects if len(o.users_collection) > 1]
 
             if len(orphans_to_delete) > 0:
-                DC.trace(2, "Removing {} orphaned objects", len(orphans_to_delete))
+                Utils.trace(2, "Removing {} orphaned objects", len(orphans_to_delete))
                 for obj in orphans_to_delete:
                     obj.select_set(True)
 
                 bpy.ops.object.delete(use_global=False, confirm=False)
 
             # Now remove the collection
-            collection_name = Util.create_collection_name(current_object)
+            collection_name = Details.create_collection_name(current_object)
             if collection_name in bpy.data.collections:
                 col_bool = bpy.data.collections[collection_name]
 
                 # Unlink orphans who actually have a home somewhere else...
                 if len(orphans_to_unlink) > 0:
-                    DC.trace(2, "Unlinking {} orphaned objects", len(orphans_to_unlink))
+                    Utils.trace(2, "Unlinking {} orphaned objects", len(orphans_to_unlink))
                     for orphan in orphans_to_unlink:
                         col_bool.objects.unlink(orphan)
 
                 # The user may have inserted their own objects
                 if len(col_bool.all_objects) == 0:
-                    DC.trace(2, "Removing collection: {}", collection_name)
+                    Utils.trace(2, "Removing collection: {}", collection_name)
 
                     # Find correct parent collection to delete from...
                     parent_col = None
@@ -334,6 +334,6 @@ class DC_OT_boolean_apply(bpy.types.Operator):
                     parent_col.children.unlink(col_bool)
                     bpy.data.collections.remove(col_bool)
                 else:
-                    DC.trace(2, "Collection still contains objects; not removing: {}", collection_name)
+                    Utils.trace(2, "Collection still contains objects; not removing: {}", collection_name)
 
-        return DC.trace_exit("DC_OT_boolean_apply")
+        return Utils.trace_exit("DC_OT_boolean_apply")

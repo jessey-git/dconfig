@@ -14,15 +14,18 @@ DebugTraceEnabled = True
 def full_name(obj):
     return "{}({})".format(obj.name, obj.data.name)
 
+
 def full_names(obj_list):
     name_list = []
     for obj in obj_list:
         name_list.append(full_name(obj))
     return name_list
 
+
 def rename(obj, new_name):
     obj.name = new_name
     obj.data.name = new_name
+
 
 def trace(level, message, *args):
     if DebugTraceEnabled:
