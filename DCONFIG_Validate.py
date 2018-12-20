@@ -14,7 +14,6 @@ import re
 
 from mathutils import Vector
 from collections import (namedtuple, defaultdict)
-from . import DCONFIG_Utils as Utils
 
 
 #
@@ -42,8 +41,8 @@ class BaseObjectRule:
     ]
 
     def is_bad_name(self, name):
-        pattern = '(%s)\.?\d*$' % '|'.join(self.BAD_NAMES)
-        return re.match(pattern, name) is not None
+        pattern = r"({})\.?\d*$".format("|".join(self.BAD_NAMES))
+        return re.match(pattern, name, re.IGNORECASE) is not None
 
     def ready_selection(self, select_mode):
         bpy.ops.mesh.select_all(action='DESELECT')
@@ -289,8 +288,7 @@ class Validator:
         context.scene.dc_validation_collection = self.collection.name
         self.examine_collection()
 
-        objects_to_check = self.collection.all_objects
-        for obj in objects_to_check:
+        for obj in self.collection.all_objects:
             print('Checking object : ', obj.name)
             if obj.type != 'MESH':
                 continue
@@ -326,8 +324,8 @@ class Validator:
                 self.results[result.rule].append(result.detail)
 
     def post_results(self, scene):
-        scene.dc_validation_results.clear()
         scene.dc_validation_results_index = 0
+        scene.dc_validation_results.clear()
 
         for key in self.results:
             errors = self.results[key]

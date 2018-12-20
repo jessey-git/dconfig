@@ -25,7 +25,7 @@ class DC_OT_setup_shading(bpy.types.Operator):
         context.space_data.clip_start = 0.01
 
         context.space_data.shading.light = 'MATCAP'
-        context.space_data.shading.show_shadows = True
+        context.space_data.shading.show_shadows = False
         context.space_data.shading.show_cavity = True
         context.space_data.shading.cavity_type = 'WORLD'
         context.space_data.shading.cavity_ridge_factor = 0
