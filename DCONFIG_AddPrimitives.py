@@ -9,8 +9,9 @@
 #
 
 import bpy
-from mathutils import ( Matrix, Vector )
+from mathutils import (Matrix, Vector)
 from . import DCONFIG_Utils as utils
+
 
 class DC_MT_add_primitive_pie(bpy.types.Menu):
     bl_label = "Add"
@@ -58,6 +59,7 @@ class DC_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.00
         col.scale_x = 1.00
+        col.operator("view3d.dc_add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
         col.operator("view3d.dc_add_lattice", icon='LATTICE_DATA', text="3 x 3 x 3").type = '3x3x3'
         col.operator("view3d.dc_add_lattice", icon='LATTICE_DATA', text="4 x 4 x 4").type = '4x4x4'
 
@@ -180,6 +182,7 @@ class DC_OT_add_primitive(bpy.types.Operator):
         context.scene.cursor_location = cursor_location
         return {'FINISHED'}
 
+
 class DC_OT_add_lattice(bpy.types.Operator):
     bl_idname = "view3d.dc_add_lattice"
     bl_label = "DC Add Lattice"
@@ -235,7 +238,6 @@ class DC_OT_add_lattice(bpy.types.Operator):
 
         return lattice_object
 
-
     def create_lattice_mod(self, target, lattice):
         mod = target.modifiers.new(lattice.name, "LATTICE")
         mod.object = lattice
@@ -265,3 +267,60 @@ class DC_OT_add_lattice(bpy.types.Operator):
         # Return center
         return ((min_vec + max_vec) / 2)
 
+
+class DC_OT_add_edge_curve(bpy.types.Operator):
+    bl_idname = "view3d.dc_add_edge_curve"
+    bl_label = "DC Add Edge Curve"
+    bl_description = "Add curve following a path of connected edges"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        active_object = context.active_object
+        return active_object is not None and active_object.type == "MESH"
+
+    def invoke(self, context, event):
+        if context.mode == 'EDIT_MESH':
+            if context.object.data.total_edge_sel > 0:
+                bpy.ops.mesh.separate(type='SELECTED')
+                bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+                context.view_layer.objects.active = context.selected_objects[-1]
+            else:
+                return {'CANCELLED'}
+
+        bpy.ops.object.convert(target='CURVE')
+        if context.active_object.type != 'CURVE':
+            return {'CANCELLED'}
+
+        curve = context.active_object
+        curve.data.dimensions = '3D'
+        curve.data.fill_mode = 'FULL'
+        curve.data.resolution_u = 3
+        curve.data.bevel_depth = 0.1
+        curve.data.bevel_resolution = 2
+
+        self.mouse_x = event.mouse_x
+        self.original_depth = curve.data.bevel_depth
+        context.window_manager.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
+    def modal(self, context, event):
+        curve = context.active_object
+
+        if event.type == 'MOUSEMOVE':
+            delta = self.mouse_x - event.mouse_x
+            curve.data.bevel_depth = self.original_depth + delta * 0.01
+        elif event.type == 'WHEELUPMOUSE':
+            if curve.data.bevel_resolution < 6:
+                curve.data.bevel_resolution += 1
+        elif event.type == 'WHEELDOWNMOUSE':
+            if curve.data.bevel_resolution > 0:
+                curve.data.bevel_resolution -= 1
+
+        elif event.type == 'LEFTMOUSE':
+            return {'FINISHED'}
+
+        elif event.type in {'RIGHTMOUSE', 'ESC'}:
+            return {'CANCELLED'}
+
+        return {'RUNNING_MODAL'}
