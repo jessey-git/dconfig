@@ -66,7 +66,7 @@ def remove_hotkeys():
 
 
 def setup_userpreferences():
-    user_prefs = bpy.context.user_preferences
+    user_prefs = bpy.context.preferences
 
     if user_prefs.edit.undo_steps < 100:
         user_prefs.edit.undo_steps = 100

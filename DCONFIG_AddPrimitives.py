@@ -194,7 +194,7 @@ class DC_OT_add_lattice(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         active_object = context.active_object
-        return active_object is not None and active_object.type == "MESH"
+        return active_object is not None and active_object.type == "MESH" and active_object.select_get()
 
     def execute(self, context):
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
@@ -277,7 +277,7 @@ class DC_OT_add_edge_curve(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         active_object = context.active_object
-        return active_object is not None and active_object.type == "MESH"
+        return active_object is not None and active_object.type == "MESH" and active_object.select_get()
 
     def invoke(self, context, event):
         if context.mode == 'EDIT_MESH':
@@ -298,6 +298,7 @@ class DC_OT_add_edge_curve(bpy.types.Operator):
         curve.data.resolution_u = 3
         curve.data.bevel_depth = 0.1
         curve.data.bevel_resolution = 2
+        curve.data.splines[0].use_smooth = True
 
         self.mouse_x = event.mouse_x
         self.original_depth = curve.data.bevel_depth
