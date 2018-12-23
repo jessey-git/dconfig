@@ -87,8 +87,8 @@
           <ThemeWidgetColors
             outline="#444444"
             inner="#1f1f1fff"
-            inner_sel="#808080ff"
-            item="#333333ff"
+            inner_sel="#505050ff"
+            item="#191919ff"
             text="#e6e6e6"
             text_sel="#ffffff"
             show_shaded="TRUE"
@@ -132,8 +132,8 @@
           <ThemeWidgetColors
             outline="#444444"
             inner="#595959ff"
-            inner_sel="#b3b3b366"
-            item="#333333ff"
+            inner_sel="#505050ff"
+            item="#191919ff"
             text="#e6e6e6"
             text_sel="#ffffff"
             show_shaded="FALSE"
@@ -147,7 +147,7 @@
           <ThemeWidgetColors
             outline="#444444"
             inner="#595959ff"
-            inner_sel="#333333ff"
+            inner_sel="#505050ff"
             item="#5680c2e6"
             text="#e6e6e6"
             text_sel="#ffffff"
@@ -318,6 +318,8 @@
             inner_driven_sel="#9900e6"
             inner_overridden="#19c3c3"
             inner_overridden_sel="#118f8f"
+            inner_changed="#cc7529"
+            inner_changed_sel="#e6852d"
             blend="0.5"
             >
           </ThemeWidgetStateColors>
@@ -344,7 +346,7 @@
         grid="#a7a7a733"
         clipping_border_3d="#313131ff"
         wire="#5c5c5c"
-        wire_edit="#a9a9a9"
+        wire_edit="#5c5c5c"
         gp_vertex="#000000"
         gp_vertex_select="#ff8500"
         gp_vertex_size="3"
@@ -1041,8 +1043,8 @@
         </space>
       </ThemeInfo>
     </info>
-    <user_preferences>
-      <ThemeUserPreferences>
+    <preferences>
+      <ThemePreferences>
         <space>
           <ThemeSpaceGeneric
             back="#424242"
@@ -1072,8 +1074,8 @@
             </panelcolors>
           </ThemeSpaceGeneric>
         </space>
-      </ThemeUserPreferences>
-    </user_preferences>
+      </ThemePreferences>
+    </preferences>
     <console>
       <ThemeConsole
         line_output="#71a8ff"
@@ -1130,6 +1132,8 @@
         frame_current="#5680c2"
         strips="#0c0a0a"
         strips_selected="#ff8c00"
+        metadatabg="#000000"
+        metadatatext="#ffffff"
         handle_free="#000000"
         handle_auto="#909000"
         handle_align="#803060"

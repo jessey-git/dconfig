@@ -21,16 +21,22 @@ class DC_OT_setup_shading(bpy.types.Operator):
     def execute(self, context):
         DC.trace_enter("DC_OT_setup_shading")
 
+        context.space_data.clip_end = 100
+        context.space_data.clip_start = 0.01
+
         context.space_data.shading.light = 'MATCAP'
-        context.space_data.shading.show_shadows = True
+        context.space_data.shading.show_shadows = False
         context.space_data.shading.show_cavity = True
+        context.space_data.shading.cavity_type = 'WORLD'
         context.space_data.shading.cavity_ridge_factor = 0
         context.space_data.shading.cavity_valley_factor = 2
         context.space_data.shading.curvature_ridge_factor = 0
-        context.space_data.shading.curvature_valley_factor = 2
+        context.space_data.shading.curvature_valley_factor = 0.8
         context.space_data.shading.xray_alpha_wireframe = 0
 
         context.space_data.overlay.wireframe_threshold = 0.86
+
+        context.scene.display.matcap_ssao_distance = 1
 
         return DC.trace_exit("DC_OT_setup_shading")
 

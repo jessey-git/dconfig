@@ -4,15 +4,18 @@
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
 
-#
-# Common utilities
-#
+import bpy
 
 DebugTraceEnabled = True
 
 
+#
+# Object utilities
+#
+
 def full_name(obj):
     return "{}({})".format(obj.name, obj.data.name)
+
 
 def full_names(obj_list):
     name_list = []
@@ -20,9 +23,35 @@ def full_names(obj_list):
         name_list.append(full_name(obj))
     return name_list
 
+
 def rename(obj, new_name):
     obj.name = new_name
     obj.data.name = new_name
+
+#
+# Collection utilities
+#
+
+
+def find_collection(context, obj):
+    collections = obj.users_collection
+    if len(collections) > 0:
+        return collections[0]
+    return context.scene.collection
+
+
+def make_collection(parent_collection, collection_name):
+    if collection_name in bpy.data.collections:
+        return bpy.data.collections[collection_name]
+    else:
+        new_collection = bpy.data.collections.new(collection_name)
+        parent_collection.children.link(new_collection)
+        return new_collection
+
+
+#
+# Trace utilities
+#
 
 def trace(level, message, *args):
     if DebugTraceEnabled:

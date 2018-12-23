@@ -9,7 +9,7 @@ from . import auto_load
 
 
 bl_info = {
-    "name": "deadpin config",
+    "name": "dconfig",
     "author": "deadpin",
     "version": (1, 0),
     "blender": (2, 80, 0),
