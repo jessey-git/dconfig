@@ -158,7 +158,7 @@ class DC_OT_add_primitive(bpy.types.Operator):
             self.add_primitive(context)
         elif context.object.type == 'MESH' and tuple(context.scene.tool_settings.mesh_select_mode) == (False, False, True):
             active = context.view_layer.objects.active
-            saved_orientation = context.scene.transform_orientation
+            saved_orientation = context.scene.transform_orientation_slots[0].type
 
             bpy.ops.view3d.snap_cursor_to_selected()
             bpy.ops.transform.create_orientation(name="AddAxis", use=True, overwrite=True)
@@ -174,7 +174,7 @@ class DC_OT_add_primitive(bpy.types.Operator):
             bpy.ops.object.join()
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
 
-            context.scene.transform_orientation = saved_orientation
+            context.scene.transform_orientation_slots[0].type = saved_orientation
         else:
             bpy.ops.view3d.snap_cursor_to_selected()
             self.add_primitive(context)
@@ -296,7 +296,7 @@ class DC_OT_add_edge_curve(bpy.types.Operator):
         curve.data.dimensions = '3D'
         curve.data.fill_mode = 'FULL'
         curve.data.resolution_u = 3
-        curve.data.bevel_depth = 0.1
+        curve.data.bevel_depth = 0.0
         curve.data.bevel_resolution = 2
         curve.data.splines[0].use_smooth = True
 
@@ -309,7 +309,7 @@ class DC_OT_add_edge_curve(bpy.types.Operator):
         curve = context.active_object
 
         if event.type == 'MOUSEMOVE':
-            delta = self.mouse_x - event.mouse_x
+            delta = event.mouse_x - self.mouse_x
             curve.data.bevel_depth = self.original_depth + delta * 0.01
         elif event.type == 'WHEELUPMOUSE':
             if curve.data.bevel_resolution < 6:
