@@ -130,6 +130,12 @@ class DC_OT_boolean_live(bpy.types.Operator):
         mod.object = source.object
         mod.operation = self.bool_operation
 
+        # Booleans go at top of stack...
+        mod_index = len(target.object.modifiers) - 1
+        while mod_index > 0 and target.object.modifiers[mod_index - 1].type != 'BOOLEAN':
+            bpy.ops.object.modifier_move_up(modifier=mod.name)
+            mod_index -= 1
+
     def prepare_objects(self, context):
         if context.mode == 'EDIT_MESH':
             if context.object.data.total_vert_sel > 0:
@@ -159,8 +165,17 @@ class DC_OT_boolean_live(bpy.types.Operator):
             bool_collection.hide_render = True
             bool_targets.append(TargetData(obj, own_collection, bool_collection))
 
+        # Last object is the boolean source; remove any modifiers present on it...
         source = selected[-1]
         source_collection = utils.find_collection(context, source)
+
+        active = context.view_layer.objects.active
+        context.view_layer.objects.active = source
+        while source.modifiers:
+            modifier = source.modifiers[0]
+            bpy.ops.object.modifier_remove(modifier=modifier.name)
+        context.view_layer.objects.active = active
+
         bool_source = SourceData(source, source_collection)
 
         return bool_targets, bool_source
@@ -259,11 +274,10 @@ class DC_OT_boolean_apply(bpy.types.Operator):
             # We need to apply everything up until the last boolean modifier
             mod_count = len(current_object.modifiers)
             mod_apply_count = 0
-            if len(current_object.modifiers) > 0:
-                for i in range(mod_count - 1, -1, -1):
-                    if current_object.modifiers[i].type == 'BOOLEAN':
-                        mod_apply_count = i + 1
-                        break
+            for i in range(mod_count - 1, -1, -1):
+                if current_object.modifiers[i].type == 'BOOLEAN':
+                    mod_apply_count = i + 1
+                    break
 
             utils.trace(2, "Applying {} of {} modifiers", mod_apply_count, mod_count)
 
@@ -290,7 +304,7 @@ class DC_OT_boolean_apply(bpy.types.Operator):
             if collection_name in bpy.data.collections:
                 bpy.data.collections[collection_name].hide_viewport = False
 
-            if len(orphans_to_delete) > 0:
+            if orphans_to_delete:
                 utils.trace(2, "Removing {} orphaned objects", len(orphans_to_delete))
                 for obj in orphans_to_delete:
                     obj.select_set(True)
@@ -302,13 +316,13 @@ class DC_OT_boolean_apply(bpy.types.Operator):
                 col_bool = bpy.data.collections[collection_name]
 
                 # Unlink orphans who actually have a home somewhere else...
-                if len(orphans_to_unlink) > 0:
+                if orphans_to_unlink:
                     utils.trace(2, "Unlinking {} orphaned objects", len(orphans_to_unlink))
                     for orphan in orphans_to_unlink:
                         col_bool.objects.unlink(orphan)
 
                 # The user may have inserted their own objects
-                if len(col_bool.all_objects) == 0:
+                if not col_bool.all_objects:
                     utils.trace(2, "Removing collection: {}", collection_name)
 
                     # Find correct parent collection to delete from...
