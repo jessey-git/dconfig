@@ -9,7 +9,6 @@
 #
 
 import bpy
-import bmesh
 from . import DCONFIG_Utils as utils
 
 
@@ -17,7 +16,7 @@ class DC_MT_symmetry_pie(bpy.types.Menu):
     bl_label = "Symmetry"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context):
         active_object = context.active_object
         return active_object is not None and active_object.type == "MESH"
 

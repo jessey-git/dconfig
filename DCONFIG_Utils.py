@@ -35,7 +35,7 @@ def rename(obj, new_name):
 
 def find_collection(context, obj):
     collections = obj.users_collection
-    if len(collections) > 0:
+    if collections:
         return collections[0]
     return context.scene.collection
 

@@ -9,7 +9,7 @@
 #
 
 import bpy
-from mathutils import (Matrix, Vector)
+from mathutils import (Vector)
 from . import DCONFIG_Utils as utils
 
 
@@ -266,7 +266,7 @@ class DC_OT_add_lattice(bpy.types.Operator):
                 max_vec.z = v.z
 
         # Return center
-        return ((min_vec + max_vec) / 2)
+        return (min_vec + max_vec) / 2
 
 
 class DC_OT_add_edge_curve(bpy.types.Operator):
@@ -274,6 +274,10 @@ class DC_OT_add_edge_curve(bpy.types.Operator):
     bl_label = "DC Add Edge Curve"
     bl_description = "Add curve following a path of connected edges"
     bl_options = {'REGISTER', 'UNDO'}
+
+    def __init__(self):
+        self.mouse_start_x = 0
+        self.original_depth = 0.0
 
     @classmethod
     def poll(cls, context):
@@ -301,7 +305,7 @@ class DC_OT_add_edge_curve(bpy.types.Operator):
         curve.data.bevel_resolution = 2
         curve.data.splines[0].use_smooth = True
 
-        self.mouse_x = event.mouse_x
+        self.mouse_start_x = event.mouse_x
         self.original_depth = curve.data.bevel_depth
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
@@ -310,8 +314,8 @@ class DC_OT_add_edge_curve(bpy.types.Operator):
         curve = context.active_object
 
         if event.type == 'MOUSEMOVE':
-            delta = event.mouse_x - self.mouse_x
-            curve.data.bevel_depth = self.original_depth + delta * 0.01
+            delta_x = event.mouse_x - self.mouse_start_x
+            curve.data.bevel_depth = self.original_depth + delta_x * 0.01
         elif event.type == 'WHEELUPMOUSE':
             if curve.data.bevel_resolution < 6:
                 curve.data.bevel_resolution += 1

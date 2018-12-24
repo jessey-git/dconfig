@@ -8,8 +8,9 @@
 # Better booleans
 #
 
-import bpy
 from collections import namedtuple
+
+import bpy
 from . import DCONFIG_Utils as utils
 
 
@@ -34,7 +35,7 @@ class DC_MT_boolean_pie(bpy.types.Menu):
     bl_label = "Booleans"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context):
         active_object = context.active_object
         return active_object is not None and active_object.type == "MESH"
 

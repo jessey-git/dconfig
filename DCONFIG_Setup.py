@@ -8,15 +8,17 @@
 # Setup User Preferences
 #
 
-import bpy
 import os
 import shutil
+
+import bpy
 import addon_utils
 
 addon_keymaps = []
 
 
 def setup_hotkeys():
+    # pylint: disable=C0326
     kc = bpy.context.window_manager.keyconfigs
 
     if kc.active.preferences is not None:
@@ -48,9 +50,9 @@ def setup_hotkeys():
     )
 
     addon_keymaps.clear()
-    for (name, space, region, id, key, action, SHIFT, CTRL, ALT, props) in new_keymap:
+    for (name, space, region, idname, key, action, SHIFT, CTRL, ALT, props) in new_keymap:
         km = kc.addon.keymaps.new(name=name, space_type=space, region_type=region)
-        kmi = km.keymap_items.new(id, key, action, shift=SHIFT, ctrl=CTRL, alt=ALT)
+        kmi = km.keymap_items.new(idname, key, action, shift=SHIFT, ctrl=CTRL, alt=ALT)
         for prop, value in props:
             setattr(kmi.properties, prop, value)
 

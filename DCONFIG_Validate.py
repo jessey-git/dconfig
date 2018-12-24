@@ -8,12 +8,11 @@
 # Model validator
 #
 
-import bpy
-import bmesh
+from collections import (namedtuple, defaultdict)
 import re
 
-from mathutils import Vector
-from collections import (namedtuple, defaultdict)
+import bpy
+import bmesh
 
 
 #
@@ -318,7 +317,7 @@ class Validator:
 
     def process(self, analysis_results):
         for result in analysis_results:
-            if not result.rule in self.results:
+            if result.rule not in self.results:
                 self.results[result.rule] = []
             if result.is_error:
                 self.results[result.rule].append(result.detail)

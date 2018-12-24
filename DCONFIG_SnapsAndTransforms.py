@@ -47,4 +47,4 @@ class DC_MT_transforms_pie(bpy.types.Menu):
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.5
-        col.prop(context.scene, "transform_orientation", expand=True)
+        col.prop(context.scene.transform_orientation_slots[0], "type", expand=True)
