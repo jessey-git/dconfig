@@ -204,9 +204,6 @@ class DC_OT_add_lattice(bpy.types.Operator):
         self.create_lattice_mod(target, lattice)
 
         bpy.ops.object.select_all(action='DESELECT')
-
-        helpers_collection = utils.make_collection(context.scene.collection, "DC_helpers")
-        helpers_collection.objects.link(lattice)
         context.view_layer.objects.active = lattice
         lattice.select_set(True)
 
@@ -235,6 +232,10 @@ class DC_OT_add_lattice(bpy.types.Operator):
         lattice_object.location = self.find_world_center(target)
         lattice_object.scale = target.dimensions * 1.1
         lattice_object.rotation_euler = target.rotation_euler
+
+        # Place in a special collection
+        helpers_collection = utils.make_collection(context.scene.collection, "DC_helpers")
+        helpers_collection.objects.link(lattice_object)
 
         return lattice_object
 

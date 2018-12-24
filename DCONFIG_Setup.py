@@ -39,6 +39,7 @@ def setup_hotkeys():
         ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.toggle_shading",        "Z",            "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Z",            "PRESS",    True,   False,  False,  (("name", "VIEW3D_MT_shading_ex_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Q",            "PRESS",    True,   False,  False,  (("name", "DC_MT_boolean_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Q",            "PRESS",    False,  True,   False,  (("name", "DC_MT_symmetry_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "W",            "PRESS",    False,  False,  False,  (("name", "DC_MT_add_primitive_pie"),)),
 
         ("Mesh",                "EMPTY",    "WINDOW",   "mesh.select_linked",       "LEFTMOUSE",        "DOUBLE_CLICK", False,  False,  False,  (("delimit", {'SEAM'}),)),
