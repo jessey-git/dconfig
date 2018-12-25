@@ -33,16 +33,16 @@ def setup_hotkeys():
         ("Screen",              "EMPTY",    "WINDOW",   "screen.redo_last",         "BUTTON5MOUSE",     "PRESS",    False,  False,  False,  ()),
         ("Screen",              "EMPTY",    "WINDOW",   "script.reload",            "F8",               "PRESS",    False,  False,  False,  ()),
 
-        ("Object Non-modal",    "EMPTY",    "WINDOW",    "wm.call_menu",            "S",                "PRESS",    True,   False,  False,  (("name", "DC_MT_snap"),)),
-        ("Object Non-modal",    "EMPTY",    "WINDOW",    "wm.call_menu_pie",        "BUTTON4MOUSE",     "PRESS",    True,   False,  False,  (("name", "DC_MT_transforms_pie"),)),
+        ("Object Non-modal",    "EMPTY",    "WINDOW",    "wm.call_menu",            "S",                "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_snap"),)),
+        ("Object Non-modal",    "EMPTY",    "WINDOW",    "wm.call_menu_pie",        "BUTTON4MOUSE",     "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_transforms_pie"),)),
         ("Object Non-modal",    "EMPTY",    "WINDOW",    "object.origin_set",       "BUTTON5MOUSE",     "PRESS",    True,   False,  False,  ()),
 
         ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.view_center_cursor",    "HOME",         "PRESS",    False,  False,  True,   ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.toggle_shading",        "Z",            "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Z",            "PRESS",    True,   False,  False,  (("name", "VIEW3D_MT_shading_ex_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Q",            "PRESS",    True,   False,  False,  (("name", "DC_MT_boolean_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Q",            "PRESS",    False,  True,   False,  (("name", "DC_MT_symmetry_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "W",            "PRESS",    False,  False,  False,  (("name", "DC_MT_add_primitive_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Q",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_boolean_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Q",            "PRESS",    False,  True,   False,  (("name", "DCONFIG_MT_symmetry_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "W",            "PRESS",    False,  False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
 
         ("Mesh",                "EMPTY",    "WINDOW",   "mesh.select_linked",       "LEFTMOUSE",        "DOUBLE_CLICK", False,  False,  False,  (("delimit", {'SEAM'}),)),
         ("Mesh",                "EMPTY",    "WINDOW",   "mesh.select_linked",       "LEFTMOUSE",        "DOUBLE_CLICK", True,   False,  False,  (("delimit", {'SEAM'}),)),
@@ -90,7 +90,7 @@ def setup_addons():
     addon_utils.enable("node_wrangler", default_set=True, persistent=True)
 
 
-class DC_OT_install_theme(bpy.types.Operator):
+class DCONFIG_OT_install_theme(bpy.types.Operator):
     bl_idname = "dconfig.install_theme"
     bl_label = "DC Install Theme"
     bl_description = "Installs custom dconfig theme"
@@ -98,7 +98,7 @@ class DC_OT_install_theme(bpy.types.Operator):
 
     def execute(self, context):
         script_path = bpy.utils.user_resource('SCRIPTS')
-        source_path = os.path.join(script_path, "addons", "dconfig", "DCONFIG.xml")
+        source_path = os.path.join(script_path, "addons", "dconfig", "dconfig.xml")
         target_path = os.path.join(script_path, "presets", "interface_theme")
 
         self.makedir(target_path)

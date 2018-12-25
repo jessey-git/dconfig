@@ -31,7 +31,7 @@ class Details:
         return [obj for obj in context.selected_objects if obj.type == "MESH"]
 
 
-class DC_MT_boolean_pie(bpy.types.Menu):
+class DCONFIG_MT_boolean_pie(bpy.types.Menu):
     bl_label = "Booleans"
 
     @classmethod
@@ -44,44 +44,44 @@ class DC_MT_boolean_pie(bpy.types.Menu):
         pie = layout.menu_pie()
 
         # LEFT
-        pie.operator("view3d.dc_boolean_apply", text="Apply")
+        pie.operator("dconfig.boolean_apply", text="Apply")
 
         # RIGHT
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.5
 
-        prop = col.operator("view3d.dc_boolean_live", text="Live Add")
+        prop = col.operator("dconfig.boolean_live", text="Live Add")
         prop.bool_operation = 'UNION'
         prop.cutline = False
         prop.insetted = False
 
-        prop = col.operator("view3d.dc_boolean_live", text="Live Intersect")
+        prop = col.operator("dconfig.boolean_live", text="Live Intersect")
         prop.bool_operation = 'INTERSECT'
         prop.cutline = False
         prop.insetted = False
 
-        prop = col.operator("view3d.dc_boolean_live", text="Live Subtract")
+        prop = col.operator("dconfig.boolean_live", text="Live Subtract")
         prop.bool_operation = 'DIFFERENCE'
         prop.cutline = False
         prop.insetted = False
 
-        prop = col.operator("view3d.dc_boolean_live", text="Live Subtract Inset")
+        prop = col.operator("dconfig.boolean_live", text="Live Subtract Inset")
         prop.bool_operation = 'DIFFERENCE'
         prop.cutline = False
         prop.insetted = True
 
-        prop = col.operator("view3d.dc_boolean_live", text="Live Cutline")
+        prop = col.operator("dconfig.boolean_live", text="Live Cutline")
         prop.bool_operation = 'DIFFERENCE'
         prop.cutline = True
         prop.insetted = False
 
         # BOTTOM
-        pie.operator("view3d.dc_boolean_toggle", text="Toggle Live Booleans")
+        pie.operator("dconfig.boolean_toggle", text="Toggle Live Booleans")
 
 
-class DC_OT_boolean_live(bpy.types.Operator):
-    bl_idname = "view3d.dc_boolean_live"
+class DCONFIG_OT_boolean_live(bpy.types.Operator):
+    bl_idname = "dconfig.boolean_live"
     bl_label = "DC Live Booleans"
     bl_description = "Add selected geometry as a boolean to the active objects"
     bl_options = {'REGISTER'}
@@ -183,7 +183,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
         return bool_targets, bool_source
 
     def execute(self, context):
-        dc.trace_enter("DC_OT_boolean_live")
+        dc.trace_enter(self)
 
         # Process and prepare all necessary data for the later operations
         # This supports multi-object editing by preparing data for every selected
@@ -191,7 +191,7 @@ class DC_OT_boolean_live(bpy.types.Operator):
         # to apply to 1 or more targets...
         bool_targets, bool_source = self.prepare_data(context)
         if bool_targets is None or bool_source is None:
-            return dc.trace_exit("DC_OT_boolean_live", 'CANCELLED')
+            return dc.trace_exit(self, 'CANCELLED')
 
         dc.trace(1, "Data:")
         for target in bool_targets:
@@ -229,17 +229,17 @@ class DC_OT_boolean_live(bpy.types.Operator):
         bpy.ops.object.select_all(action='DESELECT')
         first_target.object.select_set(state=True)
 
-        return dc.trace_exit("DC_OT_boolean_live")
+        return dc.trace_exit(self)
 
 
-class DC_OT_boolean_toggle(bpy.types.Operator):
-    bl_idname = "view3d.dc_boolean_toggle"
+class DCONFIG_OT_boolean_toggle(bpy.types.Operator):
+    bl_idname = "dconfig.boolean_toggle"
     bl_label = "DC Toggle Cutters"
     bl_description = "Toggle boolean viewport visability for the active object"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        dc.trace_enter("DC_OT_boolean_toggle")
+        dc.trace_enter(self)
 
         # Grab our main active object...
         active = context.active_object
@@ -251,20 +251,20 @@ class DC_OT_boolean_toggle(bpy.types.Operator):
             dc.trace(1, "Toggling visibility: {}", collection_name)
             bpy.data.collections[collection_name].hide_viewport = not bpy.data.collections[collection_name].hide_viewport
 
-        return dc.trace_exit("DC_OT_boolean_toggle")
+        return dc.trace_exit(self)
 
 
-class DC_OT_boolean_apply(bpy.types.Operator):
-    bl_idname = "view3d.dc_boolean_apply"
+class DCONFIG_OT_boolean_apply(bpy.types.Operator):
+    bl_idname = "dconfig.boolean_apply"
     bl_label = "DC Apply Booleans"
     bl_description = "Apply all boolean modifiers for the selected objects"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        dc.trace_enter("DC_OT_boolean_apply")
+        dc.trace_enter(self)
 
         if context.mode != "OBJECT":
-            return dc.trace_exit("DC_OT_boolean_apply", result='CANCELLED')
+            return dc.trace_exit(self, result='CANCELLED')
 
         # Process all selected objects...
         for current_object in Details.get_selected_meshes(context):
@@ -342,4 +342,4 @@ class DC_OT_boolean_apply(bpy.types.Operator):
                 else:
                     dc.trace(2, "Collection still contains objects; not removing: {}", collection_name)
 
-        return dc.trace_exit("DC_OT_boolean_apply")
+        return dc.trace_exit(self)

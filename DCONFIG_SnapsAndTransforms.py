@@ -11,7 +11,7 @@
 import bpy
 
 
-class DC_MT_snap(bpy.types.Menu):
+class DCONFIG_MT_snap(bpy.types.Menu):
     bl_label = "Snap"
 
     def draw(self, context):
@@ -30,7 +30,7 @@ class DC_MT_snap(bpy.types.Menu):
         layout.operator("view3d.snap_cursor_to_active", text="Cursor to Active")
 
 
-class DC_MT_transforms_pie(bpy.types.Menu):
+class DCONFIG_MT_transforms_pie(bpy.types.Menu):
     bl_label = "Transforms"
 
     def draw(self, context):

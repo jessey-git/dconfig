@@ -12,7 +12,7 @@ import bpy
 from . import DCONFIG_Utils as dc
 
 
-class DC_MT_symmetry_pie(bpy.types.Menu):
+class DCONFIG_MT_symmetry_pie(bpy.types.Menu):
     bl_label = "Symmetry"
 
     @classmethod
@@ -25,20 +25,20 @@ class DC_MT_symmetry_pie(bpy.types.Menu):
         pie = layout.menu_pie()
 
         # LEFT
-        pie.operator("view3d.dc_mesh_symmetry", text="Mesh Symmetry")
+        pie.operator("dconfig.mesh_symmetry", text="Mesh Symmetry")
 
         # RIGHT
-        pie.operator("view3d.dc_mirror", text="Mirror Local").local = True
+        pie.operator("dconfig.mirror", text="Mirror Local").local = True
 
         # BOTTOM
         pie.split()
 
         # TOP
-        pie.operator("view3d.dc_mirror", text="Mirror World").local = False
+        pie.operator("dconfig.mirror", text="Mirror World").local = False
 
 
-class DC_OT_mesh_symmetry(bpy.types.Operator):
-    bl_idname = "view3d.dc_mesh_symmetry"
+class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
+    bl_idname = "dconfig.mesh_symmetry"
     bl_label = "DC Mesh Symmetry"
     bl_description = "Symmetrize mesh along an axis"
     bl_options = {'REGISTER', 'UNDO'}
@@ -79,8 +79,8 @@ class DC_OT_mesh_symmetry(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
 
-class DC_OT_mirror(bpy.types.Operator):
-    bl_idname = "view3d.dc_mirror"
+class DCONFIG_OT_mirror(bpy.types.Operator):
+    bl_idname = "dconfig.mirror"
     bl_label = "DC Mirror"
     bl_description = "Mirrow mesh across an axis"
     bl_options = {'REGISTER', 'UNDO'}
@@ -93,19 +93,19 @@ class DC_OT_mirror(bpy.types.Operator):
         return active_object is not None and active_object.type == "MESH" and active_object.select_get()
 
     def execute(self, context):
-        dc.trace_enter("DC_OT_mirror")
+        dc.trace_enter(self)
 
         target = context.active_object
         mirror_object = self.create_mirror_obj(context)
         self.create_mirror_mod(target, mirror_object)
 
-        return dc.trace_exit("DC_OT_mirror")
+        return dc.trace_exit(self)
 
     def create_mirror_obj(self, context):
         mirror_object = None
         if not self.local:
             # Use a special collection
-            helpers_collection = dc.make_collection(context.scene.collection, "DC_helpers")
+            helpers_collection = dc.make_helpers_collection(context)
 
             if "DC_World_Origin" in helpers_collection.all_objects:
                 dc.trace(1, "Using existing world-origin empty")

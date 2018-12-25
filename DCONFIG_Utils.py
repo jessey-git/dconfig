@@ -49,6 +49,10 @@ def make_collection(parent_collection, collection_name):
         return new_collection
 
 
+def make_helpers_collection(context):
+    return make_collection(context.scene.collection, "DC_helpers")
+
+
 #
 # Trace utilities
 #
@@ -59,12 +63,12 @@ def trace(level, message, *args):
         print(indent + message.format(*args))
 
 
-def trace_enter(message):
+def trace_enter(op):
     trace(0, "")
-    trace(0, "ENTER " + message)
+    trace(0, "ENTER " + type(op).__name__)
 
 
-def trace_exit(message, result='FINISHED'):
-    trace(0, "EXIT  " + message + " : " + result)
+def trace_exit(op, result='FINISHED'):
+    trace(0, "EXIT  " + type(op).__name__ + " : " + result)
     trace(0, "")
     return {result}

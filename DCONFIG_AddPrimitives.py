@@ -13,7 +13,7 @@ from mathutils import (Vector)
 from . import DCONFIG_Utils as dc
 
 
-class DC_MT_add_primitive_pie(bpy.types.Menu):
+class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
     bl_label = "Add"
 
     def draw(self, context):
@@ -25,51 +25,51 @@ class DC_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("view3d.dc_add_primitive", icon='MESH_CYLINDER', text="6").type = 'Cylinder_6'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CYLINDER', text="8").type = 'Cylinder_8'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CYLINDER', text="16").type = 'Cylinder_16'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CYLINDER', text="32").type = 'Cylinder_32'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CYLINDER', text="64").type = 'Cylinder_64'
+        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="6").type = 'Cylinder_6'
+        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="8").type = 'Cylinder_8'
+        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="16").type = 'Cylinder_16'
+        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="32").type = 'Cylinder_32'
+        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="64").type = 'Cylinder_64'
 
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("view3d.dc_add_primitive", icon='MESH_CIRCLE', text="6").type = 'Circle_6'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CIRCLE', text="8").type = 'Circle_8'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CIRCLE', text="16").type = 'Circle_16'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CIRCLE', text="32").type = 'Circle_32'
+        col.operator("dconfig.add_primitive", icon='MESH_CIRCLE', text="6").type = 'Circle_6'
+        col.operator("dconfig.add_primitive", icon='MESH_CIRCLE', text="8").type = 'Circle_8'
+        col.operator("dconfig.add_primitive", icon='MESH_CIRCLE', text="16").type = 'Circle_16'
+        col.operator("dconfig.add_primitive", icon='MESH_CIRCLE', text="32").type = 'Circle_32'
 
         # Right
         split = pie.split(align=True)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("view3d.dc_add_primitive", icon='MESH_UVSPHERE', text="12").type = 'Sphere_12'
-        col.operator("view3d.dc_add_primitive", icon='MESH_UVSPHERE', text="24").type = 'Sphere_24'
-        col.operator("view3d.dc_add_primitive", icon='MESH_UVSPHERE', text="32").type = 'Sphere_32'
+        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="12").type = 'Sphere_12'
+        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="24").type = 'Sphere_24'
+        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="32").type = 'Sphere_32'
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("view3d.dc_add_primitive", icon='MESH_UVSPHERE', text="Quad 1").type = 'Quad_Sphere_1'
-        col.operator("view3d.dc_add_primitive", icon='MESH_UVSPHERE', text="Quad 2").type = 'Quad_Sphere_2'
-        col.operator("view3d.dc_add_primitive", icon='MESH_UVSPHERE', text="Quad 3").type = 'Quad_Sphere_3'
+        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="Quad 1").type = 'Quad_Sphere_1'
+        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="Quad 2").type = 'Quad_Sphere_2'
+        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="Quad 3").type = 'Quad_Sphere_3'
 
         # Bottom
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.00
         col.scale_x = 1.00
-        col.operator("view3d.dc_add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
-        col.operator("view3d.dc_add_lattice", icon='LATTICE_DATA', text="3 x 3 x 3").type = '3x3x3'
-        col.operator("view3d.dc_add_lattice", icon='LATTICE_DATA', text="4 x 4 x 4").type = '4x4x4'
+        col.operator("dconfig.add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="3 x 3 x 3").type = '3x3x3'
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="4 x 4 x 4").type = '4x4x4'
 
         # Top
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("view3d.dc_add_primitive", icon='MESH_PLANE', text="Plane").type = 'Plane'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CUBE', text="Cube").type = 'Cube'
+        col.operator("dconfig.add_primitive", icon='MESH_PLANE', text="Plane").type = 'Plane'
+        col.operator("dconfig.add_primitive", icon='MESH_CUBE', text="Cube").type = 'Cube'
 
         # Top Left
         # Top Right
@@ -77,8 +77,8 @@ class DC_MT_add_primitive_pie(bpy.types.Menu):
         # Bottom Right
 
 
-class DC_OT_add_primitive(bpy.types.Operator):
-    bl_idname = "view3d.dc_add_primitive"
+class DCONFIG_OT_add_primitive(bpy.types.Operator):
+    bl_idname = "dconfig.add_primitive"
     bl_label = "DC Add Primitive"
     bl_description = "Add pre-configured primitives and align to currently selected geometry"
     bl_options = {'REGISTER', 'UNDO'}
@@ -137,16 +137,19 @@ class DC_OT_add_primitive(bpy.types.Operator):
 
         bpy.ops.mesh.primitive_cube_add(size=radius * 2)
 
-        cube = context.active_object
-        mod_subd = cube.modifiers.new("dc_temp_subd", 'SUBSURF')
+        quad_sphere = context.active_object
+        dc.rename(quad_sphere, "QuadSphere")
+
+        mod_subd = quad_sphere.modifiers.new("dc_temp_subd", 'SUBSURF')
         mod_subd.levels = levels
-        mod_sphere = cube.modifiers.new("dc_temp_cast", 'CAST')
+        mod_sphere = quad_sphere.modifiers.new("dc_temp_cast", 'CAST')
         mod_sphere.factor = 1
         mod_sphere.radius = radius
         bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_subd.name)
         bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_sphere.name)
 
         if was_edit:
+            context.view_layer.objects.active = active
             active.select_set(True)
             bpy.ops.object.join()
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
@@ -183,8 +186,8 @@ class DC_OT_add_primitive(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class DC_OT_add_lattice(bpy.types.Operator):
-    bl_idname = "view3d.dc_add_lattice"
+class DCONFIG_OT_add_lattice(bpy.types.Operator):
+    bl_idname = "dconfig.add_lattice"
     bl_label = "DC Add Lattice"
     bl_description = "Add pre-configured lattice surrounding the selected geometry"
     bl_options = {'REGISTER', 'UNDO'}
@@ -211,8 +214,8 @@ class DC_OT_add_lattice(bpy.types.Operator):
 
     def create_lattice_obj(self, context, target):
         # Create lattice
-        lattice = bpy.data.lattices.new('DC_lattice')
-        lattice_object = bpy.data.objects.new('DC_lattice', lattice)
+        lattice = bpy.data.lattices.new('dc_lattice')
+        lattice_object = bpy.data.objects.new('dc_lattice', lattice)
 
         if self.type == "3x3x3":
             lattice.points_u = 3
@@ -234,7 +237,7 @@ class DC_OT_add_lattice(bpy.types.Operator):
         lattice_object.rotation_euler = target.rotation_euler
 
         # Place in a special collection
-        helpers_collection = dc.make_collection(context.scene.collection, "DC_helpers")
+        helpers_collection = dc.make_helpers_collection(context)
         helpers_collection.objects.link(lattice_object)
 
         return lattice_object
@@ -269,8 +272,8 @@ class DC_OT_add_lattice(bpy.types.Operator):
         return (min_vec + max_vec) / 2
 
 
-class DC_OT_add_edge_curve(bpy.types.Operator):
-    bl_idname = "view3d.dc_add_edge_curve"
+class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
+    bl_idname = "dconfig.add_edge_curve"
     bl_label = "DC Add Edge Curve"
     bl_description = "Add curve following a path of connected edges"
     bl_options = {'REGISTER', 'UNDO'}
