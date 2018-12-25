@@ -26,8 +26,6 @@ class Preferences(bpy.types.AddonPreferences):
     bl_option = {'REGISTER'}
 
     def draw(self, context):
-        import os
-
         layout = self.layout
         layout.operator("dconfig.install_theme", text="Load Theme")
 

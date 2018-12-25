@@ -9,7 +9,7 @@
 #
 
 import bpy
-from . import DCONFIG_Utils as utils
+from . import DCONFIG_Utils as dc
 
 
 class DC_MT_symmetry_pie(bpy.types.Menu):
@@ -93,24 +93,25 @@ class DC_OT_mirror(bpy.types.Operator):
         return active_object is not None and active_object.type == "MESH" and active_object.select_get()
 
     def execute(self, context):
-        utils.trace_enter("DC_OT_mirror")
+        dc.trace_enter("DC_OT_mirror")
 
         target = context.active_object
         mirror_object = self.create_mirror_obj(context)
         self.create_mirror_mod(target, mirror_object)
 
-        return utils.trace_exit("DC_OT_mirror")
+        return dc.trace_exit("DC_OT_mirror")
 
     def create_mirror_obj(self, context):
         mirror_object = None
         if not self.local:
             # Use a special collection
-            helpers_collection = utils.make_collection(context.scene.collection, "DC_helpers")
+            helpers_collection = dc.make_collection(context.scene.collection, "DC_helpers")
+
             if "DC_World_Origin" in helpers_collection.all_objects:
-                utils.trace(1, "Using existing world-origin empty")
+                dc.trace(1, "Using existing world-origin empty")
                 mirror_object = helpers_collection.objects["DC_World_Origin"]
             else:
-                utils.trace(1, "Creating new world-origin empty")
+                dc.trace(1, "Creating new world-origin empty")
                 original_object = context.view_layer.objects.active
                 original_mode = context.object.mode
 
@@ -120,7 +121,7 @@ class DC_OT_mirror(bpy.types.Operator):
                 mirror_object.name = "DC_World_Origin"
                 mirror_object.select_set(state=False)
 
-                mirror_object_collection = utils.find_collection(context, mirror_object)
+                mirror_object_collection = dc.find_collection(context, mirror_object)
                 helpers_collection.objects.link(mirror_object)
                 mirror_object_collection.objects.unlink(mirror_object)
 
@@ -131,7 +132,7 @@ class DC_OT_mirror(bpy.types.Operator):
         return mirror_object
 
     def create_mirror_mod(self, target, mirror_object):
-        utils.trace(1, "Adding {} mirror modifier to {}", "local" if self.local else "world", utils.full_name(target))
+        dc.trace(1, "Adding {} mirror modifier to {}", "local" if self.local else "world", dc.full_name(target))
 
         if self.local:
             mod = target.modifiers.new("dc_local", "MIRROR")
@@ -145,6 +146,7 @@ class DC_OT_mirror(bpy.types.Operator):
             mod.mirror_object = mirror_object
 
         mod.show_on_cage = True
+        mod.show_expanded = False
 
         # Local mirrors go before World and after Booleans...
         if self.local:

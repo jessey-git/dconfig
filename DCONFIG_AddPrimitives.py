@@ -10,7 +10,7 @@
 
 import bpy
 from mathutils import (Vector)
-from . import DCONFIG_Utils as utils
+from . import DCONFIG_Utils as dc
 
 
 class DC_MT_add_primitive_pie(bpy.types.Menu):
@@ -234,7 +234,7 @@ class DC_OT_add_lattice(bpy.types.Operator):
         lattice_object.rotation_euler = target.rotation_euler
 
         # Place in a special collection
-        helpers_collection = utils.make_collection(context.scene.collection, "DC_helpers")
+        helpers_collection = dc.make_collection(context.scene.collection, "DC_helpers")
         helpers_collection.objects.link(lattice_object)
 
         return lattice_object
