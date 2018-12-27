@@ -308,27 +308,38 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
         curve.data.bevel_resolution = 2
         curve.data.splines[0].use_smooth = True
 
+        mod_subd = curve.modifiers.new("dc_subd", 'SUBSURF')
+        mod_subd.levels = 0
+
         self.mouse_start_x = event.mouse_x
         self.original_depth = curve.data.bevel_depth
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
+    # Modal
+    # Mouse move: Adjust size of bevel
+    # Mouse wheel: Adjust resolution of bevel
+    # Shift Mouse wheel: Adjust sub-d level
     def modal(self, context, event):
         curve = context.active_object
 
         if event.type == 'MOUSEMOVE':
             delta_x = event.mouse_x - self.mouse_start_x
             curve.data.bevel_depth = self.original_depth + delta_x * 0.01
+
         elif event.type == 'WHEELUPMOUSE':
-            if curve.data.bevel_resolution < 6:
+            if not event.shift and curve.data.bevel_resolution < 6:
                 curve.data.bevel_resolution += 1
+            elif event.shift and curve.modifiers[0].levels < 3:
+                curve.modifiers[0].levels += 1
         elif event.type == 'WHEELDOWNMOUSE':
-            if curve.data.bevel_resolution > 0:
+            if not event.shift and curve.data.bevel_resolution > 0:
                 curve.data.bevel_resolution -= 1
+            elif event.shift and curve.modifiers[0].levels > 0:
+                curve.modifiers[0].levels -= 1
 
         elif event.type == 'LEFTMOUSE':
             return {'FINISHED'}
-
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
             return {'CANCELLED'}
 

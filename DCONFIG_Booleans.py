@@ -44,7 +44,18 @@ class DCONFIG_MT_boolean_pie(bpy.types.Menu):
         pie = layout.menu_pie()
 
         # LEFT
-        pie.operator("dconfig.boolean_apply", text="Apply")
+        split = pie.split()
+        col = split.column(align=True)
+        col.scale_y = 1.5
+
+        prop = col.operator("dconfig.boolean_immediate", text="Add")
+        prop.bool_operation = 'UNION'
+
+        prop = col.operator("dconfig.boolean_immediate", text="Intersect")
+        prop.bool_operation = 'INTERSECT'
+
+        prop = col.operator("dconfig.boolean_immediate", text="Subtract")
+        prop.bool_operation = 'DIFFERENCE'
 
         # RIGHT
         split = pie.split()
@@ -78,6 +89,9 @@ class DCONFIG_MT_boolean_pie(bpy.types.Menu):
 
         # BOTTOM
         pie.operator("dconfig.boolean_toggle", text="Toggle Live Booleans")
+
+        # TOP
+        pie.operator("dconfig.boolean_apply", text="Apply")
 
 
 class DCONFIG_OT_boolean_live(bpy.types.Operator):
@@ -230,6 +244,113 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
         first_target.object.select_set(state=True)
 
         return dc.trace_exit(self)
+
+
+class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
+    bl_idname = "dconfig.boolean_immediate"
+    bl_label = "DC Booleans"
+    bl_description = "Add selected geometry as a boolean to the active objects"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    bool_operation: bpy.props.StringProperty(name="Boolean Operation")
+
+    @classmethod
+    def poll(cls, context):
+        ok_edit = context.mode == 'EDIT_MESH' and context.object.data.total_vert_sel > 0
+        ok_object = context.mode == 'OBJECT' and len(context.selected_objects) > 1
+        return ok_edit or ok_object
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        if context.mode == 'EDIT_MESH':
+            dc.trace(1, "Performing direct mesh boolean from selected geometry")
+            bpy.ops.mesh.select_linked()
+            bpy.ops.mesh.normals_make_consistent(inside=False)
+            bpy.ops.mesh.intersect_boolean(operation=self.bool_operation)
+        else:
+            # Process and prepare all necessary data for the later operations
+            # This supports multi-object editing by preparing data for every selected
+            # object as best as possible. There is always just 1 boolean source object
+            # to apply to 1 or more targets...
+            bool_targets, bool_source = self.prepare_data(context)
+            if bool_targets is None or bool_source is None:
+                return dc.trace_exit(self, 'CANCELLED')
+
+            dc.trace(1, "Data:")
+            for target in bool_targets:
+                dc.trace(2, "Target {}", dc.full_name(target.object))
+            dc.trace(2, "Source {}", dc.full_name(bool_source.object))
+
+            # Perform actual boolean operations...
+            dc.trace(1, "Processing:")
+
+            for target in bool_targets:
+                context.view_layer.objects.active = target.object
+                target.object.select_set(True)
+
+                self.apply_bool_mod(target, bool_source)
+
+            dc.trace(1, "Cleanup:")
+            bpy.ops.object.select_all(action='DESELECT')
+
+            source_name = dc.full_name(bool_source.object)
+            bool_source.object.select_set(True)
+            bpy.ops.object.delete(use_global=False, confirm=False)
+            dc.trace(2, "Deleted {}", source_name)
+
+        return dc.trace_exit(self)
+
+    def prepare_source(self, context, source):
+        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        bpy.ops.object.select_all(action='DESELECT')
+
+        context.view_layer.objects.active = source
+        source.select_set(True)
+
+        bpy.ops.object.convert(target='MESH')
+        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+        bpy.ops.mesh.select_all()
+        bpy.ops.mesh.normals_make_consistent(inside=False)
+
+        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        bpy.ops.object.select_all(action='DESELECT')
+
+    def prepare_data(self, context):
+        bool_targets = []
+
+        # We should have at least 2 mesh objects (1 target, 1 source) at this point now...
+        selected = Details.get_selected_meshes(context)
+        if len(selected) < 2:
+            return None, None
+
+        # Track each target
+        for obj in selected[:-1]:
+            bool_targets.append(TargetData(obj, None, None))
+
+        # Last object is the boolean source; make sure all modifiers are applied and cleanup...
+        source = selected[-1]
+        self.prepare_source(context, source)
+        bool_source = SourceData(source, None)
+
+        return bool_targets, bool_source
+
+    def apply_bool_mod(self, target, source):
+        dc.trace(2, "Applying boolean modifier to {}", dc.full_name(target.object))
+        mod = target.object.modifiers.new(source.object.name, 'BOOLEAN')
+        mod.object = source.object
+        mod.operation = self.bool_operation
+
+        # Non-Live Booleans go to top-most location in the stack...
+        mod_index = len(target.object.modifiers) - 1
+        while mod_index > 0:
+            bpy.ops.object.modifier_move_up(modifier=mod.name)
+            mod_index -= 1
+
+        try:
+            bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+        except RuntimeError as e:
+            dc.trace(2, "Failed! Applying failed with {}", e)
 
 
 class DCONFIG_OT_boolean_toggle(bpy.types.Operator):
