@@ -279,6 +279,7 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def __init__(self):
+        self.step = 0
         self.mouse_start_x = 0
         self.original_depth = 0.0
 
@@ -288,17 +289,66 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
         return active_object is not None and active_object.type == "MESH" and active_object.select_get()
 
     def invoke(self, context, event):
-        if context.mode == 'EDIT_MESH':
-            if context.object.data.total_edge_sel > 0:
-                bpy.ops.mesh.separate(type='SELECTED')
-                bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-                context.view_layer.objects.active = context.selected_objects[-1]
-            else:
-                return {'CANCELLED'}
+        dc.trace_enter(self)
 
+        if context.mode == 'OBJECT':
+            # Object mode means we can skip to creating/manipulating the curve object
+            self.create_curve(context, event)
+            self.step = 1
+        elif context.mode == 'EDIT_MESH' and context.object.data.total_edge_sel > 0:
+            # Create a vertex group to be used later
+            bpy.ops.object.vertex_group_assign_new()
+            context.active_object.vertex_groups[-1].name = "dc_temp_vgroup"
+        else:
+            dc.trace(1, "No edges seleted")
+            return dc.trace_exit(self, 'CANCELLED')
+
+        dc.trace(1, "Starting step {}", self.step)
+
+        context.window_manager.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
+    # Modal
+    # Mouse move: Adjust size of bevel
+    # Mouse wheel: Adjust resolution of bevel
+    # Shift Mouse wheel: Adjust sub-d level
+    def modal(self, context, event):
+        if self.step == 0:
+            bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', vertex_only=True, clamp_overlap=True)
+            return self.continue_or_finish(context, event)
+
+        if self.step == 1:
+            curve = context.active_object
+
+            if event.type == 'MOUSEMOVE':
+                delta_x = event.mouse_x - self.mouse_start_x
+                curve.data.bevel_depth = self.original_depth + delta_x * 0.01
+            elif event.type == 'WHEELUPMOUSE':
+                if not event.shift and curve.data.bevel_resolution < 6:
+                    curve.data.bevel_resolution += 1
+                elif event.shift and curve.modifiers[0].levels < 3:
+                    curve.modifiers[0].levels += 1
+            elif event.type == 'WHEELDOWNMOUSE':
+                if not event.shift and curve.data.bevel_resolution > 0:
+                    curve.data.bevel_resolution -= 1
+                elif event.shift and curve.modifiers[0].levels > 0:
+                    curve.modifiers[0].levels -= 1
+
+        return self.continue_or_finish(context, event)
+
+    def prepare(self, context):
+        bpy.ops.object.vertex_group_set_active(group="dc_temp_vgroup")
+        bpy.ops.object.vertex_group_select()
+        bpy.ops.mesh.separate(type='SELECTED')
+        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        context.view_layer.objects.active = context.selected_objects[-1]
+        bpy.ops.object.select_all(action='DESELECT')
+        context.view_layer.objects.active.select_set(True)
+
+    def create_curve(self, context, event):
         bpy.ops.object.convert(target='CURVE')
         if context.active_object.type != 'CURVE':
-            return {'CANCELLED'}
+            return dc.trace_exit(self, 'CANCELLED')
 
         curve = context.active_object
         curve.data.dimensions = '3D'
@@ -313,34 +363,22 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
 
         self.mouse_start_x = event.mouse_x
         self.original_depth = curve.data.bevel_depth
-        context.window_manager.modal_handler_add(self)
-        return {'RUNNING_MODAL'}
 
-    # Modal
-    # Mouse move: Adjust size of bevel
-    # Mouse wheel: Adjust resolution of bevel
-    # Shift Mouse wheel: Adjust sub-d level
-    def modal(self, context, event):
-        curve = context.active_object
+    def continue_or_finish(self, context, event):
+        if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
+            dc.trace(1, "Ending step {}", self.step)
 
-        if event.type == 'MOUSEMOVE':
-            delta_x = event.mouse_x - self.mouse_start_x
-            curve.data.bevel_depth = self.original_depth + delta_x * 0.01
+            if self.step == 0:
+                self.prepare(context)
+                self.create_curve(context, event)
 
-        elif event.type == 'WHEELUPMOUSE':
-            if not event.shift and curve.data.bevel_resolution < 6:
-                curve.data.bevel_resolution += 1
-            elif event.shift and curve.modifiers[0].levels < 3:
-                curve.modifiers[0].levels += 1
-        elif event.type == 'WHEELDOWNMOUSE':
-            if not event.shift and curve.data.bevel_resolution > 0:
-                curve.data.bevel_resolution -= 1
-            elif event.shift and curve.modifiers[0].levels > 0:
-                curve.modifiers[0].levels -= 1
+            self.step += 1
+            if self.step == 2:
+                return dc.trace_exit(self)
 
-        elif event.type == 'LEFTMOUSE':
-            return {'FINISHED'}
+            dc.trace(1, "Starting step {}", self.step)
+
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
-            return {'CANCELLED'}
+            return dc.trace_exit(self, 'CANCELLED')
 
         return {'RUNNING_MODAL'}
