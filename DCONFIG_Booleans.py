@@ -205,7 +205,7 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
         # to apply to 1 or more targets...
         bool_targets, bool_source = self.prepare_data(context)
         if bool_targets is None or bool_source is None:
-            return dc.trace_exit(self, 'CANCELLED')
+            return dc.warn_canceled(self, "At least 2 mesh objects must be selected")
 
         dc.trace(1, "Data:")
         for target in bool_targets:
@@ -275,7 +275,7 @@ class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
             # to apply to 1 or more targets...
             bool_targets, bool_source = self.prepare_data(context)
             if bool_targets is None or bool_source is None:
-                return dc.trace_exit(self, 'CANCELLED')
+                return dc.warn_canceled(self, "At least 2 mesh objects must be selected")
 
             dc.trace(1, "Data:")
             for target in bool_targets:
@@ -381,11 +381,12 @@ class DCONFIG_OT_boolean_apply(bpy.types.Operator):
     bl_description = "Apply all boolean modifiers for the selected objects"
     bl_options = {'REGISTER', 'UNDO'}
 
+    @classmethod
+    def poll(cls, context):
+        return context.mode == "OBJECT"
+
     def execute(self, context):
         dc.trace_enter(self)
-
-        if context.mode != "OBJECT":
-            return dc.trace_exit(self, result='CANCELLED')
 
         # Process all selected objects...
         for current_object in Details.get_selected_meshes(context):

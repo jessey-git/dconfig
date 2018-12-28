@@ -72,3 +72,12 @@ def trace_exit(op, result='FINISHED'):
     trace(0, "EXIT  " + type(op).__name__ + " : " + result)
     trace(0, "")
     return {result}
+
+
+def user_canceled(op):
+    return trace_exit(op, 'CANCELLED')
+
+
+def warn_canceled(op, message):
+    op.report(type={'WARNING'}, message=message)
+    return trace_exit(op, 'CANCELLED')

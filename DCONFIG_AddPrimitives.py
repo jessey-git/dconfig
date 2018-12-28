@@ -155,6 +155,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
 
     def execute(self, context):
+        dc.trace_enter(self)
         cursor_location = tuple(context.scene.cursor_location)
 
         if context.object is None or (context.object.type == 'MESH' and context.object.data.total_vert_sel == 0):
@@ -183,7 +184,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             self.add_primitive(context)
 
         context.scene.cursor_location = cursor_location
-        return {'FINISHED'}
+        return dc.trace_exit(self)
 
 
 class DCONFIG_OT_add_lattice(bpy.types.Operator):
@@ -200,6 +201,7 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         return active_object is not None and active_object.type == "MESH" and active_object.select_get()
 
     def execute(self, context):
+        dc.trace_enter(self)
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
         target = context.active_object
@@ -210,7 +212,7 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         context.view_layer.objects.active = lattice
         lattice.select_set(True)
 
-        return {'FINISHED'}
+        return dc.trace_exit(self)
 
     def create_lattice_obj(self, context, target):
         # Create lattice
@@ -300,8 +302,7 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
             bpy.ops.object.vertex_group_assign_new()
             context.active_object.vertex_groups[-1].name = "dc_temp_vgroup"
         else:
-            dc.trace(1, "No edges seleted")
-            return dc.trace_exit(self, 'CANCELLED')
+            return dc.warn_canceled(self, "No edges selected")
 
         dc.trace(1, "Starting step {}", self.step)
 
@@ -348,7 +349,7 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
     def create_curve(self, context, event):
         bpy.ops.object.convert(target='CURVE')
         if context.active_object.type != 'CURVE':
-            return dc.trace_exit(self, 'CANCELLED')
+            return dc.warn_canceled(self, "Converting to curve failed")
 
         curve = context.active_object
         curve.data.dimensions = '3D'
@@ -379,6 +380,6 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
             dc.trace(1, "Starting step {}", self.step)
 
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
-            return dc.trace_exit(self, 'CANCELLED')
+            return dc.user_canceled(self)
 
         return {'RUNNING_MODAL'}

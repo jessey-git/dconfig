@@ -66,15 +66,16 @@ class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
         return active_object is not None and active_object.type == "MESH" and active_object.select_get()
 
     def invoke(self, context, event):
+        dc.trace_enter(self)
         context.window_manager.modal_handler_add(self)
-        return {'FINISHED'}
+        return dc.trace_exit(self)
 
     def modal(self, context, event):
         if event.type == 'LEFTMOUSE':
-            return {'FINISHED'}
+            return dc.trace_exit(self)
 
-        elif event.type in {'RIGHTMOUSE', 'ESC'}:
-            return {'CANCELLED'}
+        if event.type in {'RIGHTMOUSE', 'ESC'}:
+            return dc.user_canceled(self)
 
         return {'RUNNING_MODAL'}
 
