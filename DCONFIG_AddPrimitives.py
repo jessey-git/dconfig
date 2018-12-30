@@ -197,8 +197,7 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        active_object = context.active_object
-        return active_object is not None and active_object.type == "MESH" and active_object.select_get()
+        return dc.active_mesh_selected(context)
 
     def execute(self, context):
         dc.trace_enter(self)
@@ -287,8 +286,7 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        active_object = context.active_object
-        return active_object is not None and active_object.type == "MESH" and active_object.select_get()
+        return dc.active_mesh_selected(context)
 
     def invoke(self, context, event):
         dc.trace_enter(self)

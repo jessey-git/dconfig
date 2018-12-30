@@ -17,24 +17,35 @@ class DCONFIG_MT_symmetry_pie(bpy.types.Menu):
 
     @classmethod
     def poll(cls, context):
-        active_object = context.active_object
-        return active_object is not None and active_object.type == "MESH"
+        return dc.active_mesh_available(context)
 
     def draw(self, context):
         layout = self.layout
         pie = layout.menu_pie()
 
-        # LEFT
-        pie.operator("dconfig.mesh_symmetry", text="Mesh Symmetry")
+        # Left
+        pie.operator("dconfig.mesh_symmetry", text="+X to -X", icon='TRIA_LEFT').direction = 'POSITIVE_X'
 
-        # RIGHT
-        pie.operator("dconfig.mirror", text="Mirror Local").local = True
+        # Right
+        pie.operator("dconfig.mesh_symmetry", text="-X to +X", icon='TRIA_RIGHT').direction = 'NEGATIVE_X'
 
-        # BOTTOM
-        pie.split()
+        # Bottom
+        pie.operator("dconfig.mesh_symmetry", text="+Z to -Z", icon='TRIA_DOWN').direction = 'POSITIVE_Z'
 
-        # TOP
-        pie.operator("dconfig.mirror", text="Mirror World").local = False
+        # Top
+        pie.operator("dconfig.mesh_symmetry", text="-Z to +Z", icon='TRIA_UP').direction = 'NEGATIVE_Z'
+
+        # Top Left
+        pie.operator("dconfig.mirror", text="Mirror Local", icon='MOD_MIRROR').local = True
+
+        # Top Right
+        pie.operator("dconfig.mirror", text="Mirror World", icon='MOD_MIRROR').local = False
+
+        # Bottom Left
+        pie.operator("dconfig.mesh_symmetry", text="+Y to -Y", icon='DOT').direction = 'POSITIVE_Y'
+
+        # Bottom Right
+        pie.operator("dconfig.mesh_symmetry", text="-Y to +Y", icon='DOT').direction = 'NEGATIVE_Y'
 
 
 class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
@@ -62,22 +73,21 @@ class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        active_object = context.active_object
-        return active_object is not None and active_object.type == "MESH" and active_object.select_get()
+        return dc.active_mesh_selected(context)
 
-    def invoke(self, context, event):
+    def execute(self, context):
         dc.trace_enter(self)
-        context.window_manager.modal_handler_add(self)
+
+        if context.mode == 'EDIT_MESH':
+            bpy.ops.mesh.select_linked()
+            bpy.ops.mesh.symmetrize(direction=self.direction)
+        else:
+            bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+            bpy.ops.mesh.select_all(action='SELECT')
+            bpy.ops.mesh.symmetrize(direction=self.direction)
+            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+
         return dc.trace_exit(self)
-
-    def modal(self, context, event):
-        if event.type == 'LEFTMOUSE':
-            return dc.trace_exit(self)
-
-        if event.type in {'RIGHTMOUSE', 'ESC'}:
-            return dc.user_canceled(self)
-
-        return {'RUNNING_MODAL'}
 
 
 class DCONFIG_OT_mirror(bpy.types.Operator):
@@ -90,8 +100,7 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        active_object = context.active_object
-        return active_object is not None and active_object.type == "MESH" and active_object.select_get()
+        return dc.active_mesh_selected(context)
 
     def execute(self, context):
         dc.trace_enter(self)
@@ -121,6 +130,7 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
                 mirror_object = bpy.context.object
                 mirror_object.name = "DC_World_Origin"
                 mirror_object.select_set(state=False)
+                mirror_object.hide_viewport = True
 
                 mirror_object_collection = dc.find_collection(context, mirror_object)
                 helpers_collection.objects.link(mirror_object)

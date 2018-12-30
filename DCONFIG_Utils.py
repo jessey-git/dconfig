@@ -28,6 +28,16 @@ def rename(obj, new_name):
     obj.name = new_name
     obj.data.name = new_name
 
+
+def active_mesh_available(context):
+    active_object = context.active_object
+    return active_object is not None and active_object.type == 'MESH'
+
+
+def active_mesh_selected(context):
+    active_object = context.active_object
+    return active_object is not None and active_object.type == 'MESH' and (context.mode == 'EDIT_MESH' or active_object.select_get())
+
 #
 # Collection utilities
 #

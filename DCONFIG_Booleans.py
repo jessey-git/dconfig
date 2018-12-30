@@ -36,61 +36,60 @@ class DCONFIG_MT_boolean_pie(bpy.types.Menu):
 
     @classmethod
     def poll(cls, context):
-        active_object = context.active_object
-        return active_object is not None and active_object.type == "MESH"
+        return dc.active_mesh_available(context)
 
     def draw(self, context):
         layout = self.layout
         pie = layout.menu_pie()
 
-        # LEFT
+        # Left
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.5
 
-        prop = col.operator("dconfig.boolean_immediate", text="Add")
+        prop = col.operator("dconfig.boolean_immediate", text="Add", icon='DOT')
         prop.bool_operation = 'UNION'
 
-        prop = col.operator("dconfig.boolean_immediate", text="Intersect")
+        prop = col.operator("dconfig.boolean_immediate", text="Intersect", icon='DOT')
         prop.bool_operation = 'INTERSECT'
 
-        prop = col.operator("dconfig.boolean_immediate", text="Subtract")
+        prop = col.operator("dconfig.boolean_immediate", text="Subtract", icon='DOT')
         prop.bool_operation = 'DIFFERENCE'
 
-        # RIGHT
+        # Right
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.5
 
-        prop = col.operator("dconfig.boolean_live", text="Live Add")
+        prop = col.operator("dconfig.boolean_live", text="Live Add", icon='MOD_BOOLEAN')
         prop.bool_operation = 'UNION'
         prop.cutline = False
         prop.insetted = False
 
-        prop = col.operator("dconfig.boolean_live", text="Live Intersect")
+        prop = col.operator("dconfig.boolean_live", text="Live Intersect", icon='MOD_BOOLEAN')
         prop.bool_operation = 'INTERSECT'
         prop.cutline = False
         prop.insetted = False
 
-        prop = col.operator("dconfig.boolean_live", text="Live Subtract")
+        prop = col.operator("dconfig.boolean_live", text="Live Subtract", icon='MOD_BOOLEAN')
         prop.bool_operation = 'DIFFERENCE'
         prop.cutline = False
         prop.insetted = False
 
-        prop = col.operator("dconfig.boolean_live", text="Live Subtract Inset")
+        prop = col.operator("dconfig.boolean_live", text="Live Subtract Inset", icon='MOD_BOOLEAN')
         prop.bool_operation = 'DIFFERENCE'
         prop.cutline = False
         prop.insetted = True
 
-        prop = col.operator("dconfig.boolean_live", text="Live Cutline")
+        prop = col.operator("dconfig.boolean_live", text="Live Cutline", icon='MOD_BOOLEAN')
         prop.bool_operation = 'DIFFERENCE'
         prop.cutline = True
         prop.insetted = False
 
-        # BOTTOM
-        pie.operator("dconfig.boolean_toggle", text="Toggle Live Booleans")
+        # Bottom
+        pie.operator("dconfig.boolean_toggle", text="Toggle Live Booleans", icon='HIDE_OFF')
 
-        # TOP
+        # Top
         pie.operator("dconfig.boolean_apply", text="Apply")
 
 
@@ -103,6 +102,10 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
     cutline: bpy.props.BoolProperty(name='Cutline', default=False)
     insetted: bpy.props.BoolProperty(name='Insetted', default=False)
     bool_operation: bpy.props.StringProperty(name="Boolean Operation")
+
+    @classmethod
+    def poll(cls, context):
+        return dc.active_mesh_selected(context)
 
     def create_bool_obj(self, context, source, inset_move_list):
         def rename_boolean_obj(source):
@@ -256,7 +259,7 @@ class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        ok_edit = context.mode == 'EDIT_MESH' and context.object.data.total_vert_sel > 0
+        ok_edit = context.mode == 'EDIT_MESH' and context.object.data.total_face_sel > 0
         ok_object = context.mode == 'OBJECT' and len(context.selected_objects) > 1
         return ok_edit or ok_object
 
@@ -266,6 +269,9 @@ class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
         if context.mode == 'EDIT_MESH':
             dc.trace(1, "Performing direct mesh boolean from selected geometry")
             bpy.ops.mesh.select_linked()
+            if context.object.data.total_vert_sel == len(context.object.data.vertices):
+                return dc.warn_canceled(self, "All vertices of object became selected")
+
             bpy.ops.mesh.normals_make_consistent(inside=False)
             bpy.ops.mesh.intersect_boolean(operation=self.bool_operation)
         else:
@@ -359,18 +365,30 @@ class DCONFIG_OT_boolean_toggle(bpy.types.Operator):
     bl_description = "Toggle boolean viewport visability for the active object"
     bl_options = {'REGISTER', 'UNDO'}
 
+    @classmethod
+    def poll(cls, context):
+        return dc.active_mesh_selected(context)
+
     def execute(self, context):
         dc.trace_enter(self)
 
-        # Grab our main active object...
-        active = context.active_object
-        dc.trace(1, "Active: {}", dc.full_name(active))
+        # For cases of multiple objects selected, use the viewport setting for the first (active)
+        # object encountered...
+        sorted_meshes = sorted(Details.get_selected_meshes(context), key=lambda x: 0 if x == context.active_object else 1)
+        hide_viewport_sync = None
 
-        # Toggle viewport visibility on our special boolean collection for this object...
-        collection_name = Details.create_collection_name(active)
-        if collection_name in bpy.data.collections:
-            dc.trace(1, "Toggling visibility: {}", collection_name)
-            bpy.data.collections[collection_name].hide_viewport = not bpy.data.collections[collection_name].hide_viewport
+        # Process all selected objects...
+        for current_object in sorted_meshes:
+            dc.trace(1, "Processing: {}", dc.full_name(current_object))
+
+            # Toggle viewport visibility on our special boolean collection for this object...
+            collection_name = Details.create_collection_name(current_object)
+            if collection_name in bpy.data.collections:
+                if hide_viewport_sync is None:
+                    hide_viewport_sync = not bpy.data.collections[collection_name].hide_viewport
+
+                dc.trace(2, "Setting visibility to {}: {}", hide_viewport_sync, collection_name)
+                bpy.data.collections[collection_name].hide_viewport = hide_viewport_sync
 
         return dc.trace_exit(self)
 
@@ -383,7 +401,7 @@ class DCONFIG_OT_boolean_apply(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.mode == "OBJECT"
+        return context.mode == 'OBJECT' and dc.active_mesh_selected(context)
 
     def execute(self, context):
         dc.trace_enter(self)
