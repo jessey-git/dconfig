@@ -11,7 +11,7 @@
 import bpy
 
 
-class DC_MT_snap(bpy.types.Menu):
+class DCONFIG_MT_snap(bpy.types.Menu):
     bl_label = "Snap"
 
     def draw(self, context):
@@ -30,7 +30,7 @@ class DC_MT_snap(bpy.types.Menu):
         layout.operator("view3d.snap_cursor_to_active", text="Cursor to Active")
 
 
-class DC_MT_transforms_pie(bpy.types.Menu):
+class DCONFIG_MT_transforms_pie(bpy.types.Menu):
     bl_label = "Transforms"
 
     def draw(self, context):
@@ -47,4 +47,4 @@ class DC_MT_transforms_pie(bpy.types.Menu):
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.5
-        col.prop(context.scene, "transform_orientation", expand=True)
+        col.prop(context.scene.transform_orientation_slots[0], "type", expand=True)

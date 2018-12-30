@@ -8,15 +8,17 @@
 # Setup User Preferences
 #
 
-import bpy
 import os
 import shutil
+
+import bpy
 import addon_utils
 
 addon_keymaps = []
 
 
 def setup_hotkeys():
+    # pylint: disable=C0326
     kc = bpy.context.window_manager.keyconfigs
 
     if kc.active.preferences is not None:
@@ -25,31 +27,36 @@ def setup_hotkeys():
         kc.active.preferences.use_select_all_toggle = True
 
     new_keymap = (
-        # Keymap Name           Space       Region      Type                         Key                Action      SHIFT   CTRL    ALT     Properties
-        ("Screen",              "EMPTY",    "WINDOW",   "ed.undo_history",          "BUTTON4MOUSE",     "PRESS",    False,  True,   False,  ()),
-        ("Screen",              "EMPTY",    "WINDOW",   "screen.repeat_history",    "BUTTON5MOUSE",     "PRESS",    False,  True,   False,  ()),
-        ("Screen",              "EMPTY",    "WINDOW",   "screen.redo_last",         "BUTTON5MOUSE",     "PRESS",    False,  False,  False,  ()),
-        ("Screen",              "EMPTY",    "WINDOW",   "script.reload",            "F8",               "PRESS",    False,  False,  False,  ()),
+        # Keymap Name           Space       Region      Modal   Type                        Key                 Action      SHIFT   CTRL    ALT     Properties
+        ("Screen",              "EMPTY",    "WINDOW",   False,  "ed.undo_history",          "BUTTON4MOUSE",     "PRESS",    False,  True,   False,  ()),
+        ("Screen",              "EMPTY",    "WINDOW",   False,  "screen.repeat_history",    "BUTTON5MOUSE",     "PRESS",    False,  True,   False,  ()),
+        ("Screen",              "EMPTY",    "WINDOW",   False,  "screen.redo_last",         "BUTTON5MOUSE",     "PRESS",    False,  False,  False,  ()),
+        ("Screen",              "EMPTY",    "WINDOW",   False,  "script.reload",            "F8",               "PRESS",    False,  False,  False,  ()),
 
-        ("Object Non-modal",    "EMPTY",    "WINDOW",    "wm.call_menu",            "S",                "PRESS",    True,   False,  False,  (("name", "DC_MT_snap"),)),
-        ("Object Non-modal",    "EMPTY",    "WINDOW",    "wm.call_menu_pie",        "BUTTON4MOUSE",     "PRESS",    True,   False,  False,  (("name", "DC_MT_transforms_pie"),)),
-        ("Object Non-modal",    "EMPTY",    "WINDOW",    "object.origin_set",       "BUTTON5MOUSE",     "PRESS",    True,   False,  False,  ()),
+        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "S",                "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_snap"),)),
+        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu_pie",         "BUTTON4MOUSE",     "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_transforms_pie"),)),
+        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "object.origin_set",        "BUTTON5MOUSE",     "PRESS",    True,   False,  False,  ()),
 
-        ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.view_center_cursor",    "HOME",         "PRESS",    False,  False,  True,   ()),
-        ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.toggle_shading",        "Z",            "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Z",            "PRESS",    True,   False,  False,  (("name", "VIEW3D_MT_shading_ex_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "Q",            "PRESS",    True,   False,  False,  (("name", "DC_MT_boolean_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu_pie",             "W",            "PRESS",    False,  False,  False,  (("name", "DC_MT_add_primitive_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.view_center_cursor",    "HOME",         "PRESS",    False,  False,  True,   ()),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.toggle_shading",        "Z",            "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Z",            "PRESS",    True,   False,  False,  (("name", "VIEW3D_MT_shading_ex_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_boolean_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",            "PRESS",    False,  True,   False,  (("name", "DCONFIG_MT_symmetry_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "W",            "PRESS",    False,  False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
+        ("View3D Gesture Circle",   "EMPTY",    "WINDOW",   True,   "CONFIRM",                  "C",            "RELEASE",  False,  False,  False,   ()),
 
-        ("Mesh",                "EMPTY",    "WINDOW",   "mesh.select_linked",       "LEFTMOUSE",        "DOUBLE_CLICK", False,  False,  False,  (("delimit", {'SEAM'}),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   "mesh.select_linked",       "LEFTMOUSE",        "DOUBLE_CLICK", True,   False,  False,  (("delimit", {'SEAM'}),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   "wm.call_menu",             "BUTTON4MOUSE",     "PRESS",        False,  False,  False,  (("name", "VIEW3D_MT_edit_mesh_select_mode"),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",        "DOUBLE_CLICK", False,  False,  False,  (("delimit", {'SEAM'}),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",        "DOUBLE_CLICK", True,   False,  False,  (("delimit", {'SEAM'}),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE",     "PRESS",        False,  False,  False,  (("name", "VIEW3D_MT_edit_mesh_select_mode"),)),
     )
 
     addon_keymaps.clear()
-    for (name, space, region, id, key, action, SHIFT, CTRL, ALT, props) in new_keymap:
-        km = kc.addon.keymaps.new(name=name, space_type=space, region_type=region)
-        kmi = km.keymap_items.new(id, key, action, shift=SHIFT, ctrl=CTRL, alt=ALT)
+    for (name, space, region, modal, idname, key, action, SHIFT, CTRL, ALT, props) in new_keymap:
+        km = kc.addon.keymaps.new(name=name, space_type=space, region_type=region, modal=modal)
+        if not modal:
+            kmi = km.keymap_items.new(idname, key, action, shift=SHIFT, ctrl=CTRL, alt=ALT)
+        else:
+            kmi = km.keymap_items.new_modal(idname, key, action, shift=SHIFT, ctrl=CTRL, alt=ALT)
         for prop, value in props:
             setattr(kmi.properties, prop, value)
 
@@ -87,7 +94,7 @@ def setup_addons():
     addon_utils.enable("node_wrangler", default_set=True, persistent=True)
 
 
-class DC_OT_install_theme(bpy.types.Operator):
+class DCONFIG_OT_install_theme(bpy.types.Operator):
     bl_idname = "dconfig.install_theme"
     bl_label = "DC Install Theme"
     bl_description = "Installs custom dconfig theme"
@@ -95,7 +102,7 @@ class DC_OT_install_theme(bpy.types.Operator):
 
     def execute(self, context):
         script_path = bpy.utils.user_resource('SCRIPTS')
-        source_path = os.path.join(script_path, "addons", "dconfig", "DCONFIG.xml")
+        source_path = os.path.join(script_path, "addons", "dconfig", "dconfig.xml")
         target_path = os.path.join(script_path, "presets", "interface_theme")
 
         self.makedir(target_path)

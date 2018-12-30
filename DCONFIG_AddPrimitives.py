@@ -9,11 +9,11 @@
 #
 
 import bpy
-from mathutils import (Matrix, Vector)
-from . import DCONFIG_Utils as utils
+from mathutils import (Vector)
+from . import DCONFIG_Utils as dc
 
 
-class DC_MT_add_primitive_pie(bpy.types.Menu):
+class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
     bl_label = "Add"
 
     def draw(self, context):
@@ -25,51 +25,51 @@ class DC_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("view3d.dc_add_primitive", icon='MESH_CYLINDER', text="6").type = 'Cylinder_6'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CYLINDER', text="8").type = 'Cylinder_8'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CYLINDER', text="16").type = 'Cylinder_16'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CYLINDER', text="32").type = 'Cylinder_32'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CYLINDER', text="64").type = 'Cylinder_64'
+        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="6").type = 'Cylinder_6'
+        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="8").type = 'Cylinder_8'
+        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="16").type = 'Cylinder_16'
+        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="32").type = 'Cylinder_32'
+        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="64").type = 'Cylinder_64'
 
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("view3d.dc_add_primitive", icon='MESH_CIRCLE', text="6").type = 'Circle_6'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CIRCLE', text="8").type = 'Circle_8'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CIRCLE', text="16").type = 'Circle_16'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CIRCLE', text="32").type = 'Circle_32'
+        col.operator("dconfig.add_primitive", icon='MESH_CIRCLE', text="6").type = 'Circle_6'
+        col.operator("dconfig.add_primitive", icon='MESH_CIRCLE', text="8").type = 'Circle_8'
+        col.operator("dconfig.add_primitive", icon='MESH_CIRCLE', text="16").type = 'Circle_16'
+        col.operator("dconfig.add_primitive", icon='MESH_CIRCLE', text="32").type = 'Circle_32'
 
         # Right
         split = pie.split(align=True)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("view3d.dc_add_primitive", icon='MESH_UVSPHERE', text="12").type = 'Sphere_12'
-        col.operator("view3d.dc_add_primitive", icon='MESH_UVSPHERE', text="24").type = 'Sphere_24'
-        col.operator("view3d.dc_add_primitive", icon='MESH_UVSPHERE', text="32").type = 'Sphere_32'
+        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="12").type = 'Sphere_12'
+        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="24").type = 'Sphere_24'
+        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="32").type = 'Sphere_32'
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("view3d.dc_add_primitive", icon='MESH_UVSPHERE', text="Quad 1").type = 'Quad_Sphere_1'
-        col.operator("view3d.dc_add_primitive", icon='MESH_UVSPHERE', text="Quad 2").type = 'Quad_Sphere_2'
-        col.operator("view3d.dc_add_primitive", icon='MESH_UVSPHERE', text="Quad 3").type = 'Quad_Sphere_3'
+        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="Quad 1").type = 'Quad_Sphere_1'
+        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="Quad 2").type = 'Quad_Sphere_2'
+        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="Quad 3").type = 'Quad_Sphere_3'
 
         # Bottom
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.00
         col.scale_x = 1.00
-        col.operator("view3d.dc_add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
-        col.operator("view3d.dc_add_lattice", icon='LATTICE_DATA', text="3 x 3 x 3").type = '3x3x3'
-        col.operator("view3d.dc_add_lattice", icon='LATTICE_DATA', text="4 x 4 x 4").type = '4x4x4'
+        col.operator("dconfig.add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="3 x 3 x 3").type = '3x3x3'
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="4 x 4 x 4").type = '4x4x4'
 
         # Top
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("view3d.dc_add_primitive", icon='MESH_PLANE', text="Plane").type = 'Plane'
-        col.operator("view3d.dc_add_primitive", icon='MESH_CUBE', text="Cube").type = 'Cube'
+        col.operator("dconfig.add_primitive", icon='MESH_PLANE', text="Plane").type = 'Plane'
+        col.operator("dconfig.add_primitive", icon='MESH_CUBE', text="Cube").type = 'Cube'
 
         # Top Left
         # Top Right
@@ -77,8 +77,8 @@ class DC_MT_add_primitive_pie(bpy.types.Menu):
         # Bottom Right
 
 
-class DC_OT_add_primitive(bpy.types.Operator):
-    bl_idname = "view3d.dc_add_primitive"
+class DCONFIG_OT_add_primitive(bpy.types.Operator):
+    bl_idname = "dconfig.add_primitive"
     bl_label = "DC Add Primitive"
     bl_description = "Add pre-configured primitives and align to currently selected geometry"
     bl_options = {'REGISTER', 'UNDO'}
@@ -137,21 +137,25 @@ class DC_OT_add_primitive(bpy.types.Operator):
 
         bpy.ops.mesh.primitive_cube_add(size=radius * 2)
 
-        cube = context.active_object
-        mod_subd = cube.modifiers.new("dc_temp_subd", 'SUBSURF')
+        quad_sphere = context.active_object
+        dc.rename(quad_sphere, "QuadSphere")
+
+        mod_subd = quad_sphere.modifiers.new("dc_temp_subd", 'SUBSURF')
         mod_subd.levels = levels
-        mod_sphere = cube.modifiers.new("dc_temp_cast", 'CAST')
+        mod_sphere = quad_sphere.modifiers.new("dc_temp_cast", 'CAST')
         mod_sphere.factor = 1
         mod_sphere.radius = radius
         bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_subd.name)
         bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_sphere.name)
 
         if was_edit:
+            context.view_layer.objects.active = active
             active.select_set(True)
             bpy.ops.object.join()
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
 
     def execute(self, context):
+        dc.trace_enter(self)
         cursor_location = tuple(context.scene.cursor_location)
 
         if context.object is None or (context.object.type == 'MESH' and context.object.data.total_vert_sel == 0):
@@ -180,11 +184,11 @@ class DC_OT_add_primitive(bpy.types.Operator):
             self.add_primitive(context)
 
         context.scene.cursor_location = cursor_location
-        return {'FINISHED'}
+        return dc.trace_exit(self)
 
 
-class DC_OT_add_lattice(bpy.types.Operator):
-    bl_idname = "view3d.dc_add_lattice"
+class DCONFIG_OT_add_lattice(bpy.types.Operator):
+    bl_idname = "dconfig.add_lattice"
     bl_label = "DC Add Lattice"
     bl_description = "Add pre-configured lattice surrounding the selected geometry"
     bl_options = {'REGISTER', 'UNDO'}
@@ -193,10 +197,10 @@ class DC_OT_add_lattice(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        active_object = context.active_object
-        return active_object is not None and active_object.type == "MESH" and active_object.select_get()
+        return dc.active_mesh_selected(context)
 
     def execute(self, context):
+        dc.trace_enter(self)
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
         target = context.active_object
@@ -204,18 +208,15 @@ class DC_OT_add_lattice(bpy.types.Operator):
         self.create_lattice_mod(target, lattice)
 
         bpy.ops.object.select_all(action='DESELECT')
-
-        helpers_collection = utils.make_collection(context.scene.collection, "DC_helpers")
-        helpers_collection.objects.link(lattice)
         context.view_layer.objects.active = lattice
         lattice.select_set(True)
 
-        return {'FINISHED'}
+        return dc.trace_exit(self)
 
     def create_lattice_obj(self, context, target):
         # Create lattice
-        lattice = bpy.data.lattices.new('DC_lattice')
-        lattice_object = bpy.data.objects.new('DC_lattice', lattice)
+        lattice = bpy.data.lattices.new('dc_lattice')
+        lattice_object = bpy.data.objects.new('dc_lattice', lattice)
 
         if self.type == "3x3x3":
             lattice.points_u = 3
@@ -235,6 +236,10 @@ class DC_OT_add_lattice(bpy.types.Operator):
         lattice_object.location = self.find_world_center(target)
         lattice_object.scale = target.dimensions * 1.1
         lattice_object.rotation_euler = target.rotation_euler
+
+        # Place in a special collection
+        helpers_collection = dc.make_helpers_collection(context)
+        helpers_collection.objects.link(lattice_object)
 
         return lattice_object
 
@@ -265,32 +270,84 @@ class DC_OT_add_lattice(bpy.types.Operator):
                 max_vec.z = v.z
 
         # Return center
-        return ((min_vec + max_vec) / 2)
+        return (min_vec + max_vec) / 2
 
 
-class DC_OT_add_edge_curve(bpy.types.Operator):
-    bl_idname = "view3d.dc_add_edge_curve"
+class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
+    bl_idname = "dconfig.add_edge_curve"
     bl_label = "DC Add Edge Curve"
     bl_description = "Add curve following a path of connected edges"
     bl_options = {'REGISTER', 'UNDO'}
 
+    def __init__(self):
+        self.step = 0
+        self.mouse_start_x = 0
+        self.original_depth = 0.0
+
     @classmethod
     def poll(cls, context):
-        active_object = context.active_object
-        return active_object is not None and active_object.type == "MESH" and active_object.select_get()
+        return dc.active_mesh_selected(context)
 
     def invoke(self, context, event):
-        if context.mode == 'EDIT_MESH':
-            if context.object.data.total_edge_sel > 0:
-                bpy.ops.mesh.separate(type='SELECTED')
-                bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-                context.view_layer.objects.active = context.selected_objects[-1]
-            else:
-                return {'CANCELLED'}
+        dc.trace_enter(self)
 
+        if context.mode == 'OBJECT':
+            # Object mode means we can skip to creating/manipulating the curve object
+            self.create_curve(context, event)
+            self.step = 1
+        elif context.mode == 'EDIT_MESH' and context.object.data.total_edge_sel > 0:
+            # Create a vertex group to be used later
+            bpy.ops.object.vertex_group_assign_new()
+            context.active_object.vertex_groups[-1].name = "dc_temp_vgroup"
+        else:
+            return dc.warn_canceled(self, "No edges selected")
+
+        dc.trace(1, "Starting step {}", self.step)
+
+        context.window_manager.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
+    # Modal
+    # Mouse move: Adjust size of bevel
+    # Mouse wheel: Adjust resolution of bevel
+    # Shift Mouse wheel: Adjust sub-d level
+    def modal(self, context, event):
+        if self.step == 0:
+            bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', vertex_only=True, clamp_overlap=True)
+            return self.continue_or_finish(context, event)
+
+        if self.step == 1:
+            curve = context.active_object
+
+            if event.type == 'MOUSEMOVE':
+                delta_x = event.mouse_x - self.mouse_start_x
+                curve.data.bevel_depth = self.original_depth + delta_x * 0.01
+            elif event.type == 'WHEELUPMOUSE':
+                if not event.shift and curve.data.bevel_resolution < 6:
+                    curve.data.bevel_resolution += 1
+                elif event.shift and curve.modifiers[0].levels < 3:
+                    curve.modifiers[0].levels += 1
+            elif event.type == 'WHEELDOWNMOUSE':
+                if not event.shift and curve.data.bevel_resolution > 0:
+                    curve.data.bevel_resolution -= 1
+                elif event.shift and curve.modifiers[0].levels > 0:
+                    curve.modifiers[0].levels -= 1
+
+        return self.continue_or_finish(context, event)
+
+    def prepare(self, context):
+        bpy.ops.object.vertex_group_set_active(group="dc_temp_vgroup")
+        bpy.ops.object.vertex_group_select()
+        bpy.ops.mesh.separate(type='SELECTED')
+        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        context.view_layer.objects.active = context.selected_objects[-1]
+        bpy.ops.object.select_all(action='DESELECT')
+        context.view_layer.objects.active.select_set(True)
+
+    def create_curve(self, context, event):
         bpy.ops.object.convert(target='CURVE')
         if context.active_object.type != 'CURVE':
-            return {'CANCELLED'}
+            return dc.warn_canceled(self, "Converting to curve failed")
 
         curve = context.active_object
         curve.data.dimensions = '3D'
@@ -300,28 +357,27 @@ class DC_OT_add_edge_curve(bpy.types.Operator):
         curve.data.bevel_resolution = 2
         curve.data.splines[0].use_smooth = True
 
-        self.mouse_x = event.mouse_x
+        mod_subd = curve.modifiers.new("dc_subd", 'SUBSURF')
+        mod_subd.levels = 0
+
+        self.mouse_start_x = event.mouse_x
         self.original_depth = curve.data.bevel_depth
-        context.window_manager.modal_handler_add(self)
-        return {'RUNNING_MODAL'}
 
-    def modal(self, context, event):
-        curve = context.active_object
+    def continue_or_finish(self, context, event):
+        if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
+            dc.trace(1, "Ending step {}", self.step)
 
-        if event.type == 'MOUSEMOVE':
-            delta = event.mouse_x - self.mouse_x
-            curve.data.bevel_depth = self.original_depth + delta * 0.01
-        elif event.type == 'WHEELUPMOUSE':
-            if curve.data.bevel_resolution < 6:
-                curve.data.bevel_resolution += 1
-        elif event.type == 'WHEELDOWNMOUSE':
-            if curve.data.bevel_resolution > 0:
-                curve.data.bevel_resolution -= 1
+            if self.step == 0:
+                self.prepare(context)
+                self.create_curve(context, event)
 
-        elif event.type == 'LEFTMOUSE':
-            return {'FINISHED'}
+            self.step += 1
+            if self.step == 2:
+                return dc.trace_exit(self)
+
+            dc.trace(1, "Starting step {}", self.step)
 
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
-            return {'CANCELLED'}
+            return dc.user_canceled(self)
 
         return {'RUNNING_MODAL'}

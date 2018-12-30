@@ -8,12 +8,11 @@
 # Model validator
 #
 
-import bpy
-import bmesh
+from collections import (namedtuple, defaultdict)
 import re
 
-from mathutils import Vector
-from collections import (namedtuple, defaultdict)
+import bpy
+import bmesh
 
 
 #
@@ -318,7 +317,7 @@ class Validator:
 
     def process(self, analysis_results):
         for result in analysis_results:
-            if not result.rule in self.results:
+            if result.rule not in self.results:
                 self.results[result.rule] = []
             if result.is_error:
                 self.results[result.rule].append(result.detail)
@@ -345,8 +344,8 @@ class Validator:
 # Operators and UI
 #
 
-class DC_OT_validate(bpy.types.Operator):
-    bl_idname = "view3d.dc_validate"
+class DCONFIG_OT_validate(bpy.types.Operator):
+    bl_idname = "dconfig.validate"
     bl_label = "DC Validate"
     bl_description = "Validate Model"
 
@@ -375,7 +374,7 @@ class Validation_UL_items(bpy.types.UIList):
         pass
 
 
-class DC_PT_validate_results(bpy.types.Panel):
+class DCONFIG_PT_validate_results(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_label = "DC Validation Report"
@@ -389,20 +388,20 @@ class DC_PT_validate_results(bpy.types.Panel):
         layout.template_list("Validation_UL_items", "", scene, "dc_validation_results", scene, "dc_validation_results_index", rows=5)
 
 
-class DC_ValidationResultCollection(bpy.types.PropertyGroup):
+class DCONFIG_ValidationResultCollection(bpy.types.PropertyGroup):
     rule_category: bpy.props.StringProperty()
     rule_label: bpy.props.StringProperty()
     result_detail: bpy.props.StringProperty()
 
 
 def menu_func(self, context):
-    self.layout.operator("view3d.dc_validate", text="DC Validate")
+    self.layout.operator("dconfig.validate", text="DC Validate")
 
 
 def register():
     bpy.types.OUTLINER_MT_collection.append(menu_func)
     bpy.types.Scene.dc_validation_collection = bpy.props.StringProperty()
-    bpy.types.Scene.dc_validation_results = bpy.props.CollectionProperty(type=DC_ValidationResultCollection)
+    bpy.types.Scene.dc_validation_results = bpy.props.CollectionProperty(type=DCONFIG_ValidationResultCollection)
     bpy.types.Scene.dc_validation_results_index = bpy.props.IntProperty()
 
 

@@ -9,17 +9,17 @@
 #
 
 import bpy
-from . import DCONFIG_Utils as DC
+from . import DCONFIG_Utils as dc
 
 
-class DC_OT_setup_shading(bpy.types.Operator):
-    bl_idname = "view3d.dc_setup_shading"
+class DCONFIG_OT_setup_shading(bpy.types.Operator):
+    bl_idname = "dconfig.setup_shading"
     bl_label = "DC Setup Shading"
     bl_description = "Set common shading and overlay parameters"
     bl_options = {'REGISTER'}
 
     def execute(self, context):
-        DC.trace_enter("DC_OT_setup_shading")
+        dc.trace_enter(self)
 
         context.space_data.clip_end = 100
         context.space_data.clip_start = 0.01
@@ -38,11 +38,11 @@ class DC_OT_setup_shading(bpy.types.Operator):
 
         context.scene.display.matcap_ssao_distance = 1
 
-        return DC.trace_exit("DC_OT_setup_shading")
+        return dc.trace_exit(self)
 
 
 def menu_func(self, context):
-    self.layout.operator("view3d.dc_setup_shading", text="DC Setup Shading")
+    self.layout.operator("dconfig.setup_shading", text="DC Setup Shading")
     self.layout.separator()
 
 
