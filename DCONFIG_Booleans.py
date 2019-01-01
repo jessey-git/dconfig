@@ -26,10 +26,6 @@ class Details:
     def create_collection_name(cls, obj):
         return cls.COLLECTION_PREFIX + obj.name
 
-    @classmethod
-    def get_selected_meshes(cls, context):
-        return [obj for obj in context.selected_objects if obj.type == "MESH"]
-
 
 class DCONFIG_MT_boolean_pie(bpy.types.Menu):
     bl_label = "Booleans"
@@ -173,7 +169,7 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
         self.prepare_objects(context)
 
         # We should have at least 2 mesh objects (1 target, 1 source) at this point now...
-        selected = Details.get_selected_meshes(context)
+        selected = dc.all_meshes(context.selected_objects)
         if len(selected) < 2:
             return None, None
 
@@ -188,12 +184,12 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
         source = selected[-1]
         source_collection = dc.find_collection(context, source)
 
-        active = context.view_layer.objects.active
+        prev_active = context.view_layer.objects.active
         context.view_layer.objects.active = source
         while source.modifiers:
             modifier = source.modifiers[0]
             bpy.ops.object.modifier_remove(modifier=modifier.name)
-        context.view_layer.objects.active = active
+        context.view_layer.objects.active = prev_active
 
         bool_source = SourceData(source, source_collection)
 
@@ -326,7 +322,7 @@ class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
         bool_targets = []
 
         # We should have at least 2 mesh objects (1 target, 1 source) at this point now...
-        selected = Details.get_selected_meshes(context)
+        selected = dc.all_meshes(context.selected_objects)
         if len(selected) < 2:
             return None, None
 
@@ -374,7 +370,7 @@ class DCONFIG_OT_boolean_toggle(bpy.types.Operator):
 
         # For cases of multiple objects selected, use the viewport setting for the first (active)
         # object encountered...
-        sorted_meshes = sorted(Details.get_selected_meshes(context), key=lambda x: 0 if x == context.active_object else 1)
+        sorted_meshes = sorted(dc.all_meshes(context.selected_objects), key=lambda x: 0 if x == context.active_object else 1)
         hide_viewport_sync = None
 
         # Process all selected objects...
@@ -407,7 +403,7 @@ class DCONFIG_OT_boolean_apply(bpy.types.Operator):
         dc.trace_enter(self)
 
         # Process all selected objects...
-        for current_object in Details.get_selected_meshes(context):
+        for current_object in dc.all_meshes(context.selected_objects):
             dc.trace(1, "Processing: {}", dc.full_name(current_object))
 
             bpy.ops.object.select_all(action='DESELECT')

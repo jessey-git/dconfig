@@ -5,6 +5,7 @@
 # ------------------------------------------------------------
 
 import bpy
+from mathutils import (Vector)
 
 DebugTraceEnabled = True
 
@@ -37,6 +38,39 @@ def active_mesh_available(context):
 def active_mesh_selected(context):
     active_object = context.active_object
     return active_object is not None and active_object.type == 'MESH' and (context.mode == 'EDIT_MESH' or active_object.select_get())
+
+
+def all_meshes(obj_list):
+    return [obj for obj in obj_list if obj.type == 'MESH']
+
+#
+# Math utilities
+#
+
+
+def find_world_bbox(obj):
+    world_bbox = [obj.matrix_world @ Vector(v) for v in obj.bound_box]
+
+    bbox_min = Vector(world_bbox[0])
+    bbox_max = Vector(world_bbox[0])
+
+    for v in world_bbox:
+        if v.x < bbox_min.x:
+            bbox_min.x = v.x
+        if v.y < bbox_min.y:
+            bbox_min.y = v.y
+        if v.z < bbox_min.z:
+            bbox_min.z = v.z
+
+        if v.x > bbox_max.x:
+            bbox_max.x = v.x
+        if v.y > bbox_max.y:
+            bbox_max.y = v.y
+        if v.z > bbox_max.z:
+            bbox_max.z = v.z
+
+    # Return bounding box verts
+    return bbox_min, bbox_max
 
 #
 # Collection utilities
@@ -88,6 +122,6 @@ def user_canceled(op):
     return trace_exit(op, 'CANCELLED')
 
 
-def warn_canceled(op, message):
-    op.report(type={'WARNING'}, message=message)
+def warn_canceled(op, message, *args):
+    op.report(type={'WARNING'}, message=message.format(*args))
     return trace_exit(op, 'CANCELLED')
