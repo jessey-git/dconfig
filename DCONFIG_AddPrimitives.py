@@ -241,6 +241,12 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         helpers_collection = dc.make_helpers_collection(context)
         helpers_collection.objects.link(lattice_object)
 
+        # Toggle out of local-view mode and re-enter to ensure lattice shows up
+        if context.space_data.local_view is not None:
+            bpy.ops.view3d.localview()
+            lattice_object.select_set(True)
+            bpy.ops.view3d.localview()
+
         return lattice_object
 
     def create_lattice_mod(self, target, lattice):
