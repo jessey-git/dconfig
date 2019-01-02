@@ -128,10 +128,11 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
     def add_quad_sphere(self, context, radius, levels):
         was_edit = False
-        active = None
+        prev_active = None
         if context.mode == 'EDIT_MESH':
             was_edit = True
-            active = context.active_object
+            prev_active = context.active_object
+            bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
         bpy.ops.mesh.primitive_cube_add(size=radius * 2)
@@ -148,8 +149,8 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_sphere.name)
 
         if was_edit:
-            context.view_layer.objects.active = active
-            active.select_set(True)
+            context.view_layer.objects.active = prev_active
+            prev_active.select_set(True)
             bpy.ops.object.join()
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
 
@@ -157,7 +158,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         dc.trace_enter(self)
         prev_cursor_location = tuple(context.scene.cursor_location)
 
-        if context.object is None or (context.object.type == 'MESH' and context.object.data.total_vert_sel == 0):
+        if context.object is None or (not context.selected_objects) or (context.mode == 'EDIT_MESH' and context.object.data.total_vert_sel == 0):
             self.add_primitive(context)
         elif context.object.type == 'MESH' and tuple(context.scene.tool_settings.mesh_select_mode) == (False, False, True):
             prev_active = context.view_layer.objects.active
