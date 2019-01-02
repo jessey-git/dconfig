@@ -131,6 +131,18 @@ class GeometryInteriorFaceRule(BaseObjectRule):
         return RuleResult(self.rule, is_error, "Object '{}' contains {} interior faces".format(data.obj.name, interior_count))
 
 
+class GeometryNonManifoldRule(BaseObjectRule):
+    rule = Rule('Geometry', 'Manifold geometry')
+
+    def execute(self, data):
+        self.ready_selection('VERT')
+        bpy.ops.mesh.select_non_manifold(extend=False)
+
+        non_manifold_count = sum(1 for v in data.bm.verts if v.select)
+        is_error = non_manifold_count > 0
+        return RuleResult(self.rule, is_error, "Object '{}' contains {} non-manifold vertices".format(data.obj.name, non_manifold_count))
+
+
 class GeometryPoleRule(BaseObjectRule):
     rule = Rule('Geometry', 'Large poles')
 
@@ -232,6 +244,7 @@ class ObjectAnalyzer:
         GeometryIsolatedVertRule(),
         GeometryCoincidentVertRule(),
         GeometryInteriorFaceRule(),
+        GeometryNonManifoldRule(),
         GeometryPoleRule(),
         GeometryOpenSubDivCreaseRule(),
         OrientationTransformRule(),
