@@ -78,7 +78,7 @@ class DCONFIG_OT_center_collection(bpy.types.Operator):
         bpy.ops.object.select_all(action='DESELECT')
 
         # Process all objects to determine the collection's bounding box
-        all_meshes = dc.all_meshes(collection.all_objects)
+        all_meshes = dc.get_meshes(collection.all_objects)
         for obj in all_meshes:
             if obj.modifiers:
                 # It's too risky to move the object's origin if there are modifiers present...

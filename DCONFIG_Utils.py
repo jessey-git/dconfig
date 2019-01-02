@@ -40,7 +40,7 @@ def active_mesh_selected(context):
     return active_object is not None and active_object.type == 'MESH' and (context.mode == 'EDIT_MESH' or active_object.select_get())
 
 
-def all_meshes(obj_list):
+def get_meshes(obj_list):
     return [obj for obj in obj_list if obj.type == 'MESH']
 
 #
