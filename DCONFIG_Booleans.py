@@ -451,30 +451,30 @@ class DCONFIG_OT_boolean_apply(bpy.types.Operator):
 
             # Now remove the collection...
             if collection_name in bpy.data.collections:
-                col_bool = bpy.data.collections[collection_name]
+                bool_collection = bpy.data.collections[collection_name]
 
                 # Unlink orphans who actually have a home somewhere else...
                 if orphans_to_unlink:
                     dc.trace(2, "Unlinking {} orphaned objects", len(orphans_to_unlink))
                     for orphan in orphans_to_unlink:
-                        col_bool.objects.unlink(orphan)
+                        bool_collection.objects.unlink(orphan)
 
                 # The user may have inserted their own objects
-                if not col_bool.all_objects:
+                if not bool_collection.all_objects:
                     dc.trace(2, "Removing collection: {}", collection_name)
 
                     # Find correct parent collection to delete from...
-                    parent_col = None
-                    for col in bpy.data.collections:
-                        if collection_name in col.children:
-                            parent_col = col
+                    parent_collection = None
+                    for collection in bpy.data.collections:
+                        if collection_name in collection.children:
+                            parent_collection = collection
                             break
 
-                    if parent_col is None:
-                        parent_col = context.scene.collection
+                    if parent_collection is None:
+                        parent_collection = context.scene.collection
 
-                    parent_col.children.unlink(col_bool)
-                    bpy.data.collections.remove(col_bool)
+                    parent_collection.children.unlink(bool_collection)
+                    bpy.data.collections.remove(bool_collection)
                 else:
                     dc.trace(2, "Collection still contains objects; not removing: {}", collection_name)
 
