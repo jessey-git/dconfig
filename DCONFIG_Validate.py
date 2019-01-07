@@ -390,6 +390,7 @@ class Validation_UL_items(bpy.types.UIList):
 class DCONFIG_PT_validate_results(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
+    bl_category = "DC"
     bl_label = "DC Validation Report"
 
     def draw(self, context):
