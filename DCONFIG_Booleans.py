@@ -26,10 +26,6 @@ class Details:
     def create_collection_name(cls, obj):
         return cls.COLLECTION_PREFIX + obj.name
 
-    @classmethod
-    def get_selected_meshes(cls, context):
-        return [obj for obj in context.selected_objects if obj.type == "MESH"]
-
 
 class DCONFIG_MT_boolean_pie(bpy.types.Menu):
     bl_label = "Booleans"
@@ -173,27 +169,27 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
         self.prepare_objects(context)
 
         # We should have at least 2 mesh objects (1 target, 1 source) at this point now...
-        selected = Details.get_selected_meshes(context)
-        if len(selected) < 2:
+        selected_meshes = dc.get_meshes(context.selected_objects)
+        if len(selected_meshes) < 2:
             return None, None
 
         # Place the bool_collection at the scene level to unclutter the object's own collection
-        for obj in selected[:-1]:
+        for obj in selected_meshes[:-1]:
             own_collection = dc.find_collection(context, obj)
             bool_collection = dc.make_collection(context.scene.collection, Details.create_collection_name(obj))
             bool_collection.hide_render = True
             bool_targets.append(TargetData(obj, own_collection, bool_collection))
 
         # Last object is the boolean source; remove any modifiers present on it...
-        source = selected[-1]
+        source = selected_meshes[-1]
         source_collection = dc.find_collection(context, source)
 
-        active = context.view_layer.objects.active
+        prev_active = context.view_layer.objects.active
         context.view_layer.objects.active = source
         while source.modifiers:
             modifier = source.modifiers[0]
             bpy.ops.object.modifier_remove(modifier=modifier.name)
-        context.view_layer.objects.active = active
+        context.view_layer.objects.active = prev_active
 
         bool_source = SourceData(source, source_collection)
 
@@ -326,16 +322,16 @@ class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
         bool_targets = []
 
         # We should have at least 2 mesh objects (1 target, 1 source) at this point now...
-        selected = Details.get_selected_meshes(context)
-        if len(selected) < 2:
+        selected_meshes = dc.get_meshes(context.selected_objects)
+        if len(selected_meshes) < 2:
             return None, None
 
         # Track each target
-        for obj in selected[:-1]:
+        for obj in selected_meshes[:-1]:
             bool_targets.append(TargetData(obj, None, None))
 
         # Last object is the boolean source; make sure all modifiers are applied and cleanup...
-        source = selected[-1]
+        source = selected_meshes[-1]
         self.prepare_source(context, source)
         bool_source = SourceData(source, None)
 
@@ -374,7 +370,7 @@ class DCONFIG_OT_boolean_toggle(bpy.types.Operator):
 
         # For cases of multiple objects selected, use the viewport setting for the first (active)
         # object encountered...
-        sorted_meshes = sorted(Details.get_selected_meshes(context), key=lambda x: 0 if x == context.active_object else 1)
+        sorted_meshes = sorted(dc.get_meshes(context.selected_objects), key=lambda x: 0 if x == context.active_object else 1)
         hide_viewport_sync = None
 
         # Process all selected objects...
@@ -407,7 +403,7 @@ class DCONFIG_OT_boolean_apply(bpy.types.Operator):
         dc.trace_enter(self)
 
         # Process all selected objects...
-        for current_object in Details.get_selected_meshes(context):
+        for current_object in dc.get_meshes(context.selected_objects):
             dc.trace(1, "Processing: {}", dc.full_name(current_object))
 
             bpy.ops.object.select_all(action='DESELECT')
@@ -455,30 +451,30 @@ class DCONFIG_OT_boolean_apply(bpy.types.Operator):
 
             # Now remove the collection...
             if collection_name in bpy.data.collections:
-                col_bool = bpy.data.collections[collection_name]
+                bool_collection = bpy.data.collections[collection_name]
 
                 # Unlink orphans who actually have a home somewhere else...
                 if orphans_to_unlink:
                     dc.trace(2, "Unlinking {} orphaned objects", len(orphans_to_unlink))
                     for orphan in orphans_to_unlink:
-                        col_bool.objects.unlink(orphan)
+                        bool_collection.objects.unlink(orphan)
 
                 # The user may have inserted their own objects
-                if not col_bool.all_objects:
+                if not bool_collection.all_objects:
                     dc.trace(2, "Removing collection: {}", collection_name)
 
                     # Find correct parent collection to delete from...
-                    parent_col = None
-                    for col in bpy.data.collections:
-                        if collection_name in col.children:
-                            parent_col = col
+                    parent_collection = None
+                    for collection in bpy.data.collections:
+                        if collection_name in collection.children:
+                            parent_collection = collection
                             break
 
-                    if parent_col is None:
-                        parent_col = context.scene.collection
+                    if parent_collection is None:
+                        parent_collection = context.scene.collection
 
-                    parent_col.children.unlink(col_bool)
-                    bpy.data.collections.remove(col_bool)
+                    parent_collection.children.unlink(bool_collection)
+                    bpy.data.collections.remove(bool_collection)
                 else:
                     dc.trace(2, "Collection still contains objects; not removing: {}", collection_name)
 

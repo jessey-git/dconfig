@@ -9,7 +9,6 @@
 #
 
 import bpy
-from mathutils import (Vector)
 from . import DCONFIG_Utils as dc
 
 
@@ -129,10 +128,11 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
     def add_quad_sphere(self, context, radius, levels):
         was_edit = False
-        active = None
+        prev_active = None
         if context.mode == 'EDIT_MESH':
             was_edit = True
-            active = context.active_object
+            prev_active = context.active_object
+            bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
         bpy.ops.mesh.primitive_cube_add(size=radius * 2)
@@ -149,20 +149,20 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_sphere.name)
 
         if was_edit:
-            context.view_layer.objects.active = active
-            active.select_set(True)
+            context.view_layer.objects.active = prev_active
+            prev_active.select_set(True)
             bpy.ops.object.join()
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
 
     def execute(self, context):
         dc.trace_enter(self)
-        cursor_location = tuple(context.scene.cursor_location)
+        prev_cursor_location = tuple(context.scene.cursor_location)
 
-        if context.object is None or (context.object.type == 'MESH' and context.object.data.total_vert_sel == 0):
+        if context.object is None or (not context.selected_objects) or (context.mode == 'EDIT_MESH' and context.object.data.total_vert_sel == 0):
             self.add_primitive(context)
         elif context.object.type == 'MESH' and tuple(context.scene.tool_settings.mesh_select_mode) == (False, False, True):
-            active = context.view_layer.objects.active
-            saved_orientation = context.scene.transform_orientation_slots[0].type
+            prev_active = context.view_layer.objects.active
+            prev_orientation = context.scene.transform_orientation_slots[0].type
 
             bpy.ops.view3d.snap_cursor_to_selected()
             bpy.ops.transform.create_orientation(name="AddAxis", use=True, overwrite=True)
@@ -170,20 +170,20 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
             self.add_primitive(context)
-
             bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
                 False, False, False), constraint_orientation='AddAxis', mirror=False, proportional='DISABLED')
-            active.select_set(state=True)
-            context.view_layer.objects.active = active
+
+            prev_active.select_set(state=True)
+            context.view_layer.objects.active = prev_active
             bpy.ops.object.join()
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
 
-            context.scene.transform_orientation_slots[0].type = saved_orientation
+            context.scene.transform_orientation_slots[0].type = prev_orientation
         else:
             bpy.ops.view3d.snap_cursor_to_selected()
             self.add_primitive(context)
 
-        context.scene.cursor_location = cursor_location
+        context.scene.cursor_location = prev_cursor_location
         return dc.trace_exit(self)
 
 
@@ -241,6 +241,12 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         helpers_collection = dc.make_helpers_collection(context)
         helpers_collection.objects.link(lattice_object)
 
+        # Toggle out of local-view mode and re-enter to ensure lattice shows up
+        if context.space_data.local_view is not None:
+            bpy.ops.view3d.localview()
+            lattice_object.select_set(True)
+            bpy.ops.view3d.localview()
+
         return lattice_object
 
     def create_lattice_mod(self, target, lattice):
@@ -248,29 +254,9 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         mod.object = lattice
 
     def find_world_center(self, target):
-        local_bbox = [Vector(v) for v in target.bound_box]
-        world_bbox = [target.matrix_world @ v for v in local_bbox]
-
-        min_vec = Vector(world_bbox[0])
-        max_vec = Vector(world_bbox[0])
-
-        for v in world_bbox:
-            if v.x < min_vec.x:
-                min_vec.x = v.x
-            if v.y < min_vec.y:
-                min_vec.y = v.y
-            if v.z < min_vec.z:
-                min_vec.z = v.z
-
-            if v.x > max_vec.x:
-                max_vec.x = v.x
-            if v.y > max_vec.y:
-                max_vec.y = v.y
-            if v.z > max_vec.z:
-                max_vec.z = v.z
-
         # Return center
-        return (min_vec + max_vec) / 2
+        bbox_min, bbox_max = dc.find_world_bbox(target)
+        return (bbox_min + bbox_max) / 2
 
 
 class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
