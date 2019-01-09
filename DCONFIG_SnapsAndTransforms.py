@@ -95,10 +95,10 @@ class DCONFIG_OT_center_collection(bpy.types.Operator):
         dc.trace(1, "Bounding box bottom center: {}", bottom_center)
 
         # Move each object origin to the bbox bottom center...
-        old_cursor_location = Vector(context.scene.cursor_location)
+        prev_cursor_location = Vector(context.scene.cursor_location)
         context.scene.cursor_location = bottom_center
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        context.scene.cursor_location = old_cursor_location
+        context.scene.cursor_location = prev_cursor_location
 
         # Move each object to the world-center...
         for obj in all_meshes:
