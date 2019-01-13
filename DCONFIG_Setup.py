@@ -49,6 +49,8 @@ def setup_hotkeys():
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.delete_edgeloop",     "X",                "PRESS",        False,  True,   False,  (("use_face_split", False),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE",     "PRESS",        False,  False,  False,  (("name", "VIEW3D_MT_edit_mesh_select_mode"),)),
 
+        ("UV Editor",           "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE",     "PRESS",        False,  False,  False,  (("name", "IMAGE_MT_uvs_select_mode"),)),
+
         ("View3D Gesture Circle",   "EMPTY",    "WINDOW",   True,   "CANCEL",               "C",                "RELEASE",  False,  False,  False,   ()),
     )
 
