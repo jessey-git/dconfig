@@ -316,8 +316,12 @@ class Validator:
         self.process(analysis_results)
 
     def examine_object(self, context, obj):
+        prev_hide_viewport = obj.hide_viewport
+        obj.hide_viewport = False
+
         context.view_layer.objects.active = obj
         obj.select_set(True)
+
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         bpy.ops.mesh.select_all(action='DESELECT')
 
@@ -327,6 +331,7 @@ class Validator:
 
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         obj.select_set(False)
+        obj.hide_viewport = prev_hide_viewport
 
     def process(self, analysis_results):
         for result in analysis_results:

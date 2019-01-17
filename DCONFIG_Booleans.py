@@ -169,7 +169,7 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
         self.prepare_objects(context)
 
         # We should have at least 2 mesh objects (1 target, 1 source) at this point now...
-        selected_meshes = dc.get_meshes(context.selected_objects)
+        selected_meshes = dc.get_sorted_meshes(context.selected_objects, context.active_object)
         if len(selected_meshes) < 2:
             return None, None
 
@@ -370,7 +370,7 @@ class DCONFIG_OT_boolean_toggle(bpy.types.Operator):
 
         # For cases of multiple objects selected, use the viewport setting for the first (active)
         # object encountered...
-        sorted_meshes = sorted(dc.get_meshes(context.selected_objects), key=lambda x: 0 if x == context.active_object else 1)
+        sorted_meshes = dc.get_sorted_meshes(context.selected_objects, context.active_object)
         hide_viewport_sync = None
 
         # Process all selected objects...

@@ -43,6 +43,10 @@ def active_mesh_selected(context):
 def get_meshes(obj_list):
     return [obj for obj in obj_list if obj.type == 'MESH']
 
+
+def get_sorted_meshes(obj_list, active_object):
+    return sorted(get_meshes(obj_list), key=lambda x: 0 if x == active_object else 1)
+
 #
 # Math utilities
 #
