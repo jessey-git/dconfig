@@ -56,8 +56,8 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         # Bottom
         split = pie.split()
         col = split.column(align=True)
-        col.scale_y = 1.00
-        col.scale_x = 1.00
+        col.scale_y = 1.25
+        col.scale_x = 1.25
         col.operator("dconfig.add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
         col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="3 x 3 x 3").type = '3x3x3'
         col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="4 x 4 x 4").type = '4x4x4'

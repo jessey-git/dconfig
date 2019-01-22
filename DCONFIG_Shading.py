@@ -29,7 +29,7 @@ class DCONFIG_OT_setup_shading(bpy.types.Operator):
         context.space_data.shading.show_cavity = True
         context.space_data.shading.cavity_type = 'WORLD'
         context.space_data.shading.cavity_ridge_factor = 0
-        context.space_data.shading.cavity_valley_factor = 2
+        context.space_data.shading.cavity_valley_factor = 1
         context.space_data.shading.curvature_ridge_factor = 0
         context.space_data.shading.curvature_valley_factor = 0.8
         context.space_data.shading.xray_alpha_wireframe = 0

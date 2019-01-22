@@ -42,13 +42,13 @@ class DCONFIG_MT_transforms_pie(bpy.types.Menu):
         # Left
         split = pie.split()
         col = split.column(align=True)
-        col.scale_y = 1.5
+        col.scale_y = 1.25
         col.prop(context.scene.tool_settings, "transform_pivot_point", expand=True)
 
         # Right
         split = pie.split()
         col = split.column(align=True)
-        col.scale_y = 1.5
+        col.scale_y = 1.25
         col.prop(context.scene.transform_orientation_slots[0], "type", expand=True)
 
 
