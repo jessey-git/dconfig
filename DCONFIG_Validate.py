@@ -68,34 +68,6 @@ class ObjectDataNameRule(BaseObjectRule):
         return RuleResult(self.rule, is_error, "Object '{}' uses data name '{}' which does not match".format(data.obj.name, data.obj.data.name))
 
 
-class GeometryTrianglesRule(BaseObjectRule):
-    rule = Rule('Geometry', 'Triangles')
-
-    def execute(self, data):
-        self.ready_selection('FACE')
-        bpy.ops.mesh.select_face_by_sides(number=3, type='EQUAL', extend=False)
-
-        face_count = len(data.bm.faces)
-        triangle_count = sum(1 for f in data.bm.faces if f.select)
-        percentage = float(triangle_count) / face_count
-        is_error = percentage > 0.10
-        return RuleResult(self.rule, is_error, "Object '{}' is composed of {:.1f}% triangles".format(data.obj.name, percentage * 100))
-
-
-class GeometryNGonRule(BaseObjectRule):
-    rule = Rule('Geometry', 'Ngons')
-
-    def execute(self, data):
-        self.ready_selection('FACE')
-        bpy.ops.mesh.select_face_by_sides(number=4, type='GREATER', extend=False)
-
-        face_count = len(data.bm.faces)
-        ngon_count = sum(1 for f in data.bm.faces if f.select)
-        percentage = float(ngon_count) / face_count
-        is_error = percentage > 0.10
-        return RuleResult(self.rule, is_error, "Object '{}' is composed of {:.1f}% ngons".format(data.obj.name, percentage * 100))
-
-
 class GeometryIsolatedVertRule(BaseObjectRule):
     rule = Rule('Geometry', 'Isolated vertices')
 
@@ -143,8 +115,36 @@ class GeometryNonManifoldRule(BaseObjectRule):
         return RuleResult(self.rule, is_error, "Object '{}' contains {} non-manifold vertices".format(data.obj.name, non_manifold_count))
 
 
-class GeometryPoleRule(BaseObjectRule):
-    rule = Rule('Geometry', 'Large poles')
+class TopologyTrianglesRule(BaseObjectRule):
+    rule = Rule('Topology', 'Triangles')
+
+    def execute(self, data):
+        self.ready_selection('FACE')
+        bpy.ops.mesh.select_face_by_sides(number=3, type='EQUAL', extend=False)
+
+        face_count = len(data.bm.faces)
+        triangle_count = sum(1 for f in data.bm.faces if f.select)
+        percentage = float(triangle_count) / face_count
+        is_error = percentage > 0.10
+        return RuleResult(self.rule, is_error, "Object '{}' is composed of {:.1f}% triangles".format(data.obj.name, percentage * 100))
+
+
+class TopologyNGonRule(BaseObjectRule):
+    rule = Rule('Topology', 'Ngons')
+
+    def execute(self, data):
+        self.ready_selection('FACE')
+        bpy.ops.mesh.select_face_by_sides(number=4, type='GREATER', extend=False)
+
+        face_count = len(data.bm.faces)
+        ngon_count = sum(1 for f in data.bm.faces if f.select)
+        percentage = float(ngon_count) / face_count
+        is_error = percentage > 0.10
+        return RuleResult(self.rule, is_error, "Object '{}' is composed of {:.1f}% ngons".format(data.obj.name, percentage * 100))
+
+
+class TopologyPoleRule(BaseObjectRule):
+    rule = Rule('Topology', 'Large poles')
 
     def execute(self, data):
         large_pole_count = sum(1 for v in data.bm.verts if len(v.link_edges) > 5)
@@ -152,8 +152,8 @@ class GeometryPoleRule(BaseObjectRule):
         return RuleResult(self.rule, is_error, "Object '{}' contains {} poles with 6+ edges".format(data.obj.name, large_pole_count))
 
 
-class GeometryOpenSubDivCreaseRule(BaseObjectRule):
-    rule = Rule('Geometry', 'Edge creases')
+class TopologySubDivCreaseRule(BaseObjectRule):
+    rule = Rule('Topology', 'Edge creases')
 
     def execute(self, data):
         crease = data.bm.edges.layers.crease.verify()
@@ -239,14 +239,14 @@ class ObjectAnalyzer:
     Rules = [
         ObjectNameRule(),
         ObjectDataNameRule(),
-        GeometryTrianglesRule(),
-        GeometryNGonRule(),
         GeometryIsolatedVertRule(),
         GeometryCoincidentVertRule(),
         GeometryInteriorFaceRule(),
         GeometryNonManifoldRule(),
-        GeometryPoleRule(),
-        GeometryOpenSubDivCreaseRule(),
+        TopologyTrianglesRule(),
+        TopologyNGonRule(),
+        TopologyPoleRule(),
+        TopologySubDivCreaseRule(),
         OrientationTransformRule(),
         MaterialRule(),
         MaterialNameRule(),
