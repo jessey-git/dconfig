@@ -22,7 +22,7 @@ class DCONFIG_OT_setup_shading(bpy.types.Operator):
         dc.trace_enter(self)
 
         context.space_data.clip_end = 100
-        context.space_data.clip_start = 0.01
+        context.space_data.clip_start = 0.025
 
         context.space_data.shading.light = 'MATCAP'
         context.space_data.shading.show_shadows = False
