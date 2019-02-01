@@ -41,7 +41,7 @@ class DCONFIG_MT_boolean_pie(bpy.types.Menu):
         # Left
         split = pie.split()
         col = split.column(align=True)
-        col.scale_y = 1.5
+        col.scale_y = 1.25
 
         prop = col.operator("dconfig.boolean_immediate", text="Add", icon='DOT')
         prop.bool_operation = 'UNION'
@@ -55,7 +55,7 @@ class DCONFIG_MT_boolean_pie(bpy.types.Menu):
         # Right
         split = pie.split()
         col = split.column(align=True)
-        col.scale_y = 1.5
+        col.scale_y = 1.25
 
         prop = col.operator("dconfig.boolean_live", text="Live Add", icon='MOD_BOOLEAN')
         prop.bool_operation = 'UNION'
@@ -169,7 +169,7 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
         self.prepare_objects(context)
 
         # We should have at least 2 mesh objects (1 target, 1 source) at this point now...
-        selected_meshes = dc.get_meshes(context.selected_objects)
+        selected_meshes = dc.get_sorted_meshes(context.selected_objects, context.active_object)
         if len(selected_meshes) < 2:
             return None, None
 
@@ -180,17 +180,9 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
             bool_collection.hide_render = True
             bool_targets.append(TargetData(obj, own_collection, bool_collection))
 
-        # Last object is the boolean source; remove any modifiers present on it...
+        # Last object is the boolean source
         source = selected_meshes[-1]
         source_collection = dc.find_collection(context, source)
-
-        prev_active = context.view_layer.objects.active
-        context.view_layer.objects.active = source
-        while source.modifiers:
-            modifier = source.modifiers[0]
-            bpy.ops.object.modifier_remove(modifier=modifier.name)
-        context.view_layer.objects.active = prev_active
-
         bool_source = SourceData(source, source_collection)
 
         return bool_targets, bool_source
@@ -370,7 +362,7 @@ class DCONFIG_OT_boolean_toggle(bpy.types.Operator):
 
         # For cases of multiple objects selected, use the viewport setting for the first (active)
         # object encountered...
-        sorted_meshes = sorted(dc.get_meshes(context.selected_objects), key=lambda x: 0 if x == context.active_object else 1)
+        sorted_meshes = dc.get_sorted_meshes(context.selected_objects, context.active_object)
         hide_viewport_sync = None
 
         # Process all selected objects...

@@ -56,8 +56,8 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         # Bottom
         split = pie.split()
         col = split.column(align=True)
-        col.scale_y = 1.00
-        col.scale_x = 1.00
+        col.scale_y = 1.25
+        col.scale_x = 1.25
         col.operator("dconfig.add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
         col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="3 x 3 x 3").type = '3x3x3'
         col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="4 x 4 x 4").type = '4x4x4'
@@ -267,6 +267,7 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
 
     def __init__(self):
         self.step = 0
+        self.should_separate = False
         self.mouse_start_x = 0
         self.original_depth = 0.0
 
@@ -282,13 +283,20 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
             self.create_curve(context, event)
             self.step = 1
         elif context.mode == 'EDIT_MESH' and context.object.data.total_edge_sel > 0:
+            self.should_separate = context.object.data.total_edge_sel != len(context.object.data.edges)
+            if self.should_separate:
+                bpy.ops.mesh.duplicate_move()
+
             # Create a vertex group to be used later
             bpy.ops.object.vertex_group_assign_new()
-            context.active_object.vertex_groups[-1].name = "dc_temp_vgroup"
+            context.active_object.vertex_groups.active.name = "dc_temp_vgroup"
         else:
             return dc.warn_canceled(self, "No edges selected")
 
         dc.trace(1, "Starting step {}", self.step)
+        if self.step == 0:
+            bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='VERT')
+            bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', vertex_only=True, clamp_overlap=True)
 
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
@@ -299,7 +307,6 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
     # Shift Mouse wheel: Adjust sub-d level
     def modal(self, context, event):
         if self.step == 0:
-            bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', vertex_only=True, clamp_overlap=True)
             return self.continue_or_finish(context, event)
 
         if self.step == 1:
@@ -322,9 +329,15 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
         return self.continue_or_finish(context, event)
 
     def prepare(self, context):
+        bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='EDGE')
         bpy.ops.object.vertex_group_set_active(group="dc_temp_vgroup")
         bpy.ops.object.vertex_group_select()
-        bpy.ops.mesh.separate(type='SELECTED')
+        bpy.ops.object.vertex_group_remove(all=False, all_unlocked=False)
+
+        if self.should_separate:
+            dc.trace(2, "Separating due to subset of edges being selected")
+            bpy.ops.mesh.separate(type='SELECTED')
+
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         context.view_layer.objects.active = context.selected_objects[-1]
         bpy.ops.object.select_all(action='DESELECT')
@@ -364,6 +377,12 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
             dc.trace(1, "Starting step {}", self.step)
 
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
+            vgroup = context.active_object.vertex_groups.active
+            if vgroup is not None and vgroup.name == "dc_temp_vgroup":
+                bpy.ops.object.vertex_group_remove(all=False, all_unlocked=False)
+
             return dc.user_canceled(self)
 
+        if self.step == 0:
+            return {'PASS_THROUGH'}
         return {'RUNNING_MODAL'}

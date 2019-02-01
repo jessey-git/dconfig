@@ -42,12 +42,14 @@ def setup_hotkeys():
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Z",            "PRESS",    True,   False,  False,  (("name", "VIEW3D_MT_shading_ex_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_boolean_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",            "PRESS",    False,  True,   False,  (("name", "DCONFIG_MT_symmetry_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "W",            "PRESS",    False,  False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "W",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
 
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",        "DOUBLE_CLICK", False,  False,  False,  (("delimit", {'SEAM'}),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",        "DOUBLE_CLICK", True,   False,  False,  (("delimit", {'SEAM'}),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.delete_edgeloop",     "X",                "PRESS",        False,  True,   False,  (("use_face_split", False),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE",     "PRESS",        False,  False,  False,  (("name", "VIEW3D_MT_edit_mesh_select_mode"),)),
+
+        ("UV Editor",           "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE",     "PRESS",        False,  False,  False,  (("name", "IMAGE_MT_uvs_select_mode"),)),
 
         ("View3D Gesture Circle",   "EMPTY",    "WINDOW",   True,   "CANCEL",               "C",                "RELEASE",  False,  False,  False,   ()),
     )
