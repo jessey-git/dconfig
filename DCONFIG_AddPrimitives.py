@@ -60,9 +60,9 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col.scale_y = 1.25
         col.scale_x = 1.25
         col.operator("dconfig.add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 2x2x2").type = '2x2x2'
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 3x3x3").type = '3x3x3'
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 4x4x4").type = '4x4x4'
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 2x2x2").resolution = '2x2x2'
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 3x3x3").resolution = '3x3x3'
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 4x4x4").resolution = '4x4x4'
 
         # Top
         split = pie.split()
@@ -112,7 +112,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         elif self.type == 'Cylinder_32':
             bpy.ops.mesh.primitive_cylinder_add(radius=0.50, depth=0.50, vertices=32)
         elif self.type == 'Cylinder_64':
-            bpy.ops.mesh.primitive_cylinder_add(radius=0.50, depth=0.50, vertices=64)
+            bpy.ops.mesh.primitive_cylinder_add(radius=1.00, depth=1.00, vertices=64)
 
         elif self.type == 'Sphere_12':
             bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=6, radius=0.25)
@@ -195,19 +195,7 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
     bl_description = "Add pre-configured lattice surrounding the selected geometry"
     bl_options = {'REGISTER', 'UNDO'}
 
-    type: bpy.props.EnumProperty(
-        items=(
-            ('2x2x2', "FFD 2x2x2", "FFD 2x2x2", 0),
-            ('3x3x3', "FFD 3x3x3", "FFD 3x3x3", 1),
-            ('4x4x4', "FFD 4x4x4", "FFD 4x4x4", 2),
-        ),
-        name="FFD Type",
-        description="lattice resolution",
-        default='3x3x3',
-        options={'ANIMATABLE'},
-        update=None,
-        get=None,
-        set=None)
+    resolution: bpy.props.StringProperty(name="Resolution")
 
     @classmethod
     def poll(cls, context):
@@ -232,15 +220,15 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         lattice = bpy.data.lattices.new('dc_lattice')
         lattice_object = bpy.data.objects.new('dc_lattice', lattice)
 
-        if self.type == "2x2x2":
+        if self.resolution == "2x2x2":
             lattice.points_u = 2
             lattice.points_v = 2
             lattice.points_w = 2
-        elif self.type == "3x3x3":
+        elif self.resolution == "3x3x3":
             lattice.points_u = 3
             lattice.points_v = 3
             lattice.points_w = 3
-        elif self.type == "4x4x4":
+        elif self.resolution == "4x4x4":
             lattice.points_u = 4
             lattice.points_v = 4
             lattice.points_w = 4
