@@ -52,13 +52,13 @@ def get_sorted_meshes(obj_list, active_object):
 #
 
 
-def find_world_bbox(obj):
-    world_bbox = [obj.matrix_world @ Vector(v) for v in obj.bound_box]
+def find_world_bbox(matrix_world, verts):
+    world_verts = [matrix_world @ v for v in verts]
 
-    bbox_min = Vector(world_bbox[0])
-    bbox_max = Vector(world_bbox[0])
+    bbox_min = Vector(world_verts[0])
+    bbox_max = Vector(world_verts[0])
 
-    for v in world_bbox:
+    for v in world_verts:
         if v.x < bbox_min.x:
             bbox_min.x = v.x
         if v.y < bbox_min.y:

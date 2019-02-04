@@ -9,6 +9,7 @@
 #
 
 import bpy
+from mathutils import (Vector)
 from . import DCONFIG_Utils as dc
 
 
@@ -59,8 +60,9 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col.scale_y = 1.25
         col.scale_x = 1.25
         col.operator("dconfig.add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="3 x 3 x 3").type = '3x3x3'
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="4 x 4 x 4").type = '4x4x4'
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 2x2x2").type = '2x2x2'
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 3x3x3").type = '3x3x3'
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 4x4x4").type = '4x4x4'
 
         # Top
         split = pie.split()
@@ -193,7 +195,19 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
     bl_description = "Add pre-configured lattice surrounding the selected geometry"
     bl_options = {'REGISTER', 'UNDO'}
 
-    type: bpy.props.StringProperty(name="Type")
+    type: bpy.props.EnumProperty(
+        items=(
+            ('2x2x2', "FFD 2x2x2", "FFD 2x2x2", 0),
+            ('3x3x3', "FFD 3x3x3", "FFD 3x3x3", 1),
+            ('4x4x4', "FFD 4x4x4", "FFD 4x4x4", 2),
+        ),
+        name="FFD Type",
+        description="lattice resolution",
+        default='3x3x3',
+        options={'ANIMATABLE'},
+        update=None,
+        get=None,
+        set=None)
 
     @classmethod
     def poll(cls, context):
@@ -218,7 +232,11 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         lattice = bpy.data.lattices.new('dc_lattice')
         lattice_object = bpy.data.objects.new('dc_lattice', lattice)
 
-        if self.type == "3x3x3":
+        if self.type == "2x2x2":
+            lattice.points_u = 2
+            lattice.points_v = 2
+            lattice.points_w = 2
+        elif self.type == "3x3x3":
             lattice.points_u = 3
             lattice.points_v = 3
             lattice.points_w = 3
@@ -233,9 +251,7 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         lattice.use_outside = False
 
         # Position + Orientation
-        lattice_object.location = self.find_world_center(target)
-        lattice_object.scale = target.dimensions * 1.1
-        lattice_object.rotation_euler = target.rotation_euler
+        self.set_transforms(target, lattice_object)
 
         # Place in a special collection
         helpers_collection = dc.make_helpers_collection(context)
@@ -253,10 +269,13 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         mod = target.modifiers.new(lattice.name, "LATTICE")
         mod.object = lattice
 
-    def find_world_center(self, target):
-        # Return center
-        bbox_min, bbox_max = dc.find_world_bbox(target)
-        return (bbox_min + bbox_max) / 2
+    def set_transforms(self, target, lattice):
+        bbox_min, bbox_max = dc.find_world_bbox(target.matrix_world, [v.co for v in target.data.vertices])
+        size = bbox_max - bbox_min
+
+        lattice.location = (bbox_min + bbox_max) / 2
+        lattice.scale = Vector([max(0.1, c) for c in size]) * 1.1
+        lattice.rotation_euler = target.rotation_euler
 
 
 class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
