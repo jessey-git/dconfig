@@ -133,7 +133,7 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
 
                 context.view_layer.objects.active = source.object
                 bpy.ops.object.constraint_add(type='COPY_TRANSFORMS')
-                context.object.constraints["Copy Transforms"].target = inset
+                context.active_object.constraints["Copy Transforms"].target = inset
                 inset_move_list.append(inset)
 
         source.object.display_type = 'WIRE'
@@ -153,7 +153,7 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
 
     def prepare_objects(self, context):
         if context.mode == 'EDIT_MESH':
-            if context.object.data.total_vert_sel > 0:
+            if context.active_object.data.total_vert_sel > 0:
                 bpy.ops.mesh.select_linked()
                 bpy.ops.mesh.normals_make_consistent(inside=False)
                 bpy.ops.mesh.separate(type='SELECTED')
@@ -247,7 +247,7 @@ class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        ok_edit = context.mode == 'EDIT_MESH' and context.object.data.total_face_sel > 0
+        ok_edit = context.mode == 'EDIT_MESH' and context.active_object.data.total_face_sel > 0
         ok_object = context.mode == 'OBJECT' and len(context.selected_objects) > 1
         return ok_edit or ok_object
 
@@ -257,7 +257,7 @@ class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
         if context.mode == 'EDIT_MESH':
             dc.trace(1, "Performing direct mesh boolean from selected geometry")
             bpy.ops.mesh.select_linked()
-            if context.object.data.total_vert_sel == len(context.object.data.vertices):
+            if context.active_object.data.total_vert_sel == len(context.active_object.data.vertices):
                 return dc.warn_canceled(self, "All vertices of object became selected")
 
             bpy.ops.mesh.normals_make_consistent(inside=False)

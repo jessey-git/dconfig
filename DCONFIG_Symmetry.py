@@ -122,12 +122,12 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
                 mirror_object = helpers_collection.objects["DC_World_Origin"]
             else:
                 dc.trace(1, "Creating new world-origin empty")
-                original_object = context.view_layer.objects.active
-                original_mode = context.object.mode
+                original_object = context.active_object
+                original_mode = context.active_object.mode
 
                 bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
                 bpy.ops.object.empty_add(type='PLAIN_AXES', view_align=False, location=(0, 0, 0))
-                mirror_object = bpy.context.object
+                mirror_object = context.active_object
                 mirror_object.name = "DC_World_Origin"
                 mirror_object.select_set(state=False)
                 mirror_object.hide_viewport = True

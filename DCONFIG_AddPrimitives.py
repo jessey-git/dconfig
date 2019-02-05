@@ -159,11 +159,12 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
     def execute(self, context):
         dc.trace_enter(self)
         prev_cursor_location = tuple(context.scene.cursor_location)
+        is_edit_mode = context.mode == 'EDIT_MESH'
 
-        if context.object is None or (not context.selected_objects) or (context.mode == 'EDIT_MESH' and context.object.data.total_vert_sel == 0):
+        if context.active_object is None or (not context.selected_objects) or (is_edit_mode and context.active_object.data.total_vert_sel == 0):
             self.add_primitive(context)
-        elif context.object.type == 'MESH' and tuple(context.scene.tool_settings.mesh_select_mode) == (False, False, True):
-            prev_active = context.view_layer.objects.active
+        elif context.active_object.type == 'MESH' and is_edit_mode and tuple(context.scene.tool_settings.mesh_select_mode) == (False, False, True):
+            prev_active = context.active_object
             prev_orientation = context.scene.transform_orientation_slots[0].type
 
             bpy.ops.view3d.snap_cursor_to_selected()
@@ -175,8 +176,8 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
                 False, False, False), constraint_orientation='AddAxis', mirror=False, proportional='DISABLED')
 
-            prev_active.select_set(state=True)
             context.view_layer.objects.active = prev_active
+            context.view_layer.objects.active.select_set(True)
             bpy.ops.object.join()
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
 
@@ -289,8 +290,8 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
             # Object mode means we can skip to creating/manipulating the curve object
             self.create_curve(context, event)
             self.step = 1
-        elif context.mode == 'EDIT_MESH' and context.object.data.total_edge_sel > 0:
-            self.should_separate = context.object.data.total_edge_sel != len(context.object.data.edges)
+        elif context.mode == 'EDIT_MESH' and context.active_object.data.total_edge_sel > 0:
+            self.should_separate = context.active_object.data.total_edge_sel != len(context.active_object.data.edges)
             if self.should_separate:
                 bpy.ops.mesh.duplicate_move()
 
