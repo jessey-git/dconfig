@@ -88,17 +88,24 @@ def find_collection(context, obj):
     return context.scene.collection
 
 
-def make_collection(parent_collection, collection_name):
+def make_collection(parent_collection, collection_name, force_create=True, hide_render=False):
     if collection_name in bpy.data.collections:
         return bpy.data.collections[collection_name]
-    else:
+    elif force_create:
         new_collection = bpy.data.collections.new(collection_name)
+        new_collection.hide_render = hide_render
         parent_collection.children.link(new_collection)
         return new_collection
+    else:
+        return None
 
 
-def make_helpers_collection(context):
-    return make_collection(context.scene.collection, "DC_helpers")
+def get_helpers_collection(context):
+    return make_collection(context.scene.collection, "DC_helpers", True, True)
+
+
+def get_boolean_collection(context, force_create):
+    return make_collection(context.scene.collection, "DC_booleans", force_create, True)
 
 
 #

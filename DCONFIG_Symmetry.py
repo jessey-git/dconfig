@@ -115,7 +115,7 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
         mirror_object = None
         if not self.local:
             # Use a special collection
-            helpers_collection = dc.make_helpers_collection(context)
+            helpers_collection = dc.get_helpers_collection(context)
 
             if "DC_World_Origin" in helpers_collection.all_objects:
                 dc.trace(1, "Using existing world-origin empty")

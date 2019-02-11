@@ -243,7 +243,7 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         self.set_transforms(target, lattice_object)
 
         # Place in a special collection
-        helpers_collection = dc.make_helpers_collection(context)
+        helpers_collection = dc.get_helpers_collection(context)
         helpers_collection.objects.link(lattice_object)
 
         # Toggle out of local-view mode and re-enter to ensure lattice shows up
