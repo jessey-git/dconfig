@@ -8,8 +8,9 @@
 # Better symmetry
 #
 
-import bpy
 import math
+
+import bpy
 from . import DCONFIG_Utils as dc
 
 
@@ -96,7 +97,7 @@ class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
 class DCONFIG_OT_mirror(bpy.types.Operator):
     bl_idname = "dconfig.mirror"
     bl_label = "DC Mirror"
-    bl_description = "Mirrow mesh across an axis"
+    bl_description = "Mirror mesh across an axis"
     bl_options = {'REGISTER', 'UNDO'}
 
     local: bpy.props.BoolProperty()
@@ -173,13 +174,12 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
 class DCONFIG_OT_mirror_radial(bpy.types.Operator):
     bl_idname = "dconfig.mirror_radial"
     bl_label = "DC Mirror Radial"
-    bl_description = "Mirrow mesh in a radial fashion"
+    bl_description = "Mirror mesh in a radial fashion"
     bl_options = {'REGISTER', 'UNDO'}
 
     def __init__(self):
         self.radial_mod = None
         self.radial_object = None
-        self.current_rotation = 0
 
     @classmethod
     def poll(cls, context):
@@ -189,22 +189,24 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         dc.trace_enter(self)
 
         target = context.active_object
-        self.create_radial_obj(context)
-        self.create_radial_mod(target)
+        if not self.init_from_existing(target):
+            self.create_radial_obj(context)
+            self.create_radial_mod(target)
+            self.align_objects(context, target)
+            self.adjust_radial_mod(0)
 
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
     def modal(self, context, event):
         if event.type == 'WHEELUPMOUSE':
-            self.radial_mod.count += 1
-            self.adjust_rotation()
+            self.adjust_radial_mod(1)
 
         elif event.type == 'WHEELDOWNMOUSE':
-            self.radial_mod.count -= 1
-            self.adjust_rotation()
+            self.adjust_radial_mod(-1)
 
         if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
+            self.radial_object.hide_viewport = True
             return dc.trace_exit(self)
 
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
@@ -212,24 +214,39 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
 
         return {'RUNNING_MODAL'}
 
-    def adjust_rotation(self):
-        # self.radial_object.rotation_euler.z = math.radians(360 / self.radial_mod.count)
+    def adjust_radial_mod(self, delta):
+        current_rotation = math.radians(360 / self.radial_mod.count if delta != 0 else 0)
+
+        self.radial_mod.count += delta
         required_rotation = math.radians(360 / self.radial_mod.count)
-        actual_rotation = required_rotation - self.current_rotation
+        actual_rotation = current_rotation - required_rotation
 
-        world_matrix = self.radial_object.matrix_world
-        rotation_axis = (world_matrix[0][2], world_matrix[1][2], world_matrix[2][2])
+        bpy.ops.transform.rotate(value=actual_rotation, constraint_axis=(False, False, True), constraint_orientation='LOCAL')
 
-        self.current_rotation = required_rotation
-        bpy.ops.transform.rotate(value=actual_rotation, axis=rotation_axis, constraint_orientation='Face')
+    def align_objects(self, context, target):
+        target.select_set(state=True)
+        dc.trace(1, "Aligning items: {}", [o.name for o in context.selected_objects])
+
+        if context.scene.transform_orientation_slots[0].type == 'Face':
+            dc.trace(2, "To Face")
+            bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
+                False, False, False), constraint_orientation='Face', mirror=False, proportional='DISABLED')
+        else:
+            is_ortho = not context.space_data.region_3d.is_perspective
+            if is_ortho:
+                dc.trace(2, "To Ortho view")
+                bpy.ops.transform.create_orientation(name="TestAxis", use_view=True, use=True, overwrite=True)
+                bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
+                    False, False, False), constraint_orientation='TestAxis', mirror=False, proportional='DISABLED')
+                bpy.ops.transform.delete_orientation()
+
+        # Ensure the proper object is active/selected for further bpy.ops
+        bpy.ops.object.select_all(action='DESELECT')
+        context.view_layer.objects.active = self.radial_object
+        context.view_layer.objects.active.select_set(True)
 
     def create_radial_obj(self, context):
-        # Use a special collection
-        helpers_collection = dc.get_helpers_collection(context)
-
         dc.trace(1, "Creating new radial empty")
-        original_object = context.active_object
-        original_mode = context.active_object.mode
         prev_cursor_location = tuple(context.scene.cursor_location)
 
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
@@ -238,25 +255,15 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         bpy.ops.object.empty_add(type='PLAIN_AXES', view_align=False)
         self.radial_object = context.active_object
         self.radial_object.name = "DC Radial"
-
-        original_object.select_set(state=True)
         self.radial_object.select_set(state=True)
-        # self.radial_object.hide_viewport = True
 
-        dc.trace(1, "Selected items: {}", [o.name for o in context.selected_objects])
-
-        bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
-            False, False, False), constraint_orientation='Face', mirror=False, proportional='DISABLED')
-
+        # Place empty in a helpers collection
         radial_object_collection = dc.find_collection(context, self.radial_object)
+        helpers_collection = dc.get_helpers_collection(context)
         helpers_collection.objects.link(self.radial_object)
         radial_object_collection.objects.unlink(self.radial_object)
 
-        bpy.ops.object.select_all(action='DESELECT')
-        context.view_layer.objects.active = self.radial_object
-        context.view_layer.objects.active.select_set(True)
         context.scene.cursor_location = prev_cursor_location
-        # bpy.ops.object.mode_set(mode=original_mode, toggle=False)
 
     def create_radial_mod(self, target):
         dc.trace(1, "Adding array modifier to {}", dc.full_name(target))
@@ -267,6 +274,20 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         self.radial_mod.offset_object = self.radial_object
         self.radial_mod.use_relative_offset = False
         self.radial_mod.use_object_offset = True
+        self.radial_mod.use_merge_vertices = True
+        self.radial_mod.use_merge_vertices_cap = True
 
         self.radial_mod.show_on_cage = True
         self.radial_mod.show_expanded = False
+
+    def init_from_existing(self, target):
+        self.radial_mod = next((mod for mod in reversed(target.modifiers) if mod.name.startswith("dc_radial")), None)
+        if self.radial_mod is not None:
+            dc.trace(1, "Found existing modifier: {}", self.radial_mod.name)
+            self.radial_object = self.radial_mod.offset_object
+            self.radial_object.hide_viewport = False
+
+            target.select_set(state=False)
+            self.radial_object.select_set(state=True)
+
+        return self.radial_mod is not None
