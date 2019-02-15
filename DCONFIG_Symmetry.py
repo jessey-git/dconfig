@@ -210,6 +210,7 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
             return dc.trace_exit(self)
 
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
+            self.radial_object.hide_viewport = True
             return dc.user_canceled(self)
 
         return {'RUNNING_MODAL'}
@@ -221,24 +222,35 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         required_rotation = math.radians(360 / self.radial_mod.count)
         actual_rotation = current_rotation - required_rotation
 
-        bpy.ops.transform.rotate(value=actual_rotation, constraint_axis=(False, False, True), constraint_orientation='LOCAL')
+        if self.radial_object["dc_axis"] is None:
+            bpy.ops.transform.rotate(value=actual_rotation, constraint_axis=(False, False, True), constraint_orientation='LOCAL')
+        else:
+            bpy.ops.transform.rotate(value=actual_rotation, axis=self.radial_object["dc_axis"])
 
     def align_objects(self, context, target):
-        target.select_set(state=True)
-        dc.trace(1, "Aligning items: {}", [o.name for o in context.selected_objects])
-
         if context.scene.transform_orientation_slots[0].type == 'Face':
-            dc.trace(2, "To Face")
+            target.select_set(state=True)
+            dc.trace(1, "Using Face axis alignment: {}", [o.name for o in context.selected_objects])
+
+            self.radial_object["dc_axis"] = None
             bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
                 False, False, False), constraint_orientation='Face', mirror=False, proportional='DISABLED')
         else:
             is_ortho = not context.space_data.region_3d.is_perspective
             if is_ortho:
-                dc.trace(2, "To Ortho view")
-                bpy.ops.transform.create_orientation(name="TestAxis", use_view=True, use=True, overwrite=True)
-                bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
-                    False, False, False), constraint_orientation='TestAxis', mirror=False, proportional='DISABLED')
-                bpy.ops.transform.delete_orientation()
+                view = dc.get_view_orientation_from_quaternion(context.space_data.region_3d.view_rotation)
+
+                dc.trace(1, "Using Ortho axis: {}", view)
+
+                if view == 'TOP' or view == 'BOTTOM':
+                    self.radial_object["dc_axis"] = (0, 0, 1)
+                elif view == 'LEFT' or view == 'RIGHT':
+                    self.radial_object["dc_axis"] = (1, 0, 0)
+                elif view == 'FRONT' or view == 'BACK':
+                    self.radial_object["dc_axis"] = (0, 1, 0)
+            else:
+                dc.trace(1, "Using Global-Z axis")
+                self.radial_object["dc_axis"] = None
 
         # Ensure the proper object is active/selected for further bpy.ops
         bpy.ops.object.select_all(action='DESELECT')
