@@ -177,6 +177,8 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
     bl_description = "Mirror mesh in a radial fashion"
     bl_options = {'REGISTER', 'UNDO'}
 
+    count: bpy.props.IntProperty(name="count", default=0)
+
     def __init__(self):
         self.radial_mod = None
         self.radial_object = None
@@ -185,18 +187,31 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
     def poll(cls, context):
         return dc.active_mesh_selected(context)
 
+    def invoke(self, context, event):
+        dc.trace_enter(self)
+
+        self.execute_core(context, False)
+
+        context.window_manager.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
     def execute(self, context):
         dc.trace_enter(self)
 
+        self.execute_core(context, True)
+        self.radial_object.hide_viewport = True
+
+        return dc.trace_exit(self)
+
+    def execute_core(self, context, is_execute):
         target = context.active_object
         if not self.init_from_existing(target):
             self.create_radial_obj(context)
             self.create_radial_mod(target)
             self.align_objects(context, target)
             self.adjust_radial_mod(0)
-
-        context.window_manager.modal_handler_add(self)
-        return {'RUNNING_MODAL'}
+        elif is_execute and self.count != self.radial_mod.count:
+            self.adjust_radial_mod(self.count - self.radial_mod.count)
 
     def modal(self, context, event):
         if event.type == 'WHEELUPMOUSE':
@@ -215,17 +230,41 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
 
         return {'RUNNING_MODAL'}
 
-    def adjust_radial_mod(self, delta):
-        current_rotation = math.radians(360 / self.radial_mod.count if delta != 0 else 0)
+    def create_radial_obj(self, context):
+        dc.trace(1, "Creating new radial empty")
+        prev_cursor_location = tuple(context.scene.cursor_location)
 
-        self.radial_mod.count += delta
-        required_rotation = math.radians(360 / self.radial_mod.count)
-        actual_rotation = current_rotation - required_rotation
+        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        bpy.ops.view3d.snap_cursor_to_selected()
 
-        if self.radial_object["dc_axis"] is None:
-            bpy.ops.transform.rotate(value=actual_rotation, constraint_axis=(False, False, True), constraint_orientation='LOCAL')
-        else:
-            bpy.ops.transform.rotate(value=actual_rotation, axis=self.radial_object["dc_axis"])
+        bpy.ops.object.empty_add(type='PLAIN_AXES', view_align=False)
+        self.radial_object = context.active_object
+        self.radial_object.name = "DC Radial"
+        self.radial_object.select_set(state=True)
+
+        # Place empty in a helpers collection
+        radial_object_collection = dc.find_collection(context, self.radial_object)
+        helpers_collection = dc.get_helpers_collection(context)
+        helpers_collection.objects.link(self.radial_object)
+        radial_object_collection.objects.unlink(self.radial_object)
+
+        context.scene.cursor_location = prev_cursor_location
+
+    def create_radial_mod(self, target):
+        dc.trace(1, "Adding array modifier to {}", dc.full_name(target))
+        self.count = 3 if self.count is 0 else self.count
+
+        self.radial_mod = target.modifiers.new("dc_radial", 'ARRAY')
+        self.radial_mod.fit_type = 'FIXED_COUNT'
+        self.radial_mod.count = self.count
+        self.radial_mod.offset_object = self.radial_object
+        self.radial_mod.use_relative_offset = False
+        self.radial_mod.use_object_offset = True
+        self.radial_mod.use_merge_vertices = True
+        self.radial_mod.use_merge_vertices_cap = True
+
+        self.radial_mod.show_on_cage = True
+        self.radial_mod.show_expanded = False
 
     def align_objects(self, context, target):
         if context.scene.transform_orientation_slots[0].type == 'Face':
@@ -257,40 +296,20 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         context.view_layer.objects.active = self.radial_object
         context.view_layer.objects.active.select_set(True)
 
-    def create_radial_obj(self, context):
-        dc.trace(1, "Creating new radial empty")
-        prev_cursor_location = tuple(context.scene.cursor_location)
+    def adjust_radial_mod(self, delta):
+        dc.trace(1, "Delta: {}", delta)
+        current_rotation = math.radians(360 / self.radial_mod.count if delta != 0 else 0)
 
-        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-        bpy.ops.view3d.snap_cursor_to_selected()
+        self.count += delta
+        self.radial_mod.count = self.count
 
-        bpy.ops.object.empty_add(type='PLAIN_AXES', view_align=False)
-        self.radial_object = context.active_object
-        self.radial_object.name = "DC Radial"
-        self.radial_object.select_set(state=True)
+        required_rotation = math.radians(360 / self.radial_mod.count)
+        actual_rotation = current_rotation - required_rotation
 
-        # Place empty in a helpers collection
-        radial_object_collection = dc.find_collection(context, self.radial_object)
-        helpers_collection = dc.get_helpers_collection(context)
-        helpers_collection.objects.link(self.radial_object)
-        radial_object_collection.objects.unlink(self.radial_object)
-
-        context.scene.cursor_location = prev_cursor_location
-
-    def create_radial_mod(self, target):
-        dc.trace(1, "Adding array modifier to {}", dc.full_name(target))
-
-        self.radial_mod = target.modifiers.new("dc_radial", 'ARRAY')
-        self.radial_mod.fit_type = 'FIXED_COUNT'
-        self.radial_mod.count = 3
-        self.radial_mod.offset_object = self.radial_object
-        self.radial_mod.use_relative_offset = False
-        self.radial_mod.use_object_offset = True
-        self.radial_mod.use_merge_vertices = True
-        self.radial_mod.use_merge_vertices_cap = True
-
-        self.radial_mod.show_on_cage = True
-        self.radial_mod.show_expanded = False
+        if self.radial_object["dc_axis"] is None:
+            bpy.ops.transform.rotate(value=actual_rotation, constraint_axis=(False, False, True), constraint_orientation='LOCAL')
+        else:
+            bpy.ops.transform.rotate(value=actual_rotation, axis=self.radial_object["dc_axis"])
 
     def init_from_existing(self, target):
         self.radial_mod = next((mod for mod in reversed(target.modifiers) if mod.name.startswith("dc_radial")), None)

@@ -34,7 +34,7 @@ class DCONFIG_OT_setup_shading(bpy.types.Operator):
         context.space_data.shading.curvature_valley_factor = 0.8
         context.space_data.shading.xray_alpha_wireframe = 0
 
-        context.space_data.overlay.wireframe_threshold = 0.86
+        context.space_data.overlay.wireframe_threshold = 1.0
 
         context.scene.display.matcap_ssao_distance = 1
 
