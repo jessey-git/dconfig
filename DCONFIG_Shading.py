@@ -41,6 +41,20 @@ class DCONFIG_OT_setup_shading(bpy.types.Operator):
         return dc.trace_exit(self)
 
 
+class DCONFIG_OT_toggle_wireframe(bpy.types.Operator):
+    bl_idname = "dconfig.toggle_wireframe"
+    bl_label = "DC Toggle Wireframe"
+    bl_description = "Toggle wireframe overlay"
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        context.space_data.overlay.show_wireframes = not context.space_data.overlay.show_wireframes
+
+        return dc.trace_exit(self)
+
+
 def menu_func(self, context):
     self.layout.operator("dconfig.setup_shading", text="DC Setup Shading")
     self.layout.separator()
