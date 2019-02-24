@@ -4,6 +4,7 @@
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
 
+import math
 import bpy
 from mathutils import (Vector)
 
@@ -52,13 +53,13 @@ def get_sorted_meshes(obj_list, active_object):
 #
 
 
-def find_world_bbox(obj):
-    world_bbox = [obj.matrix_world @ Vector(v) for v in obj.bound_box]
+def find_world_bbox(matrix_world, verts):
+    world_verts = [matrix_world @ v for v in verts]
 
-    bbox_min = Vector(world_bbox[0])
-    bbox_max = Vector(world_bbox[0])
+    bbox_min = Vector(world_verts[0])
+    bbox_max = Vector(world_verts[0])
 
-    for v in world_bbox:
+    for v in world_verts:
         if v.x < bbox_min.x:
             bbox_min.x = v.x
         if v.y < bbox_min.y:
@@ -76,6 +77,21 @@ def find_world_bbox(obj):
     # Return bounding box verts
     return bbox_min, bbox_max
 
+
+def get_view_orientation_from_quaternion(view_quat):
+    def r(x):
+        return round(x, 2)
+    view_rot = view_quat.to_euler()
+
+    orientation_dict = {(0.0, 0.0, 0.0): 'TOP',
+                        (r(math.pi), 0.0, 0.0): 'BOTTOM',
+                        (r(math.pi / 2), 0.0, 0.0): 'FRONT',
+                        (r(math.pi / 2), 0.0, r(math.pi)): 'BACK',
+                        (r(math.pi / 2), 0.0, r(-math.pi / 2)): 'LEFT',
+                        (r(math.pi / 2), 0.0, r(math.pi / 2)): 'RIGHT'}
+
+    return orientation_dict.get(tuple(map(r, view_rot)), None)
+
 #
 # Collection utilities
 #
@@ -88,17 +104,24 @@ def find_collection(context, obj):
     return context.scene.collection
 
 
-def make_collection(parent_collection, collection_name):
+def make_collection(parent_collection, collection_name, force_create=True, hide_render=False):
     if collection_name in bpy.data.collections:
         return bpy.data.collections[collection_name]
-    else:
+    elif force_create:
         new_collection = bpy.data.collections.new(collection_name)
+        new_collection.hide_render = hide_render
         parent_collection.children.link(new_collection)
         return new_collection
+    else:
+        return None
 
 
-def make_helpers_collection(context):
-    return make_collection(context.scene.collection, "DC_helpers")
+def get_helpers_collection(context):
+    return make_collection(context.scene.collection, "DC_helpers", True, True)
+
+
+def get_boolean_collection(context, force_create):
+    return make_collection(context.scene.collection, "DC_booleans", force_create, True)
 
 
 #

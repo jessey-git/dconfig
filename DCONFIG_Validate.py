@@ -401,7 +401,7 @@ class DCONFIG_PT_validate_results(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         layout.use_property_split = True
-        scene = bpy.context.scene
+        scene = context.scene
 
         layout.label(text="Collection: " + scene.dc_validation_collection)
         layout.template_list("Validation_UL_items", "", scene, "dc_validation_results", scene, "dc_validation_results_index", rows=5)

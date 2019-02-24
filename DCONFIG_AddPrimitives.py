@@ -9,6 +9,7 @@
 #
 
 import bpy
+from mathutils import (Vector)
 from . import DCONFIG_Utils as dc
 
 
@@ -59,8 +60,9 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col.scale_y = 1.25
         col.scale_x = 1.25
         col.operator("dconfig.add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="3 x 3 x 3").type = '3x3x3'
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="4 x 4 x 4").type = '4x4x4'
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 2x2x2").resolution = '2x2x2'
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 3x3x3").resolution = '3x3x3'
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 4x4x4").resolution = '4x4x4'
 
         # Top
         split = pie.split()
@@ -110,7 +112,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         elif self.type == 'Cylinder_32':
             bpy.ops.mesh.primitive_cylinder_add(radius=0.50, depth=0.50, vertices=32)
         elif self.type == 'Cylinder_64':
-            bpy.ops.mesh.primitive_cylinder_add(radius=0.50, depth=0.50, vertices=64)
+            bpy.ops.mesh.primitive_cylinder_add(radius=1.00, depth=1.00, vertices=64)
 
         elif self.type == 'Sphere_12':
             bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=6, radius=0.25)
@@ -157,11 +159,12 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
     def execute(self, context):
         dc.trace_enter(self)
         prev_cursor_location = tuple(context.scene.cursor_location)
+        is_edit_mode = context.mode == 'EDIT_MESH'
 
-        if context.object is None or (not context.selected_objects) or (context.mode == 'EDIT_MESH' and context.object.data.total_vert_sel == 0):
+        if context.active_object is None or (not context.selected_objects) or (is_edit_mode and context.active_object.data.total_vert_sel == 0):
             self.add_primitive(context)
-        elif context.object.type == 'MESH' and tuple(context.scene.tool_settings.mesh_select_mode) == (False, False, True):
-            prev_active = context.view_layer.objects.active
+        elif context.active_object.type == 'MESH' and is_edit_mode and tuple(context.scene.tool_settings.mesh_select_mode) == (False, False, True):
+            prev_active = context.active_object
             prev_orientation = context.scene.transform_orientation_slots[0].type
 
             bpy.ops.view3d.snap_cursor_to_selected()
@@ -173,8 +176,8 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
                 False, False, False), constraint_orientation='AddAxis', mirror=False, proportional='DISABLED')
 
-            prev_active.select_set(state=True)
             context.view_layer.objects.active = prev_active
+            context.view_layer.objects.active.select_set(True)
             bpy.ops.object.join()
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
 
@@ -193,7 +196,7 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
     bl_description = "Add pre-configured lattice surrounding the selected geometry"
     bl_options = {'REGISTER', 'UNDO'}
 
-    type: bpy.props.StringProperty(name="Type")
+    resolution: bpy.props.StringProperty(name="Resolution")
 
     @classmethod
     def poll(cls, context):
@@ -218,11 +221,15 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         lattice = bpy.data.lattices.new('dc_lattice')
         lattice_object = bpy.data.objects.new('dc_lattice', lattice)
 
-        if self.type == "3x3x3":
+        if self.resolution == "2x2x2":
+            lattice.points_u = 2
+            lattice.points_v = 2
+            lattice.points_w = 2
+        elif self.resolution == "3x3x3":
             lattice.points_u = 3
             lattice.points_v = 3
             lattice.points_w = 3
-        elif self.type == "4x4x4":
+        elif self.resolution == "4x4x4":
             lattice.points_u = 4
             lattice.points_v = 4
             lattice.points_w = 4
@@ -233,19 +240,17 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         lattice.use_outside = False
 
         # Position + Orientation
-        lattice_object.location = self.find_world_center(target)
-        lattice_object.scale = target.dimensions * 1.1
-        lattice_object.rotation_euler = target.rotation_euler
+        self.set_transforms(target, lattice_object)
 
         # Place in a special collection
-        helpers_collection = dc.make_helpers_collection(context)
+        helpers_collection = dc.get_helpers_collection(context)
         helpers_collection.objects.link(lattice_object)
 
         # Toggle out of local-view mode and re-enter to ensure lattice shows up
         if context.space_data.local_view is not None:
-            bpy.ops.view3d.localview()
+            bpy.ops.view3d.localview(frame_selected=False)
             lattice_object.select_set(True)
-            bpy.ops.view3d.localview()
+            bpy.ops.view3d.localview(frame_selected=False)
 
         return lattice_object
 
@@ -253,10 +258,13 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         mod = target.modifiers.new(lattice.name, "LATTICE")
         mod.object = lattice
 
-    def find_world_center(self, target):
-        # Return center
-        bbox_min, bbox_max = dc.find_world_bbox(target)
-        return (bbox_min + bbox_max) / 2
+    def set_transforms(self, target, lattice):
+        bbox_min, bbox_max = dc.find_world_bbox(target.matrix_world, [v.co for v in target.data.vertices])
+        size = bbox_max - bbox_min
+
+        lattice.location = (bbox_min + bbox_max) / 2
+        lattice.scale = Vector([max(0.1, c) for c in size]) * 1.1
+        lattice.rotation_euler = target.rotation_euler
 
 
 class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
@@ -282,8 +290,8 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
             # Object mode means we can skip to creating/manipulating the curve object
             self.create_curve(context, event)
             self.step = 1
-        elif context.mode == 'EDIT_MESH' and context.object.data.total_edge_sel > 0:
-            self.should_separate = context.object.data.total_edge_sel != len(context.object.data.edges)
+        elif context.mode == 'EDIT_MESH' and context.active_object.data.total_edge_sel > 0:
+            self.should_separate = context.active_object.data.total_edge_sel != len(context.active_object.data.edges)
             if self.should_separate:
                 bpy.ops.mesh.duplicate_move()
 

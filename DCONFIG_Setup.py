@@ -39,7 +39,7 @@ def setup_hotkeys():
 
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.view_center_cursor",    "HOME",         "PRESS",    False,  False,  True,   ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.toggle_shading",        "Z",            "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Z",            "PRESS",    True,   False,  False,  (("name", "VIEW3D_MT_shading_ex_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.toggle_wireframe",     "Z",            "PRESS",    True,   False,  False,  ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_boolean_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",            "PRESS",    False,  True,   False,  (("name", "DCONFIG_MT_symmetry_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "W",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),

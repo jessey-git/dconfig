@@ -85,7 +85,7 @@ class DCONFIG_OT_center_collection(bpy.types.Operator):
                 return dc.warn_canceled(self, "Object {} has {} unapplied modifiers", dc.full_name(obj), len(obj.modifiers))
 
             obj.select_set(True)
-            bbox_min, bbox_max = dc.find_world_bbox(obj)
+            bbox_min, bbox_max = dc.find_world_bbox(obj.matrix_world, [Vector(v) for v in obj.bound_box])
             self.merge_bbox(bbox_min, bbox_max)
 
         dc.trace(1, "Bounding box min:{}  max:{}", self.bbox_min, self.bbox_max)
