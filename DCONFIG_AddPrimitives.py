@@ -173,8 +173,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
             self.add_primitive(context)
-            bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
-                False, False, False), constraint_orientation='AddAxis', mirror=False, proportional='DISABLED')
+            bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), constraint_axis=(False, False, False), orient_type='AddAxis')
 
             context.view_layer.objects.active = prev_active
             context.view_layer.objects.active.select_set(True)

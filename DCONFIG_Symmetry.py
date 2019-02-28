@@ -272,8 +272,7 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
             dc.trace(1, "Using Face axis alignment: {}", [o.name for o in context.selected_objects])
 
             self.radial_object["dc_axis"] = None
-            bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
-                False, False, False), constraint_orientation='Face', mirror=False, proportional='DISABLED')
+            bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), constraint_axis=(False, False, False), orient_type='Face')
         else:
             is_ortho = not context.space_data.region_3d.is_perspective
             if is_ortho:
@@ -307,7 +306,7 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         actual_rotation = current_rotation - required_rotation
 
         if self.radial_object["dc_axis"] is None:
-            bpy.ops.transform.rotate(value=actual_rotation, constraint_axis=(False, False, True), constraint_orientation='LOCAL')
+            bpy.ops.transform.rotate(value=actual_rotation, constraint_axis=(False, False, True), orient_type='LOCAL')
         else:
             bpy.ops.transform.rotate(value=actual_rotation, axis=self.radial_object["dc_axis"])
 
