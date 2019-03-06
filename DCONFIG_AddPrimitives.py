@@ -158,7 +158,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
     def execute(self, context):
         dc.trace_enter(self)
-        prev_cursor_location = tuple(context.scene.cursor_location)
+        prev_cursor_location = tuple(context.scene.cursor.location)
         is_edit_mode = context.mode == 'EDIT_MESH'
 
         if context.active_object is None or (not context.selected_objects) or (is_edit_mode and context.active_object.data.total_vert_sel == 0):
@@ -185,7 +185,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             bpy.ops.view3d.snap_cursor_to_selected()
             self.add_primitive(context)
 
-        context.scene.cursor_location = prev_cursor_location
+        context.scene.cursor.location = prev_cursor_location
         return dc.trace_exit(self)
 
 
