@@ -13,7 +13,7 @@ import re
 
 import bpy
 import bmesh
-
+from . import DCONFIG_Utils as dc
 
 #
 # Rules
@@ -64,8 +64,14 @@ class ObjectDataNameRule(BaseObjectRule):
     rule = Rule('Organization', 'Object data name')
 
     def execute(self, data):
-        is_error = data.obj.name != data.obj.data.name
-        return RuleResult(self.rule, is_error, "Object '{}' uses data name '{}' which does not match".format(data.obj.name, data.obj.data.name))
+        if data.obj.data.users < 2:
+            is_error = data.obj.name != data.obj.data.name
+            message = "Object '{}' uses data name '{}' which does not match".format(data.obj.name, data.obj.data.name)
+        else:
+            is_error = self.is_bad_name(data.obj.data.name)
+            message = "Object '{}' uses data name '{}' which is named poorly".format(data.obj.name, data.obj.data.name)
+
+        return RuleResult(self.rule, is_error, message)
 
 
 class GeometryIsolatedVertRule(BaseObjectRule):
@@ -300,11 +306,8 @@ class Validator:
         context.scene.dc_validation_collection = self.collection.name
         self.examine_collection()
 
-        for obj in self.collection.all_objects:
+        for obj in dc.get_meshes(self.collection.all_objects):
             print('Checking object : ', obj.name)
-            if obj.type != 'MESH':
-                continue
-
             self.examine_object(context, obj)
 
         self.post_results(context.scene)

@@ -158,6 +158,7 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
             mod = target.modifiers.new("dc_world", 'MIRROR')
             mod.use_axis[0] = True
             mod.use_bisect_axis[0] = False
+            mod.use_clip = True
             mod.mirror_object = mirror_object
 
         mod.show_on_cage = True

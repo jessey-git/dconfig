@@ -22,7 +22,6 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
         dc.trace_enter(self)
 
         context.scene.tool_settings.snap_elements = {'VERTEX'}
-        context.scene.tool_settings.use_snap_align_rotation = True
 
         context.space_data.clip_end = 100
         context.space_data.clip_start = 0.02
