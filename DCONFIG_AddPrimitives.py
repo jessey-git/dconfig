@@ -162,8 +162,10 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         is_edit_mode = context.mode == 'EDIT_MESH'
 
         if context.active_object is None or (not context.selected_objects) or (is_edit_mode and context.active_object.data.total_vert_sel == 0):
+            dc.trace(1, "Adding {} at cursor", self.type)
             self.add_primitive(context)
         elif context.active_object.type == 'MESH' and is_edit_mode and tuple(context.scene.tool_settings.mesh_select_mode) == (False, False, True):
+            dc.trace(1, "Adding {} aligned to selected faces", self.type)
             prev_active = context.active_object
             prev_orientation = context.scene.transform_orientation_slots[0].type
 
@@ -182,6 +184,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
             context.scene.transform_orientation_slots[0].type = prev_orientation
         else:
+            dc.trace(1, "Adding {} at selection", self.type)
             bpy.ops.view3d.snap_cursor_to_selected()
             self.add_primitive(context)
 
