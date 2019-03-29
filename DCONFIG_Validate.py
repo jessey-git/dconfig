@@ -381,7 +381,7 @@ class DCONFIG_OT_validate(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class Validation_UL_items(bpy.types.UIList):
+class DCONFIG_UL_validation_items(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         split = layout.split(factor=0.15, align=True)
         split.alignment = 'LEFT'
@@ -407,7 +407,7 @@ class DCONFIG_PT_validate_results(bpy.types.Panel):
         scene = context.scene
 
         layout.label(text="Collection: " + scene.dc_validation_collection)
-        layout.template_list("Validation_UL_items", "", scene, "dc_validation_results", scene, "dc_validation_results_index", rows=5)
+        layout.template_list("DCONFIG_UL_validation_items", "", scene, "dc_validation_results", scene, "dc_validation_results_index", rows=5)
 
 
 class DCONFIG_ValidationResultCollection(bpy.types.PropertyGroup):

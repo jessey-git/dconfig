@@ -66,9 +66,9 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col.scale_y = 1.25
         col.scale_x = 1.25
         col.operator("dconfig.add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 2x2x2").resolution = '2x2x2'
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 3x3x3").resolution = '3x3x3'
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 4x4x4").resolution = '4x4x4'
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 2x2x2").resolution = 2
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 3x3x3").resolution = 3
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 4x4x4").resolution = 4
 
         # Top
         split = pie.split()
@@ -91,13 +91,13 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     prim_type: bpy.props.StringProperty(name="Type")
-    radius: bpy.props.FloatProperty(name="Radius", default=1.0, step=1)
-    depth: bpy.props.FloatProperty(name="Depth", default=1.0, step=1)
-    size: bpy.props.FloatProperty(name="Size", default=1.0, step=1)
-    segments: bpy.props.IntProperty(name="Segments", default=12)
-    ring_count: bpy.props.IntProperty(name="Rings", default=6)
-    vertices: bpy.props.IntProperty(name="Vertices", default=8)
-    levels: bpy.props.IntProperty(name="Levels", default=1)
+    radius: bpy.props.FloatProperty(name="Radius", default=1.0, step=1, min=0.01)
+    depth: bpy.props.FloatProperty(name="Depth", default=1.0, step=1, min=0.01)
+    size: bpy.props.FloatProperty(name="Size", default=1.0, step=1, min=0.01)
+    segments: bpy.props.IntProperty(name="Segments", default=12, min=3, max=40)
+    ring_count: bpy.props.IntProperty(name="Rings", default=6, min=3, max=20)
+    vertices: bpy.props.IntProperty(name="Vertices", default=8, min=3, max=96)
+    levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
 
     def draw(self, context):
         layout = self.layout
@@ -105,7 +105,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
         layout.prop(self, "prim_type")
         layout.separator()
-        if self.prim_type == 'Cube':
+        if self.prim_type == 'Cube' or self.prim_type == 'Plane':
             layout.prop(self, "size")
         elif self.prim_type == 'Circle':
             layout.prop(self, "radius")
@@ -119,6 +119,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             layout.prop(self, "segments")
             layout.prop(self, "ring_count")
         elif self.prim_type == 'Quad_Sphere':
+            layout.prop(self, "radius")
             layout.prop(self, "levels")
 
     def add_primitive(self, context):
@@ -128,7 +129,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             bpy.ops.mesh.primitive_cube_add(size=self.size)
 
         elif self.prim_type == 'Plane':
-            bpy.ops.mesh.primitive_plane_add(view_align=is_ortho)
+            bpy.ops.mesh.primitive_plane_add(size=self.size, view_align=is_ortho)
 
         elif self.prim_type == 'Circle':
             bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=self.radius, vertices=self.vertices, view_align=is_ortho)
@@ -140,7 +141,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             bpy.ops.mesh.primitive_uv_sphere_add(radius=self.radius, segments=self.segments, ring_count=self.ring_count)
 
         elif self.prim_type == 'Quad_Sphere':
-            self.add_quad_sphere(context, 0.5, self.levels)
+            self.add_quad_sphere(context, self.radius, self.levels)
 
     def add_quad_sphere(self, context, radius, levels):
         was_edit = False
@@ -212,7 +213,7 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
     bl_description = "Add pre-configured lattice surrounding the selected geometry"
     bl_options = {'REGISTER', 'UNDO'}
 
-    resolution: bpy.props.StringProperty(name="Resolution")
+    resolution: bpy.props.IntProperty(name="Resolution", default=2, min=2, max=4)
 
     @classmethod
     def poll(cls, context):
@@ -237,18 +238,9 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         lattice = bpy.data.lattices.new('dc_lattice')
         lattice_object = bpy.data.objects.new('dc_lattice', lattice)
 
-        if self.resolution == "2x2x2":
-            lattice.points_u = 2
-            lattice.points_v = 2
-            lattice.points_w = 2
-        elif self.resolution == "3x3x3":
-            lattice.points_u = 3
-            lattice.points_v = 3
-            lattice.points_w = 3
-        elif self.resolution == "4x4x4":
-            lattice.points_u = 4
-            lattice.points_v = 4
-            lattice.points_w = 4
+        lattice.points_u = self.resolution
+        lattice.points_v = self.resolution
+        lattice.points_w = self.resolution
 
         lattice.interpolation_type_u = 'KEY_BSPLINE'
         lattice.interpolation_type_v = 'KEY_BSPLINE'
@@ -271,6 +263,7 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
     def create_lattice_mod(self, target, lattice):
         mod = target.modifiers.new(lattice.name, "LATTICE")
         mod.object = lattice
+        mod.show_expanded = False
 
     def set_transforms(self, target, lattice):
         bbox_min, bbox_max = dc.find_world_bbox(target.matrix_world, [v.co for v in target.data.vertices])
