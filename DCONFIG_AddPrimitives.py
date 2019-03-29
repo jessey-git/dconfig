@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Copyright(c) 2018 Jesse Yurkovich
+# Copyright(c) 2019 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
@@ -20,39 +20,45 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
+        def setop(layout, name, icon, text, prim_type, props):
+            op = layout.operator(name, icon=icon, text=text)
+            op.prim_type = prim_type
+            for prop, value in props:
+                setattr(op, prop, value)
+
         # Left
         split = pie.split(align=True)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="6").type = 'Cylinder_6'
-        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="8").type = 'Cylinder_8'
-        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="16").type = 'Cylinder_16'
-        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="32").type = 'Cylinder_32'
-        col.operator("dconfig.add_primitive", icon='MESH_CYLINDER', text="64").type = 'Cylinder_64'
+        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "6", prim_type='Cylinder', props=(("radius", 0.25), ("depth", 0.25), ("vertices", 6)))
+        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "8", prim_type='Cylinder', props=(("radius", 0.25), ("depth", 0.25), ("vertices", 8)))
+        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "16", prim_type='Cylinder', props=(("radius", 0.50), ("depth", 0.50), ("vertices", 16)))
+        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "32", prim_type='Cylinder', props=(("radius", 0.50), ("depth", 0.50), ("vertices", 32)))
 
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("dconfig.add_primitive", icon='MESH_CIRCLE', text="6").type = 'Circle_6'
-        col.operator("dconfig.add_primitive", icon='MESH_CIRCLE', text="8").type = 'Circle_8'
-        col.operator("dconfig.add_primitive", icon='MESH_CIRCLE', text="16").type = 'Circle_16'
-        col.operator("dconfig.add_primitive", icon='MESH_CIRCLE', text="32").type = 'Circle_32'
+        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "6", prim_type='Circle', props=(("radius", 0.25), ("vertices", 6)))
+        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "8", prim_type='Circle', props=(("radius", 0.25), ("vertices", 8)))
+        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "16", prim_type='Circle', props=(("radius", 0.50), ("vertices", 16)))
+        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "32", prim_type='Circle', props=(("radius", 0.50), ("vertices", 32)))
 
         # Right
         split = pie.split(align=True)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="12").type = 'Sphere_12'
-        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="24").type = 'Sphere_24'
-        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="32").type = 'Sphere_32'
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "12", prim_type='Sphere', props=(("radius", 0.25), ("segments", 12), ("ring_count", 6)))
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "24", prim_type='Sphere', props=(("radius", 0.50), ("segments", 24), ("ring_count", 12)))
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "32", prim_type='Sphere', props=(("radius", 0.50), ("segments", 32), ("ring_count", 16)))
+
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="Quad 1").type = 'Quad_Sphere_1'
-        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="Quad 2").type = 'Quad_Sphere_2'
-        col.operator("dconfig.add_primitive", icon='MESH_UVSPHERE', text="Quad 3").type = 'Quad_Sphere_3'
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 1", prim_type='Quad_Sphere', props=(("levels", 1),))
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 2", prim_type='Quad_Sphere', props=(("levels", 2),))
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 3", prim_type='Quad_Sphere', props=(("levels", 3),))
 
         # Bottom
         split = pie.split()
@@ -60,17 +66,17 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col.scale_y = 1.25
         col.scale_x = 1.25
         col.operator("dconfig.add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 2x2x2").resolution = '2x2x2'
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 3x3x3").resolution = '3x3x3'
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 4x4x4").resolution = '4x4x4'
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 2x2x2").resolution = 2
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 3x3x3").resolution = 3
+        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 4x4x4").resolution = 4
 
         # Top
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("dconfig.add_primitive", icon='MESH_PLANE', text="Plane").type = 'Plane'
-        col.operator("dconfig.add_primitive", icon='MESH_CUBE', text="Cube").type = 'Cube'
+        col.operator("dconfig.add_primitive", icon='MESH_PLANE', text="Plane").prim_type = 'Plane'
+        col.operator("dconfig.add_primitive", icon='MESH_CUBE', text="Cube").prim_type = 'Cube'
 
         # Top Left
         # Top Right
@@ -84,49 +90,58 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
     bl_description = "Add pre-configured primitives and align to currently selected geometry"
     bl_options = {'REGISTER', 'UNDO'}
 
-    type: bpy.props.StringProperty(name="Type")
+    prim_type: bpy.props.StringProperty(name="Type")
+    radius: bpy.props.FloatProperty(name="Radius", default=1.0, step=1, min=0.01)
+    depth: bpy.props.FloatProperty(name="Depth", default=1.0, step=1, min=0.01)
+    size: bpy.props.FloatProperty(name="Size", default=1.0, step=1, min=0.01)
+    segments: bpy.props.IntProperty(name="Segments", default=12, min=3, max=40)
+    ring_count: bpy.props.IntProperty(name="Rings", default=6, min=3, max=20)
+    vertices: bpy.props.IntProperty(name="Vertices", default=8, min=3, max=96)
+    levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+
+        layout.prop(self, "prim_type")
+        layout.separator()
+        if self.prim_type == 'Cube' or self.prim_type == 'Plane':
+            layout.prop(self, "size")
+        elif self.prim_type == 'Circle':
+            layout.prop(self, "radius")
+            layout.prop(self, "vertices")
+        elif self.prim_type == 'Cylinder':
+            layout.prop(self, "radius")
+            layout.prop(self, "depth")
+            layout.prop(self, "vertices")
+        elif self.prim_type == 'Sphere':
+            layout.prop(self, "radius")
+            layout.prop(self, "segments")
+            layout.prop(self, "ring_count")
+        elif self.prim_type == 'Quad_Sphere':
+            layout.prop(self, "radius")
+            layout.prop(self, "levels")
 
     def add_primitive(self, context):
         is_ortho = not context.space_data.region_3d.is_perspective
 
-        if self.type == 'Cube':
-            bpy.ops.mesh.primitive_cube_add(size=1.0)
-        elif self.type == 'Plane':
-            bpy.ops.mesh.primitive_plane_add(view_align=is_ortho)
+        if self.prim_type == 'Cube':
+            bpy.ops.mesh.primitive_cube_add(size=self.size)
 
-        elif self.type == 'Circle_6':
-            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=0.25, vertices=6, view_align=is_ortho)
-        elif self.type == 'Circle_8':
-            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=0.25, vertices=8, view_align=is_ortho)
-        elif self.type == 'Circle_16':
-            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=0.50, vertices=16, view_align=is_ortho)
-        elif self.type == 'Circle_32':
-            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=0.50, vertices=32, view_align=is_ortho)
+        elif self.prim_type == 'Plane':
+            bpy.ops.mesh.primitive_plane_add(size=self.size, view_align=is_ortho)
 
-        elif self.type == 'Cylinder_6':
-            bpy.ops.mesh.primitive_cylinder_add(radius=0.25, depth=0.25, vertices=6)
-        elif self.type == 'Cylinder_8':
-            bpy.ops.mesh.primitive_cylinder_add(radius=0.25, depth=0.25, vertices=8)
-        elif self.type == 'Cylinder_16':
-            bpy.ops.mesh.primitive_cylinder_add(radius=0.50, depth=0.50, vertices=16)
-        elif self.type == 'Cylinder_32':
-            bpy.ops.mesh.primitive_cylinder_add(radius=0.50, depth=0.50, vertices=32)
-        elif self.type == 'Cylinder_64':
-            bpy.ops.mesh.primitive_cylinder_add(radius=1.00, depth=1.00, vertices=64)
+        elif self.prim_type == 'Circle':
+            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=self.radius, vertices=self.vertices, view_align=is_ortho)
 
-        elif self.type == 'Sphere_12':
-            bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=6, radius=0.25)
-        elif self.type == 'Sphere_24':
-            bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, radius=0.50)
-        elif self.type == 'Sphere_32':
-            bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, radius=0.50)
+        elif self.prim_type == 'Cylinder':
+            bpy.ops.mesh.primitive_cylinder_add(radius=self.radius, depth=self.depth, vertices=self.vertices)
 
-        elif self.type == 'Quad_Sphere_1':
-            self.add_quad_sphere(context, 0.5, 1)
-        elif self.type == 'Quad_Sphere_2':
-            self.add_quad_sphere(context, 0.5, 2)
-        elif self.type == 'Quad_Sphere_3':
-            self.add_quad_sphere(context, 0.5, 3)
+        elif self.prim_type == 'Sphere':
+            bpy.ops.mesh.primitive_uv_sphere_add(radius=self.radius, segments=self.segments, ring_count=self.ring_count)
+
+        elif self.prim_type == 'Quad_Sphere':
+            self.add_quad_sphere(context, self.radius, self.levels)
 
     def add_quad_sphere(self, context, radius, levels):
         was_edit = False
@@ -158,12 +173,14 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
     def execute(self, context):
         dc.trace_enter(self)
-        prev_cursor_location = tuple(context.scene.cursor_location)
+        prev_cursor_location = tuple(context.scene.cursor.location)
         is_edit_mode = context.mode == 'EDIT_MESH'
 
         if context.active_object is None or (not context.selected_objects) or (is_edit_mode and context.active_object.data.total_vert_sel == 0):
+            dc.trace(1, "Adding {} at cursor", self.prim_type)
             self.add_primitive(context)
         elif context.active_object.type == 'MESH' and is_edit_mode and tuple(context.scene.tool_settings.mesh_select_mode) == (False, False, True):
+            dc.trace(1, "Adding {} aligned to selected faces", self.prim_type)
             prev_active = context.active_object
             prev_orientation = context.scene.transform_orientation_slots[0].type
 
@@ -173,8 +190,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
             self.add_primitive(context)
-            bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
-                False, False, False), constraint_orientation='AddAxis', mirror=False, proportional='DISABLED')
+            bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), constraint_axis=(False, False, False))
 
             context.view_layer.objects.active = prev_active
             context.view_layer.objects.active.select_set(True)
@@ -183,10 +199,11 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
             context.scene.transform_orientation_slots[0].type = prev_orientation
         else:
+            dc.trace(1, "Adding {} at selection", self.prim_type)
             bpy.ops.view3d.snap_cursor_to_selected()
             self.add_primitive(context)
 
-        context.scene.cursor_location = prev_cursor_location
+        context.scene.cursor.location = prev_cursor_location
         return dc.trace_exit(self)
 
 
@@ -196,7 +213,7 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
     bl_description = "Add pre-configured lattice surrounding the selected geometry"
     bl_options = {'REGISTER', 'UNDO'}
 
-    resolution: bpy.props.StringProperty(name="Resolution")
+    resolution: bpy.props.IntProperty(name="Resolution", default=2, min=2, max=4)
 
     @classmethod
     def poll(cls, context):
@@ -221,18 +238,9 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         lattice = bpy.data.lattices.new('dc_lattice')
         lattice_object = bpy.data.objects.new('dc_lattice', lattice)
 
-        if self.resolution == "2x2x2":
-            lattice.points_u = 2
-            lattice.points_v = 2
-            lattice.points_w = 2
-        elif self.resolution == "3x3x3":
-            lattice.points_u = 3
-            lattice.points_v = 3
-            lattice.points_w = 3
-        elif self.resolution == "4x4x4":
-            lattice.points_u = 4
-            lattice.points_v = 4
-            lattice.points_w = 4
+        lattice.points_u = self.resolution
+        lattice.points_v = self.resolution
+        lattice.points_w = self.resolution
 
         lattice.interpolation_type_u = 'KEY_BSPLINE'
         lattice.interpolation_type_v = 'KEY_BSPLINE'
@@ -246,17 +254,16 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         helpers_collection = dc.get_helpers_collection(context)
         helpers_collection.objects.link(lattice_object)
 
-        # Toggle out of local-view mode and re-enter to ensure lattice shows up
+        # Ensure the lattice is added to local view...
         if context.space_data.local_view is not None:
-            bpy.ops.view3d.localview(frame_selected=False)
-            lattice_object.select_set(True)
-            bpy.ops.view3d.localview(frame_selected=False)
+            lattice_object.local_view_set(context.space_data, True)
 
         return lattice_object
 
     def create_lattice_mod(self, target, lattice):
         mod = target.modifiers.new(lattice.name, "LATTICE")
         mod.object = lattice
+        mod.show_expanded = False
 
     def set_transforms(self, target, lattice):
         bbox_min, bbox_max = dc.find_world_bbox(target.matrix_world, [v.co for v in target.data.vertices])

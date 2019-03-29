@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Copyright(c) 2018 Jesse Yurkovich
+# Copyright(c) 2019 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
@@ -158,6 +158,7 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
             mod = target.modifiers.new("dc_world", 'MIRROR')
             mod.use_axis[0] = True
             mod.use_bisect_axis[0] = False
+            mod.use_clip = True
             mod.mirror_object = mirror_object
 
         mod.show_on_cage = True
@@ -232,7 +233,7 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
 
     def create_radial_obj(self, context):
         dc.trace(1, "Creating new radial empty")
-        prev_cursor_location = tuple(context.scene.cursor_location)
+        prev_cursor_location = tuple(context.scene.cursor.location)
 
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         bpy.ops.view3d.snap_cursor_to_selected()
@@ -248,7 +249,7 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         helpers_collection.objects.link(self.radial_object)
         radial_object_collection.objects.unlink(self.radial_object)
 
-        context.scene.cursor_location = prev_cursor_location
+        context.scene.cursor.location = prev_cursor_location
 
     def create_radial_mod(self, target):
         dc.trace(1, "Adding array modifier to {}", dc.full_name(target))
@@ -272,8 +273,7 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
             dc.trace(1, "Using Face axis alignment: {}", [o.name for o in context.selected_objects])
 
             self.radial_object["dc_axis"] = None
-            bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), axis=(0, 0, 0), constraint_axis=(
-                False, False, False), constraint_orientation='Face', mirror=False, proportional='DISABLED')
+            bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), constraint_axis=(False, False, False), orient_type='Face')
         else:
             is_ortho = not context.space_data.region_3d.is_perspective
             if is_ortho:
@@ -282,11 +282,11 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
                 dc.trace(1, "Using Ortho axis: {}", view)
 
                 if view == 'TOP' or view == 'BOTTOM':
-                    self.radial_object["dc_axis"] = (0, 0, 1)
+                    self.radial_object["dc_axis"] = 'Z'
                 elif view == 'LEFT' or view == 'RIGHT':
-                    self.radial_object["dc_axis"] = (1, 0, 0)
+                    self.radial_object["dc_axis"] = 'X'
                 elif view == 'FRONT' or view == 'BACK':
-                    self.radial_object["dc_axis"] = (0, 1, 0)
+                    self.radial_object["dc_axis"] = 'Y'
             else:
                 dc.trace(1, "Using Global-Z axis")
                 self.radial_object["dc_axis"] = None
@@ -307,9 +307,9 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         actual_rotation = current_rotation - required_rotation
 
         if self.radial_object["dc_axis"] is None:
-            bpy.ops.transform.rotate(value=actual_rotation, constraint_axis=(False, False, True), constraint_orientation='LOCAL')
+            bpy.ops.transform.rotate(value=actual_rotation, constraint_axis=(False, False, True), orient_type='LOCAL')
         else:
-            bpy.ops.transform.rotate(value=actual_rotation, axis=self.radial_object["dc_axis"])
+            bpy.ops.transform.rotate(value=actual_rotation, orient_axis=self.radial_object["dc_axis"], orient_type='GLOBAL',)
 
     def init_from_existing(self, target):
         self.radial_mod = next((mod for mod in reversed(target.modifiers) if mod.name.startswith("dc_radial")), None)

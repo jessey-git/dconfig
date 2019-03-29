@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Copyright(c) 2018 Jesse Yurkovich
+# Copyright(c) 2019 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
@@ -27,31 +27,33 @@ def setup_hotkeys():
         kc.active.preferences.use_select_all_toggle = True
 
     new_keymap = (
-        # Keymap Name           Space       Region      Modal   Type                        Key                 Action      SHIFT   CTRL    ALT     Properties
-        ("Screen",              "EMPTY",    "WINDOW",   False,  "ed.undo_history",          "BUTTON4MOUSE",     "PRESS",    False,  True,   False,  ()),
-        ("Screen",              "EMPTY",    "WINDOW",   False,  "screen.repeat_history",    "BUTTON5MOUSE",     "PRESS",    False,  True,   False,  ()),
-        ("Screen",              "EMPTY",    "WINDOW",   False,  "screen.redo_last",         "BUTTON5MOUSE",     "PRESS",    False,  False,  False,  ()),
-        ("Screen",              "EMPTY",    "WINDOW",   False,  "script.reload",            "F8",               "PRESS",    False,  False,  False,  ()),
+        # Keymap Name           Space       Region      Modal   Type                        Key             Action      SHIFT   CTRL    ALT     Properties
+        ("Screen",              "EMPTY",    "WINDOW",   False,  "ed.undo_history",          "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
+        ("Screen",              "EMPTY",    "WINDOW",   False,  "screen.repeat_history",    "BUTTON5MOUSE", "PRESS",    False,  True,   False,  ()),
+        ("Screen",              "EMPTY",    "WINDOW",   False,  "screen.redo_last",         "BUTTON5MOUSE", "PRESS",    False,  False,  False,  ()),
+        ("Screen",              "EMPTY",    "WINDOW",   False,  "script.reload",            "F8",           "PRESS",    False,  False,  False,  ()),
 
-        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "S",                "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_snap"),)),
-        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu_pie",         "BUTTON4MOUSE",     "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_transforms_pie"),)),
-        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "object.origin_set",        "BUTTON5MOUSE",     "PRESS",    True,   False,  False,  ()),
+        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "S",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_snap"),)),
+        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu_pie",         "BUTTON4MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_transforms_pie"),)),
+        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "object.origin_set",        "BUTTON5MOUSE", "PRESS",    True,   False,  False,  ()),
 
-        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.view_center_cursor",    "HOME",         "PRESS",    False,  False,  True,   ()),
-        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.toggle_shading",        "Z",            "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.toggle_wireframe",     "Z",            "PRESS",    True,   False,  False,  ()),
-        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_boolean_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",            "PRESS",    False,  True,   False,  (("name", "DCONFIG_MT_symmetry_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "W",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.view_center_cursor",    "HOME",     "PRESS",    False,  False,  True,   ()),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.toggle_shading",        "Z",        "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.toggle_wireframe",     "Z",        "PRESS",    True,   False,  False,  ()),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu",                 "Q",        "PRESS",    False,  False,  False,  (("name", "DCONFIG_MT_quick"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",        "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_boolean_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",        "PRESS",    False,  True,   False,  (("name", "DCONFIG_MT_symmetry_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "W",        "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
 
-        ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",        "DOUBLE_CLICK", False,  False,  False,  (("delimit", {'SEAM'}),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",        "DOUBLE_CLICK", True,   False,  False,  (("delimit", {'SEAM'}),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.delete_edgeloop",     "X",                "PRESS",        False,  True,   False,  (("use_face_split", False),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE",     "PRESS",        False,  False,  False,  (("name", "VIEW3D_MT_edit_mesh_select_mode"),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  (("delimit", {'SEAM'}),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("delimit", {'SEAM'}),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.delete_edgeloop",     "X",            "PRESS",        False,  True,   False,  (("use_face_split", False),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.dissolve_mode",       "BACK_SPACE",   "PRESS",        False,  False,  False,  (("use_verts", False), ("use_face_split", False),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE", "PRESS",        False,  False,  False,  (("name", "VIEW3D_MT_edit_mesh_select_mode"),)),
 
-        ("UV Editor",           "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE",     "PRESS",        False,  False,  False,  (("name", "IMAGE_MT_uvs_select_mode"),)),
+        ("UV Editor",           "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE", "PRESS",        False,  False,  False,  (("name", "IMAGE_MT_uvs_select_mode"),)),
 
-        ("View3D Gesture Circle",   "EMPTY",    "WINDOW",   True,   "CANCEL",               "C",                "RELEASE",  False,  False,  False,   ()),
+        ("View3D Gesture Circle",   "EMPTY",    "WINDOW",   True,   "CANCEL",               "C",            "RELEASE",      False,  False,  False,  ()),
     )
 
     addon_keymaps.clear()
@@ -96,6 +98,7 @@ def setup_userpreferences():
 def setup_addons():
     addon_utils.enable("mesh_looptools", default_set=True, persistent=True)
     addon_utils.enable("node_wrangler", default_set=True, persistent=True)
+    addon_utils.enable("space_view3d_copy_attributes", default_set=True, persistent=True)
 
 
 class DCONFIG_OT_install_theme(bpy.types.Operator):

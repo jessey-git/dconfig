@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Copyright(c) 2018 Jesse Yurkovich
+# Copyright(c) 2019 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
@@ -13,7 +13,7 @@ import re
 
 import bpy
 import bmesh
-
+from . import DCONFIG_Utils as dc
 
 #
 # Rules
@@ -64,8 +64,14 @@ class ObjectDataNameRule(BaseObjectRule):
     rule = Rule('Organization', 'Object data name')
 
     def execute(self, data):
-        is_error = data.obj.name != data.obj.data.name
-        return RuleResult(self.rule, is_error, "Object '{}' uses data name '{}' which does not match".format(data.obj.name, data.obj.data.name))
+        if data.obj.data.users < 2:
+            is_error = data.obj.name != data.obj.data.name
+            message = "Object '{}' uses data name '{}' which does not match".format(data.obj.name, data.obj.data.name)
+        else:
+            is_error = self.is_bad_name(data.obj.data.name)
+            message = "Object '{}' uses data name '{}' which is named poorly".format(data.obj.name, data.obj.data.name)
+
+        return RuleResult(self.rule, is_error, message)
 
 
 class GeometryIsolatedVertRule(BaseObjectRule):
@@ -300,11 +306,8 @@ class Validator:
         context.scene.dc_validation_collection = self.collection.name
         self.examine_collection()
 
-        for obj in self.collection.all_objects:
+        for obj in dc.get_meshes(self.collection.all_objects):
             print('Checking object : ', obj.name)
-            if obj.type != 'MESH':
-                continue
-
             self.examine_object(context, obj)
 
         self.post_results(context.scene)
@@ -378,7 +381,7 @@ class DCONFIG_OT_validate(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class Validation_UL_items(bpy.types.UIList):
+class DCONFIG_UL_validation_items(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         split = layout.split(factor=0.15, align=True)
         split.alignment = 'LEFT'
@@ -404,7 +407,7 @@ class DCONFIG_PT_validate_results(bpy.types.Panel):
         scene = context.scene
 
         layout.label(text="Collection: " + scene.dc_validation_collection)
-        layout.template_list("Validation_UL_items", "", scene, "dc_validation_results", scene, "dc_validation_results_index", rows=5)
+        layout.template_list("DCONFIG_UL_validation_items", "", scene, "dc_validation_results", scene, "dc_validation_results_index", rows=5)
 
 
 class DCONFIG_ValidationResultCollection(bpy.types.PropertyGroup):

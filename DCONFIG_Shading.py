@@ -1,28 +1,30 @@
 # ------------------------------------------------------------
-# Copyright(c) 2018 Jesse Yurkovich
+# Copyright(c) 2019 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
 
 #
-# Shading paramters and setup
+# Viewport paramters and setup
 #
 
 import bpy
 from . import DCONFIG_Utils as dc
 
 
-class DCONFIG_OT_setup_shading(bpy.types.Operator):
-    bl_idname = "dconfig.setup_shading"
-    bl_label = "DC Setup Shading"
-    bl_description = "Set common shading and overlay parameters"
+class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
+    bl_idname = "dconfig.viewport_defaults"
+    bl_label = "DC Viewport Defaults"
+    bl_description = "Set common viewport parameters"
     bl_options = {'REGISTER'}
 
     def execute(self, context):
         dc.trace_enter(self)
 
+        context.scene.tool_settings.snap_elements = {'VERTEX'}
+
         context.space_data.clip_end = 100
-        context.space_data.clip_start = 0.025
+        context.space_data.clip_start = 0.02
 
         context.space_data.shading.light = 'MATCAP'
         context.space_data.shading.show_shadows = False
@@ -56,7 +58,7 @@ class DCONFIG_OT_toggle_wireframe(bpy.types.Operator):
 
 
 def menu_func(self, context):
-    self.layout.operator("dconfig.setup_shading", text="DC Setup Shading")
+    self.layout.operator("dconfig.viewport_defaults", text="DC Viewport Defaults")
     self.layout.separator()
 
 
