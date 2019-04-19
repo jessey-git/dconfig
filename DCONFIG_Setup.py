@@ -81,14 +81,14 @@ def remove_hotkeys():
 def setup_userpreferences():
     user_prefs = bpy.context.preferences
 
-    if user_prefs.edit.undo_steps < 100:
-        user_prefs.edit.undo_steps = 100
+    user_prefs.edit.undo_steps = 100
 
     user_prefs.view.show_tooltips_python = True
     user_prefs.view.show_developer_ui = True
 
     user_prefs.view.mini_axis_type = 'MINIMAL'
     user_prefs.view.mini_axis_size = 40
+    user_prefs.view.mini_axis_brightness = 10
 
     user_prefs.system.anisotropic_filter = 'FILTER_8'
     user_prefs.system.multi_sample = '4'

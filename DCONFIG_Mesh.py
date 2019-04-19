@@ -13,6 +13,20 @@ import bmesh
 from . import DCONFIG_Utils as dc
 
 
+class DCONFIG_MT_quick(bpy.types.Menu):
+    bl_label = "Quick"
+
+    def draw(self, context):
+        layout = self.layout
+
+        layout.operator("mesh.fill_grid", text="Fill Grid")
+        layout.operator("dconfig.subdivide_cylinder", text="Subdivide Cylinder")
+        layout.operator("dconfig.subd_bevel", text="Sub-D Bevel")
+
+        layout.separator()
+        layout.operator("mesh.remove_doubles", text="Remove Doubles")
+
+
 class DCONFIG_OT_subdivide_cylinder(bpy.types.Operator):
     bl_idname = "dconfig.subdivide_cylinder"
     bl_label = "DC Subdivide Cylinder"
