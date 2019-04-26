@@ -9,9 +9,9 @@
 #
 
 from ctypes import windll
+import re
 import blf
 import bpy
-import re
 
 
 def draw_stats(font_id, line_height, final_scale):
@@ -41,18 +41,19 @@ def draw_stats(font_id, line_height, final_scale):
     y_pos = bpy.context.area.height - top_offset
 
     digit_width = blf.dimensions(font_id, "0")[0]
-
-    lines = []
-    longest_title = 0
+    longest_title = blf.dimensions(font_id, "Edges")[0]  # Known longest title
     longest_digits = digit_width * 10
+
+    # Calculate dimensions for each piece of data...
+    lines = []
     for value in stats:
         line_data = [[val, 0] for val in filter(None, re.split("[ :/]", value))]
         for data in line_data:
             data[1] = blf.dimensions(font_id, data[0])[0]
 
-        longest_title = max(longest_title, line_data[0][1])
         lines.append(line_data)
 
+    # Aligned layout using dimensions above (special case first piece of data for the title)...
     for line in lines:
         x = x_pos + longest_title
         for index, data in enumerate(line):
