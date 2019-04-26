@@ -11,58 +11,82 @@
 from ctypes import windll
 import blf
 import bpy
+import re
+
+
+def draw_stats(font_id, line_height, final_scale):
+    view_layer = bpy.context.view_layer
+
+    # Gather up stats...
+    stats = bpy.context.scene.statistics(view_layer).split("|")
+    if bpy.context.mode == 'OBJECT':
+        if bpy.context.active_object:
+            stats = stats[2:5]
+        else:
+            stats = stats[1:4]
+    elif bpy.context.mode == 'EDIT_MESH':
+        stats = stats[1:5]
+    elif bpy.context.mode == 'SCULPT':
+        if len(stats) > 4:
+            stats = stats[1:4]
+        else:
+            stats = stats[1:3]
+    else:
+        return
+
+    # Initial positions and offsets to handle tool region and top text...
+    toolbar_width = next((region.width for region in bpy.context.area.regions if region.type == 'TOOLS'), 100)
+    top_offset = line_height * 12
+    x_pos = (20 * final_scale) + toolbar_width
+    y_pos = bpy.context.area.height - top_offset
+
+    digit_width = blf.dimensions(font_id, "0")[0]
+
+    lines = []
+    longest_title = 0
+    longest_digits = digit_width * 10
+    for value in stats:
+        line_data = [[val, 0] for val in filter(None, re.split("[ :/]", value))]
+        for data in line_data:
+            data[1] = blf.dimensions(font_id, data[0])[0]
+
+        longest_title = max(longest_title, line_data[0][1])
+        lines.append(line_data)
+
+    for line in lines:
+        x = x_pos + longest_title
+        for index, data in enumerate(line):
+            if index > 0:
+                x += longest_digits
+            blf.position(font_id, x - data[1], y_pos, 0)
+            blf.draw(font_id, data[0])
+
+        y_pos -= line_height
 
 
 def draw_func(ignore):
-    # Only draw our text when allowed...
+    # Only draw when allowed...
     space_data = bpy.context.space_data
     if not (space_data.overlay.show_overlays and space_data.overlay.show_text):
         return
 
-    # Gather statistics...
-    view_layer = bpy.context.view_layer
-    stats = bpy.context.scene.statistics(view_layer).split("|")
-
-    if bpy.context.mode == 'OBJECT':
-        stats = stats[2:5]
-    elif bpy.context.mode == 'EDIT_MESH':
-        stats = stats[1:5]
-    elif bpy.context.mode == 'SCULPT':
-        stats = stats[1:4]
-    else:
-        stats = []
-
     # Setup font and scaling parameters...
-    font_id = 0
-    font_size = 11  # In points
+    font_id = draw_settings["font_id"]
+    font_size = draw_settings["font_size"]
+    dpi_scale = draw_settings["dpi_scale"]
 
-    dpi_scale = int(draw_info["dpi"] / 96)
     ui_scale = bpy.context.preferences.view.ui_scale
     final_scale = ui_scale * dpi_scale
 
-    blf.size(font_id, font_size, 72 * dpi_scale)
+    blf.size(font_id, int(font_size * ui_scale), int(72 * dpi_scale))
     blf.enable(font_id, blf.SHADOW)
     blf.shadow(font_id, 5, 0.0, 0.0, 0.0, 0.9)
     blf.shadow_offset(font_id, 1, -1)
+
     line_height = blf.dimensions(font_id, "M")[1] * 1.55
 
-    # Start drawing a few lines down from the top and shifted away
-    # from the Tools panel...
-    top_offset = line_height * 10
-    if bpy.context.scene.render.engine == 'CYCLES':
-        if bpy.context.space_data.shading.type == 'RENDERED':
-            top_offset += line_height
-
-    toolbar_width = next((region.width for region in bpy.context.area.regions if region.type == 'TOOLS'), 100)
-    x_pos = (20 * final_scale) + toolbar_width
-    y_pos = bpy.context.area.height - top_offset
-
-    for value in stats:
-        line_text = value.replace(":", ": ").replace("/", " / ").strip()
-        blf.position(font_id, x_pos, y_pos, 0)
-        blf.draw(font_id, line_text)
-
-        y_pos -= line_height
+    # Draw all the things...
+    draw_stats(font_id, line_height, final_scale)
 
 
 def get_ppi():
@@ -75,16 +99,18 @@ def get_ppi():
     return pix_per_inch
 
 
-draw_info = {
-    "dpi": None,
+draw_settings = {
+    "font_id": 0,
+    "font_size": 11,
+    "dpi_scale": None,
     "handler": None
 }
 
 
 def register():
-    draw_info["dpi"] = get_ppi()
-    draw_info["handler"] = bpy.types.SpaceView3D.draw_handler_add(draw_func, (None, ), 'WINDOW', 'POST_PIXEL')
+    draw_settings["dpi_scale"] = get_ppi() / 96
+    draw_settings["handler"] = bpy.types.SpaceView3D.draw_handler_add(draw_func, (None, ), 'WINDOW', 'POST_PIXEL')
 
 
 def unregister():
-    bpy.types.SpaceView3D.draw_handler_remove(draw_info["handler"], 'WINDOW')
+    bpy.types.SpaceView3D.draw_handler_remove(draw_settings["handler"], 'WINDOW')
