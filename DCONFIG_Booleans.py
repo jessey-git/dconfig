@@ -246,6 +246,8 @@ class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
         if context.mode == 'EDIT_MESH':
             dc.trace(1, "Performing direct mesh boolean from selected geometry")
             bpy.ops.mesh.select_linked()
+
+            context.active_object.update_from_editmode()
             if context.active_object.data.total_vert_sel == len(context.active_object.data.vertices):
                 return dc.warn_canceled(self, "All vertices of object became selected")
 

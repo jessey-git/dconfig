@@ -307,6 +307,7 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
             self.create_curve(context, event)
             self.step = 1
         elif context.mode == 'EDIT_MESH' and context.active_object.data.total_edge_sel > 0:
+            context.active_object.update_from_editmode()
             self.should_separate = context.active_object.data.total_edge_sel != len(context.active_object.data.edges)
             if self.should_separate:
                 bpy.ops.mesh.duplicate_move()
