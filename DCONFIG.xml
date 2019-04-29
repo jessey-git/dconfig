@@ -4,7 +4,6 @@
       <ThemeUserInterface
         menu_shadow_fac="0.3"
         menu_shadow_width="4"
-        icon_file=""
         icon_alpha="1"
         icon_saturation="0.5"
         widget_emboss="#00000005"
@@ -374,7 +373,7 @@
         face_select="#03b0ff59"
         face_dot="#37e2ff"
         facedot_size="3"
-        freestyle_face_mark="#7fff7f33"
+        freestyle_face_mark="#7fff7f4d"
         nurb_uline="#909000"
         nurb_vline="#803060"
         nurb_sel_uline="#f0ff40"
@@ -432,8 +431,8 @@
             <gradients>
               <ThemeGradientColors
                 show_grad="FALSE"
-                gradient="#393939"
                 high_gradient="#393939"
+                gradient="#000000"
                 >
               </ThemeGradientColors>
             </gradients>
@@ -859,7 +858,7 @@
     <text_editor>
       <ThemeTextEditor
         line_numbers_background="#313133"
-        selected_text="#19191a"
+        selected_text="#5680c2"
         cursor="#ff0000"
         syntax_builtin="#ff1961"
         syntax_symbols="#ff734d"
@@ -916,7 +915,7 @@
         node_backdrop="#565656ff"
         converter_node="#66c4ff"
         color_node="#ccb83d"
-        group_node="#426628"
+        group_node="#426628b9"
         group_socket_node="#1a1a1a"
         frame_node="#1a1a1acc"
         matte_node="#975b5b"
@@ -1018,7 +1017,7 @@
         info_error_text="#ffffff"
         info_warning="#b36a00"
         info_warning_text="#ffffff"
-        info_info="#668000"
+        info_info="#1d4383"
         info_info_text="#ffffff"
         info_debug="#d3d3d3"
         info_debug_text="#000000"

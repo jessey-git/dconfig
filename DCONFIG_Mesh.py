@@ -9,7 +9,22 @@
 #
 
 import bpy
+import bmesh
 from . import DCONFIG_Utils as dc
+
+
+class DCONFIG_MT_quick(bpy.types.Menu):
+    bl_label = "Quick"
+
+    def draw(self, context):
+        layout = self.layout
+
+        layout.operator("mesh.fill_grid", text="Fill Grid")
+        layout.operator("dconfig.subdivide_cylinder", text="Subdivide Cylinder")
+        layout.operator("dconfig.subd_bevel", text="Sub-D Bevel")
+
+        layout.separator()
+        layout.operator("mesh.remove_doubles", text="Remove Doubles")
 
 
 class DCONFIG_OT_subdivide_cylinder(bpy.types.Operator):
@@ -40,33 +55,30 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return dc.active_mesh_selected(context)
+        return dc.active_mesh_available(context) and context.mode == 'EDIT_MESH'
 
     def execute(self, context):
         dc.trace_enter(self)
 
         target = context.active_object
-        if "dc_bevel" not in target.modifiers:
-            if context.mode == 'EDIT_MESH':
-                dc.trace(1, "Selecting initial set of sharp edges")
-                bpy.ops.mesh.select_all(action='DESELECT')
-                bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='EDGE')
-
-                bpy.ops.mesh.edges_select_sharp()
-                bpy.ops.transform.edge_bevelweight(value=1)
-
-            dc.trace(1, "Creating bevel modifier")
-            self.create_bevel_mod(target)
+        if target.data.total_edge_sel > 0:
+            dc.trace(1, "Using existing set of {} selected edges", target.data.total_edge_sel)
         else:
-            return dc.warn_canceled(self, "Mesh already beveled")
+            dc.trace(1, "Selecting set of sharp edges")
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='EDGE')
+            bpy.ops.mesh.edges_select_sharp()
+
+        edge_min = 100
+        bm = bmesh.from_edit_mesh(target.data)
+        for edge in bm.edges:
+            if edge.select:
+                edge_min = min(edge_min, edge.calc_length())
+
+        bevel_offset = max(0.015, edge_min * .05)
+        bevel_offset = min(bevel_offset, edge_min / 4)
+
+        dc.trace(1, "Creating bevel with offset {}", bevel_offset)
+        bpy.ops.mesh.bevel(offset_type='OFFSET', offset=bevel_offset, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
 
         return dc.trace_exit(self)
-
-    def create_bevel_mod(self, target):
-        mod = target.modifiers.new("dc_bevel", 'BEVEL')
-        mod.offset_type = 'PERCENT'
-        mod.limit_method = 'WEIGHT'
-        mod.miter_outer = 'MITER_ARC'
-        mod.width_pct = 5
-        mod.segments = 2
-        mod.profile = 1

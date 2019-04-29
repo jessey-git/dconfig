@@ -9,6 +9,7 @@
 #
 
 import bpy
+import bmesh
 from mathutils import (Vector)
 from . import DCONFIG_Utils as dc
 
@@ -56,9 +57,9 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 1", prim_type='Quad_Sphere', props=(("levels", 1),))
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 2", prim_type='Quad_Sphere', props=(("levels", 2),))
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 3", prim_type='Quad_Sphere', props=(("levels", 3),))
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 1", prim_type='Quad_Sphere', props=(("radius", 0.50), ("levels", 1)))
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 2", prim_type='Quad_Sphere', props=(("radius", 0.50), ("levels", 2)))
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 3", prim_type='Quad_Sphere', props=(("radius", 0.50), ("levels", 3)))
 
         # Bottom
         split = pie.split()
@@ -75,8 +76,8 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        col.operator("dconfig.add_primitive", icon='MESH_PLANE', text="Plane").prim_type = 'Plane'
-        col.operator("dconfig.add_primitive", icon='MESH_CUBE', text="Cube").prim_type = 'Cube'
+        setop(col, "dconfig.add_primitive", 'MESH_PLANE', "Plane", prim_type='Plane', props=(("size", 1),))
+        setop(col, "dconfig.add_primitive", 'MESH_CUBE', "Cube", prim_type='Cube', props=(("size", 1),))
 
         # Top Left
         # Top Right
@@ -182,22 +183,30 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         elif context.active_object.type == 'MESH' and is_edit_mode and tuple(context.scene.tool_settings.mesh_select_mode) == (False, False, True):
             dc.trace(1, "Adding {} aligned to selected faces", self.prim_type)
             prev_active = context.active_object
-            prev_orientation = context.scene.transform_orientation_slots[0].type
 
+            # Extract transformation matrix...
             bpy.ops.view3d.snap_cursor_to_selected()
             bpy.ops.transform.create_orientation(name="AddAxis", use=True, overwrite=True)
+            mat = context.scene.transform_orientation_slots[0].custom_orientation.matrix.to_4x4()
+            bpy.ops.transform.delete_orientation()
+
             bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-
             self.add_primitive(context)
-            bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), constraint_axis=(False, False, False))
+
+            # Apply transformation matrix manually...
+            bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+            bm = bmesh.from_edit_mesh(context.active_object.data)
+            for vert in bm.verts:
+                vert.co = mat @ vert.co
+            bm.normal_update()
+            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
             context.view_layer.objects.active = prev_active
             context.view_layer.objects.active.select_set(True)
             bpy.ops.object.join()
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
 
-            context.scene.transform_orientation_slots[0].type = prev_orientation
         else:
             dc.trace(1, "Adding {} at selection", self.prim_type)
             bpy.ops.view3d.snap_cursor_to_selected()
@@ -298,6 +307,7 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
             self.create_curve(context, event)
             self.step = 1
         elif context.mode == 'EDIT_MESH' and context.active_object.data.total_edge_sel > 0:
+            context.active_object.update_from_editmode()
             self.should_separate = context.active_object.data.total_edge_sel != len(context.active_object.data.edges)
             if self.should_separate:
                 bpy.ops.mesh.duplicate_move()
