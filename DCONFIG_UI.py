@@ -21,22 +21,19 @@ def draw_stats(font_id, line_height, final_scale):
     stats = bpy.context.scene.statistics(view_layer).split("|")
     if bpy.context.mode == 'OBJECT':
         if bpy.context.active_object:
-            stats = stats[2:5]
-        else:
-            stats = stats[1:4]
-    elif bpy.context.mode == 'EDIT_MESH':
-        stats = stats[1:5]
-    elif bpy.context.mode == 'SCULPT':
-        if len(stats) > 4:
-            stats = stats[1:4]
+            stats = stats[2:4]
         else:
             stats = stats[1:3]
+    elif bpy.context.mode == 'EDIT_MESH':
+        stats = stats[1:4]
+    elif bpy.context.mode == 'SCULPT':
+        stats = stats[1:3]
     else:
         return
 
     # Initial positions and offsets to handle tool region and top text...
     toolbar_width = next((region.width for region in bpy.context.area.regions if region.type == 'TOOLS'), 100)
-    top_offset = line_height * 12
+    top_offset = line_height * 10
     x_pos = (20 * final_scale) + toolbar_width
     y_pos = bpy.context.area.height - top_offset
 
@@ -90,7 +87,7 @@ def draw_func(ignore):
     draw_stats(font_id, line_height, final_scale)
 
 
-def get_ppi():
+def get_ppi_win32():
     LOGPIXELSX = 88
     user32 = windll.user32
     user32.SetProcessDPIAware()
@@ -109,7 +106,7 @@ draw_settings = {
 
 
 def register():
-    draw_settings["dpi_scale"] = get_ppi() / 96
+    draw_settings["dpi_scale"] = get_ppi_win32() / 96
     draw_settings["handler"] = bpy.types.SpaceView3D.draw_handler_add(draw_func, (None, ), 'WINDOW', 'POST_PIXEL')
 
 

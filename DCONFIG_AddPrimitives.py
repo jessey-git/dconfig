@@ -65,11 +65,11 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.25
-        col.scale_x = 1.25
+        col.scale_x = 1.1
         col.operator("dconfig.add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 2x2x2").resolution = 2
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 3x3x3").resolution = 3
-        col.operator("dconfig.add_lattice", icon='LATTICE_DATA', text="FFD 4x4x4").resolution = 4
+        col.operator("dconfig.add_lattice", icon='MESH_GRID', text="FFD 2x2x2").resolution = 2
+        col.operator("dconfig.add_lattice", icon='MESH_GRID', text="FFD 3x3x3").resolution = 3
+        col.operator("dconfig.add_lattice", icon='MESH_GRID', text="FFD 4x4x4").resolution = 4
 
         # Top
         split = pie.split()
