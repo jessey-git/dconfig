@@ -197,8 +197,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             # Apply transformation matrix manually...
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
             bm = bmesh.from_edit_mesh(context.active_object.data)
-            for vert in bm.verts:
-                vert.co = mat @ vert.co
+            bm.transform(mat)
             bm.normal_update()
             bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
