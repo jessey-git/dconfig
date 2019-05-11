@@ -121,7 +121,7 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
                 bpy.ops.object.mode_set(mode='EDIT', toggle=False)
                 bpy.ops.mesh.select_all(action='SELECT')
                 context.scene.tool_settings.transform_pivot_point = 'INDIVIDUAL_ORIGINS'
-                bpy.ops.transform.resize(value=(0.95, 0.95, 0.95), constraint_axis=(False, False, False), mirror=False, proportional='DISABLED')
+                bpy.ops.transform.resize(value=(0.95, 0.95, 0.95), constraint_axis=(False, False, False), mirror=False, use_proportional_edit=False)
                 context.scene.tool_settings.transform_pivot_point = 'MEDIAN_POINT'
                 bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 

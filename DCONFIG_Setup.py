@@ -92,7 +92,7 @@ def setup_userpreferences():
 
     user_prefs.system.anisotropic_filter = 'FILTER_8'
     user_prefs.system.multi_sample = '4'
-    user_prefs.system.gpu_viewport_quality = 1
+    user_prefs.system.viewport_aa = '5'
 
 
 def setup_addons():
