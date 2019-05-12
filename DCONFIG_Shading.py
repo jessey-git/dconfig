@@ -23,6 +23,10 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
 
         context.scene.tool_settings.snap_elements = {'VERTEX'}
 
+        context.scene.tool_settings.statvis.type = 'DISTORT'
+        context.scene.tool_settings.statvis.distort_min = 0
+        context.scene.tool_settings.statvis.distort_max = 0.698132
+
         context.space_data.clip_end = 100
         context.space_data.clip_start = 0.02
 

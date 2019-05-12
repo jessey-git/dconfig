@@ -9,6 +9,7 @@
 #
 
 from collections import (namedtuple, defaultdict)
+import math
 import re
 
 import bpy
@@ -114,11 +115,34 @@ class GeometryNonManifoldRule(BaseObjectRule):
 
     def execute(self, data):
         self.ready_selection('VERT')
-        bpy.ops.mesh.select_non_manifold(extend=False)
+        bpy.ops.mesh.select_non_manifold(extend=False, use_boundary=False)
 
         non_manifold_count = sum(1 for v in data.bm.verts if v.select)
         is_error = non_manifold_count > 0
         return RuleResult(self.rule, is_error, "Object '{}' contains {} non-manifold vertices".format(data.obj.name, non_manifold_count))
+
+
+class GeometryDistortionRule(BaseObjectRule):
+    rule = Rule('Geometry', 'Distortion')
+    Max_Distortion = math.radians(40)
+
+    def is_face_distorted(self, face):
+        face_no = face.normal
+        max_angle = 0.0
+
+        for loop in face.loops:
+            loop_no = loop.calc_normal()
+            if loop_no.dot(face_no) < 0.0:
+                loop_no.negate()
+
+            max_angle = max(max_angle, face_no.angle(loop_no, math.pi))
+
+        return (2 * max_angle) >= self.Max_Distortion
+
+    def execute(self, data):
+        distored_faces = sum(1 for f in data.bm.faces if self.is_face_distorted(f))
+        is_error = distored_faces > 0
+        return RuleResult(self.rule, is_error, "Object '{}' contains {} distorted faces".format(data.obj.name, distored_faces))
 
 
 class TopologyTrianglesRule(BaseObjectRule):
@@ -249,6 +273,7 @@ class ObjectAnalyzer:
         GeometryCoincidentVertRule(),
         GeometryInteriorFaceRule(),
         GeometryNonManifoldRule(),
+        GeometryDistortionRule(),
         TopologyTrianglesRule(),
         TopologyNGonRule(),
         TopologyPoleRule(),
