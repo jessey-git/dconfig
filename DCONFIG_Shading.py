@@ -9,6 +9,7 @@
 #
 
 import bpy
+from bpy.app.handlers import persistent
 from . import DCONFIG_Utils as dc
 
 
@@ -66,9 +67,22 @@ def menu_func(self, context):
     self.layout.separator()
 
 
+@persistent
+def load_handler(ignore):
+    area = next((area for area in bpy.context.screen.areas if area.type == 'VIEW_3D'), None)
+    if area is not None:
+        region = next((region for region in area.regions if region.type == 'WINDOW'), None)
+
+    if region is not None:
+        override = {'area': area, 'region': region}
+        bpy.ops.dconfig.viewport_defaults(override)
+
+
 def register():
     bpy.types.VIEW3D_MT_view.prepend(menu_func)
+    bpy.app.handlers.load_post.append(load_handler)
 
 
 def unregister():
     bpy.types.VIEW3D_MT_view.remove(menu_func)
+    bpy.app.handlers.load_post.remove(load_handler)
