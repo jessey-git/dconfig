@@ -442,7 +442,7 @@ class DCONFIG_ValidationResultCollection(bpy.types.PropertyGroup):
 
 
 def menu_func(self, context):
-    self.layout.operator("dconfig.validate", text="DC Validate")
+    self.layout.operator("dconfig.validate")
 
 
 def register():

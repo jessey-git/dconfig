@@ -127,7 +127,7 @@ class DCONFIG_OT_center_collection(bpy.types.Operator):
 
 
 def menu_func(self, context):
-    self.layout.operator("dconfig.center_collection", text="DC Center Meshes")
+    self.layout.operator("dconfig.center_collection")
 
 
 def register():

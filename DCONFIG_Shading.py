@@ -8,6 +8,7 @@
 # Viewport paramters and setup
 #
 
+import math
 import bpy
 from bpy.app.handlers import persistent
 from . import DCONFIG_Utils as dc
@@ -26,7 +27,7 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
 
         context.scene.tool_settings.statvis.type = 'DISTORT'
         context.scene.tool_settings.statvis.distort_min = 0
-        context.scene.tool_settings.statvis.distort_max = 0.698132
+        context.scene.tool_settings.statvis.distort_max = math.radians(40)
 
         context.space_data.clip_end = 100
         context.space_data.clip_start = 0.02
@@ -48,6 +49,47 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
         return dc.trace_exit(self)
 
 
+class DCONFIG_OT_engine_defaults(bpy.types.Operator):
+    bl_idname = "dconfig.engine_defaults"
+    bl_label = "DC Engine Defaults"
+    bl_description = "Set common rendering engine parameters"
+    bl_options = {'REGISTER'}
+
+    force: bpy.props.BoolProperty(name="Force", default=False)
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        if self.force or "dc_engine_defaults" not in context.scene:
+            # Workbench
+            context.scene.display.render_aa = '11'
+            context.scene.display.viewport_aa = '5'
+
+            # Eevee
+            context.scene.eevee.use_sss = True
+            context.scene.eevee.use_ssr = True
+            context.scene.eevee.use_ssr_refraction = True
+            context.scene.eevee.use_gtao = True
+            context.scene.eevee.use_dof = False
+
+            context.scene.eevee.use_volumetric = True
+            context.scene.eevee.use_volumetric_shadows = True
+            context.scene.eevee.volumetric_tile_size = '2'
+
+            # Cycles
+            context.scene.cycles.samples = 20
+            context.scene.cycles.preview_samples = 6
+            context.scene.cycles.use_square_samples = True
+            context.scene.cycles.tile_order = 'CENTER'
+
+            context.scene["dc_engine_defaults"] = "applied"
+            dc.trace(1, "Applied")
+        else:
+            dc.trace(1, "Skipped")
+
+        return dc.trace_exit(self)
+
+
 class DCONFIG_OT_toggle_wireframe(bpy.types.Operator):
     bl_idname = "dconfig.toggle_wireframe"
     bl_label = "DC Toggle Wireframe"
@@ -63,7 +105,8 @@ class DCONFIG_OT_toggle_wireframe(bpy.types.Operator):
 
 
 def menu_func(self, context):
-    self.layout.operator("dconfig.viewport_defaults", text="DC Viewport Defaults")
+    self.layout.operator("dconfig.viewport_defaults")
+    self.layout.operator("dconfig.engine_defaults").force = True
     self.layout.separator()
 
 
@@ -76,6 +119,7 @@ def load_handler(ignore):
     if region is not None:
         override = {'area': area, 'region': region}
         bpy.ops.dconfig.viewport_defaults(override)
+        bpy.ops.dconfig.engine_defaults(override, force=False)
 
 
 def register():

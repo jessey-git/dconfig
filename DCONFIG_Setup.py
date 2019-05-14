@@ -94,6 +94,8 @@ def setup_userpreferences():
     user_prefs.system.multi_sample = '4'
     user_prefs.system.viewport_aa = '5'
 
+    user_prefs.use_preferences_save = False
+
 
 def setup_addons():
     addon_utils.enable("mesh_looptools", default_set=True, persistent=True)
