@@ -46,6 +46,12 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
 
         context.scene.display.matcap_ssao_distance = 1
 
+        area = next((area for area in context.screen.areas if area.type == 'OUTLINER'), None)
+        if area is not None:
+            area.spaces.active.show_restrict_column_viewport = False
+            area.spaces.active.show_restrict_column_instance = True
+            area.spaces.active.show_restrict_column_render = True
+
         return dc.trace_exit(self)
 
 
@@ -55,37 +61,29 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
     bl_description = "Set common rendering engine parameters"
     bl_options = {'REGISTER'}
 
-    force: bpy.props.BoolProperty(name="Force", default=False)
-
     def execute(self, context):
         dc.trace_enter(self)
 
-        if self.force or "dc_engine_defaults" not in context.scene:
-            # Workbench
-            context.scene.display.render_aa = '11'
-            context.scene.display.viewport_aa = '5'
+        # Workbench
+        context.scene.display.render_aa = '11'
+        context.scene.display.viewport_aa = '5'
 
-            # Eevee
-            context.scene.eevee.use_sss = True
-            context.scene.eevee.use_ssr = True
-            context.scene.eevee.use_ssr_refraction = True
-            context.scene.eevee.use_gtao = True
-            context.scene.eevee.use_dof = False
+        # Eevee
+        context.scene.eevee.use_sss = True
+        context.scene.eevee.use_ssr = True
+        context.scene.eevee.use_ssr_refraction = True
+        context.scene.eevee.use_gtao = True
+        context.scene.eevee.use_dof = False
 
-            context.scene.eevee.use_volumetric = True
-            context.scene.eevee.use_volumetric_shadows = True
-            context.scene.eevee.volumetric_tile_size = '2'
+        context.scene.eevee.use_volumetric = True
+        context.scene.eevee.use_volumetric_shadows = True
+        context.scene.eevee.volumetric_tile_size = '2'
 
-            # Cycles
-            context.scene.cycles.samples = 20
-            context.scene.cycles.preview_samples = 6
-            context.scene.cycles.use_square_samples = True
-            context.scene.cycles.tile_order = 'CENTER'
-
-            context.scene["dc_engine_defaults"] = "applied"
-            dc.trace(1, "Applied")
-        else:
-            dc.trace(1, "Skipped")
+        # Cycles
+        context.scene.cycles.samples = 20
+        context.scene.cycles.preview_samples = 6
+        context.scene.cycles.use_square_samples = True
+        context.scene.cycles.tile_order = 'CENTER'
 
         return dc.trace_exit(self)
 
@@ -106,20 +104,22 @@ class DCONFIG_OT_toggle_wireframe(bpy.types.Operator):
 
 def menu_func(self, context):
     self.layout.operator("dconfig.viewport_defaults")
-    self.layout.operator("dconfig.engine_defaults").force = True
+    self.layout.operator("dconfig.engine_defaults")
     self.layout.separator()
 
 
 @persistent
 def load_handler(ignore):
-    area = next((area for area in bpy.context.screen.areas if area.type == 'VIEW_3D'), None)
-    if area is not None:
-        region = next((region for region in area.regions if region.type == 'WINDOW'), None)
+    # Only apply settings when the file being loaded is from startup.blend (aka. '')
+    if bpy.data.filepath == '':
+        area = next((area for area in bpy.context.screen.areas if area.type == 'VIEW_3D'), None)
+        if area is not None:
+            region = next((region for region in area.regions if region.type == 'WINDOW'), None)
 
-    if region is not None:
-        override = {'area': area, 'region': region}
-        bpy.ops.dconfig.viewport_defaults(override)
-        bpy.ops.dconfig.engine_defaults(override, force=False)
+        if region is not None:
+            override = {'area': area, 'region': region}
+            bpy.ops.dconfig.viewport_defaults(override)
+            bpy.ops.dconfig.engine_defaults(override)
 
 
 def register():

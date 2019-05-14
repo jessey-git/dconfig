@@ -20,10 +20,7 @@ def draw_stats(font_id, line_height, final_scale):
     # Gather up stats...
     stats = bpy.context.scene.statistics(view_layer).split("|")
     if bpy.context.mode == 'OBJECT':
-        if bpy.context.active_object:
-            stats = stats[2:4]
-        else:
-            stats = stats[1:3]
+        stats = stats[2:4]
     elif bpy.context.mode == 'EDIT_MESH':
         stats = stats[1:4]
     elif bpy.context.mode == 'SCULPT':
