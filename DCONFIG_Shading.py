@@ -49,7 +49,7 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
         area = next((area for area in context.screen.areas if area.type == 'OUTLINER'), None)
         if area is not None:
             area.spaces.active.show_restrict_column_viewport = False
-            area.spaces.active.show_restrict_column_instance = True
+            area.spaces.active.show_restrict_column_hide = True
             area.spaces.active.show_restrict_column_render = True
 
         return dc.trace_exit(self)
