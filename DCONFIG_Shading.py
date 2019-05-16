@@ -48,8 +48,8 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
 
         area = next((area for area in context.screen.areas if area.type == 'OUTLINER'), None)
         if area is not None:
-            area.spaces.active.show_restrict_column_viewport = False
             area.spaces.active.show_restrict_column_hide = True
+            area.spaces.active.show_restrict_column_viewport = True
             area.spaces.active.show_restrict_column_render = True
 
         return dc.trace_exit(self)
@@ -71,11 +71,12 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
         # Eevee
         context.scene.eevee.use_sss = True
         context.scene.eevee.use_ssr = True
+        context.scene.eevee.use_ssr_halfres = False
         context.scene.eevee.use_ssr_refraction = True
         context.scene.eevee.use_gtao = True
         context.scene.eevee.use_dof = False
 
-        context.scene.eevee.use_volumetric = True
+        context.scene.eevee.use_volumetric = False
         context.scene.eevee.use_volumetric_shadows = True
         context.scene.eevee.volumetric_tile_size = '2'
 

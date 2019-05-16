@@ -124,16 +124,16 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             layout.prop(self, "levels")
 
     def add_primitive(self, context):
-        is_ortho = not context.space_data.region_3d.is_perspective
+        align = 'VIEW' if not context.space_data.region_3d.is_perspective else 'WORLD'
 
         if self.prim_type == 'Cube':
             bpy.ops.mesh.primitive_cube_add(size=self.size)
 
         elif self.prim_type == 'Plane':
-            bpy.ops.mesh.primitive_plane_add(size=self.size, view_align=is_ortho)
+            bpy.ops.mesh.primitive_plane_add(size=self.size, align=align)
 
         elif self.prim_type == 'Circle':
-            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=self.radius, vertices=self.vertices, view_align=is_ortho)
+            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=self.radius, vertices=self.vertices, align=align)
 
         elif self.prim_type == 'Cylinder':
             bpy.ops.mesh.primitive_cylinder_add(radius=self.radius, depth=self.depth, vertices=self.vertices)
