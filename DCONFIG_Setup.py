@@ -51,6 +51,8 @@ def setup_hotkeys():
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON4MOUSE", "PRESS",        False,  True,   False,  (("focus", False),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON5MOUSE", "PRESS",        False,  True,   False,  (("focus", True),)),
 
+        ("UV Editor",           "EMPTY",    "WINDOW",   False,  "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  ()),
+        ("UV Editor",           "EMPTY",    "WINDOW",   False,  "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("extend", True),)),
         ("UV Editor",           "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE", "PRESS",        False,  False,  False,  (("name", "IMAGE_MT_uvs_select_mode"),)),
 
         ("View3D Gesture Circle",   "EMPTY",    "WINDOW",   True,   "CANCEL",               "C",            "RELEASE",      False,  False,  False,  ()),
