@@ -127,25 +127,11 @@ class DCONFIG_OT_install_theme(bpy.types.Operator):
             os.makedirs(target)
 
 
-def file_menu_func(self, context):
-    self.layout.separator()
-    self.layout.operator("wm.quit_blender", text="Quit", icon='QUIT')
-
-
-def edit_menu_func(self, context):
-    self.layout.separator()
-    self.layout.operator("screen.userpref_show", text="Preferences")
-
-
 def register():
     setup_hotkeys()
     setup_userpreferences()
     setup_addons()
-    bpy.types.TOPBAR_MT_file.append(file_menu_func)
-    bpy.types.TOPBAR_MT_edit.append(edit_menu_func)
 
 
 def unregister():
     remove_hotkeys()
-    bpy.types.TOPBAR_MT_file.remove(file_menu_func)
-    bpy.types.TOPBAR_MT_edit.remove(edit_menu_func)
