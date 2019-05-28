@@ -82,8 +82,8 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
             if edge.select:
                 edge_min = min(edge_min, edge.calc_length())
 
-        bevel_offset = max(0.015, edge_min * .05)
-        bevel_offset = min(bevel_offset, edge_min / 4)
+        bevel_offset = max(0.02, edge_min * .02)
+        bevel_offset = min(bevel_offset, edge_min / 3)
 
         dc.trace(1, "Creating bevel with offset {}", bevel_offset)
         bpy.ops.mesh.bevel(offset_type='OFFSET', offset=bevel_offset, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
@@ -108,9 +108,7 @@ class DCONFIG_OT_mesh_focus(bpy.types.Operator):
 
         if self.focus:
             dc.trace(1, "Focus selection")
-            bpy.ops.mesh.select_all(action='INVERT')
-            bpy.ops.mesh.hide(unselected=False)
-            bpy.ops.mesh.select_all(action='SELECT')
+            bpy.ops.mesh.hide(unselected=True)
             bpy.ops.view3d.view_selected(use_all_regions=False)
         else:
             dc.trace(1, "Reveal hidden")
