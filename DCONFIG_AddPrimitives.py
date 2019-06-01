@@ -27,32 +27,34 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
             for prop, value in props:
                 setattr(op, prop, value)
 
+        align = 'WORLD' if context.space_data.region_3d.is_perspective else 'VIEW'
+
         # Left
         split = pie.split(align=True)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "6", prim_type='Cylinder', props=(("radius", 0.25), ("depth", 0.25), ("vertices", 6)))
-        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "8", prim_type='Cylinder', props=(("radius", 0.25), ("depth", 0.25), ("vertices", 8)))
-        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "16", prim_type='Cylinder', props=(("radius", 0.50), ("depth", 0.50), ("vertices", 16)))
-        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "32", prim_type='Cylinder', props=(("radius", 0.50), ("depth", 0.50), ("vertices", 32)))
+        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "6", prim_type='Cylinder', props=(("radius", 0.25), ("depth", 0.25), ("vertices", 6), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "8", prim_type='Cylinder', props=(("radius", 0.25), ("depth", 0.25), ("vertices", 8), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "16", prim_type='Cylinder', props=(("radius", 0.50), ("depth", 0.50), ("vertices", 16), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "32", prim_type='Cylinder', props=(("radius", 0.50), ("depth", 0.50), ("vertices", 32), ("align", align)))
 
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "6", prim_type='Circle', props=(("radius", 0.25), ("vertices", 6)))
-        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "8", prim_type='Circle', props=(("radius", 0.25), ("vertices", 8)))
-        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "16", prim_type='Circle', props=(("radius", 0.50), ("vertices", 16)))
-        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "32", prim_type='Circle', props=(("radius", 0.50), ("vertices", 32)))
+        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "6", prim_type='Circle', props=(("radius", 0.25), ("vertices", 6), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "8", prim_type='Circle', props=(("radius", 0.25), ("vertices", 8), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "16", prim_type='Circle', props=(("radius", 0.50), ("vertices", 16), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "32", prim_type='Circle', props=(("radius", 0.50), ("vertices", 32), ("align", align)))
 
         # Right
         split = pie.split(align=True)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "12", prim_type='Sphere', props=(("radius", 0.25), ("segments", 12), ("ring_count", 6)))
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "24", prim_type='Sphere', props=(("radius", 0.50), ("segments", 24), ("ring_count", 12)))
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "32", prim_type='Sphere', props=(("radius", 0.50), ("segments", 32), ("ring_count", 16)))
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "12", prim_type='Sphere', props=(("radius", 0.25), ("segments", 12), ("ring_count", 6), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "24", prim_type='Sphere', props=(("radius", 0.50), ("segments", 24), ("ring_count", 12), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "32", prim_type='Sphere', props=(("radius", 0.50), ("segments", 32), ("ring_count", 16), ("align", align)))
 
         col = split.column(align=True)
         col.scale_y = 1.25
@@ -76,7 +78,7 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'MESH_PLANE', "Plane", prim_type='Plane', props=(("size", 1),))
+        setop(col, "dconfig.add_primitive", 'MESH_PLANE', "Plane", prim_type='Plane', props=(("size", 1), ("align", align)))
         setop(col, "dconfig.add_primitive", 'MESH_CUBE', "Cube", prim_type='Cube', props=(("size", 1),))
 
         # Top Left
@@ -99,6 +101,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
     ring_count: bpy.props.IntProperty(name="Rings", default=6, min=3, max=20)
     vertices: bpy.props.IntProperty(name="Vertices", default=8, min=3, max=96)
     levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
+    align: bpy.props.StringProperty(name="Align", default='WORLD')
 
     def draw(self, context):
         layout = self.layout
@@ -124,25 +127,26 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             layout.prop(self, "levels")
 
     def add_primitive(self, context):
-        align = 'VIEW' if not context.space_data.region_3d.is_perspective else 'WORLD'
-
         if self.prim_type == 'Cube':
             bpy.ops.mesh.primitive_cube_add(size=self.size)
 
         elif self.prim_type == 'Plane':
-            bpy.ops.mesh.primitive_plane_add(size=self.size, align=align)
+            bpy.ops.mesh.primitive_plane_add(size=self.size, align=self.align)
 
         elif self.prim_type == 'Circle':
-            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=self.radius, vertices=self.vertices, align=align)
+            bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=self.radius, vertices=self.vertices, align=self.align)
 
         elif self.prim_type == 'Cylinder':
-            bpy.ops.mesh.primitive_cylinder_add(radius=self.radius, depth=self.depth, vertices=self.vertices)
+            bpy.ops.mesh.primitive_cylinder_add(radius=self.radius, depth=self.depth, vertices=self.vertices, align=self.align)
 
         elif self.prim_type == 'Sphere':
-            bpy.ops.mesh.primitive_uv_sphere_add(radius=self.radius, segments=self.segments, ring_count=self.ring_count)
+            bpy.ops.mesh.primitive_uv_sphere_add(radius=self.radius, segments=self.segments, ring_count=self.ring_count, align=self.align)
 
         elif self.prim_type == 'Quad_Sphere':
             self.add_quad_sphere(context, self.radius, self.levels)
+
+        if self.align == 'VIEW':
+            bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
 
     def add_quad_sphere(self, context, radius, levels):
         was_edit = False
