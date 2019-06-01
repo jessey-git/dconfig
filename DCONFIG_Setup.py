@@ -92,6 +92,8 @@ def setup_userpreferences():
     user_prefs.view.mini_axis_size = 40
     user_prefs.view.mini_axis_brightness = 10
 
+    user_prefs.filepaths.save_version = 0
+
     user_prefs.system.anisotropic_filter = 'FILTER_8'
     user_prefs.system.multi_sample = '4'
     user_prefs.system.viewport_aa = '5'

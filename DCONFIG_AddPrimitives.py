@@ -145,7 +145,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         elif self.prim_type == 'Quad_Sphere':
             self.add_quad_sphere(context, self.radius, self.levels)
 
-        if self.align == 'VIEW':
+        if self.align == 'VIEW' and context.mode == 'OBJECT':
             bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
 
     def add_quad_sphere(self, context, radius, levels):
