@@ -121,7 +121,7 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
                 bpy.ops.object.mode_set(mode='EDIT', toggle=False)
                 bpy.ops.mesh.select_all(action='SELECT')
                 context.scene.tool_settings.transform_pivot_point = 'INDIVIDUAL_ORIGINS'
-                bpy.ops.transform.resize(value=(0.95, 0.95, 0.95), constraint_axis=(False, False, False), mirror=False, proportional='DISABLED')
+                bpy.ops.transform.resize(value=(0.95, 0.95, 0.95), constraint_axis=(False, False, False), mirror=False, use_proportional_edit=False)
                 context.scene.tool_settings.transform_pivot_point = 'MEDIAN_POINT'
                 bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
@@ -405,10 +405,11 @@ class DCONFIG_OT_boolean_apply(bpy.types.Operator):
             for orphan in orphaned_objects:
                 ok_to_delete = True
                 for obj in bpy.data.objects:
-                    for modifier in obj.modifiers:
-                        if modifier.type == 'BOOLEAN' and modifier.object is not None and modifier.object.name == orphan.name:
-                            ok_to_delete = False
-                            break
+                    if obj not in orphaned_objects:
+                        for modifier in obj.modifiers:
+                            if modifier.type == 'BOOLEAN' and modifier.object is not None and modifier.object.name == orphan.name:
+                                ok_to_delete = False
+                                break
 
                     if not ok_to_delete:
                         break
@@ -419,6 +420,7 @@ class DCONFIG_OT_boolean_apply(bpy.types.Operator):
             # The collection must be visible for delete to work...
             bool_collection = dc.get_boolean_collection(context, False)
             if bool_collection is not None:
+                prev_hide_viewport = bool_collection.hide_viewport
                 bool_collection.hide_viewport = False
 
             dc.trace(2, "Removing {} orphaned objects", len(orphans_to_delete))
@@ -448,5 +450,6 @@ class DCONFIG_OT_boolean_apply(bpy.types.Operator):
                     bpy.data.collections.remove(bool_collection)
                 else:
                     dc.trace(2, "Collection still contains objects; not removing: {}", bool_collection.name)
+                    bool_collection.hide_viewport = prev_hide_viewport
 
         return dc.trace_exit(self)

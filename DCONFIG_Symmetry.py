@@ -130,7 +130,7 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
                 original_mode = context.active_object.mode
 
                 bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-                bpy.ops.object.empty_add(type='PLAIN_AXES', view_align=False, location=(0, 0, 0))
+                bpy.ops.object.empty_add(type='PLAIN_AXES', align='WORLD', location=(0, 0, 0))
                 mirror_object = context.active_object
                 mirror_object.name = "DC_World_Origin"
                 mirror_object.select_set(state=False)
@@ -238,7 +238,7 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         bpy.ops.view3d.snap_cursor_to_selected()
 
-        bpy.ops.object.empty_add(type='PLAIN_AXES', view_align=False)
+        bpy.ops.object.empty_add(type='PLAIN_AXES', align='WORLD')
         self.radial_object = context.active_object
         self.radial_object.name = "DC Radial"
         self.radial_object.select_set(state=True)

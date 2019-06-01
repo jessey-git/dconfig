@@ -28,8 +28,6 @@ def setup_hotkeys():
 
     new_keymap = (
         # Keymap Name           Space       Region      Modal   Type                        Key             Action      SHIFT   CTRL    ALT     Properties
-        ("Screen",              "EMPTY",    "WINDOW",   False,  "ed.undo_history",          "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
-        ("Screen",              "EMPTY",    "WINDOW",   False,  "screen.repeat_history",    "BUTTON5MOUSE", "PRESS",    False,  True,   False,  ()),
         ("Screen",              "EMPTY",    "WINDOW",   False,  "screen.redo_last",         "BUTTON5MOUSE", "PRESS",    False,  False,  False,  ()),
         ("Screen",              "EMPTY",    "WINDOW",   False,  "script.reload",            "F8",           "PRESS",    False,  False,  False,  ()),
 
@@ -50,7 +48,11 @@ def setup_hotkeys():
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.delete_edgeloop",     "X",            "PRESS",        False,  True,   False,  (("use_face_split", False),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.dissolve_mode",       "BACK_SPACE",   "PRESS",        False,  False,  False,  (("use_verts", False), ("use_face_split", False),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE", "PRESS",        False,  False,  False,  (("name", "VIEW3D_MT_edit_mesh_select_mode"),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON4MOUSE", "PRESS",        False,  True,   False,  (("focus", False),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON5MOUSE", "PRESS",        False,  True,   False,  (("focus", True),)),
 
+        ("UV Editor",           "EMPTY",    "WINDOW",   False,  "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  ()),
+        ("UV Editor",           "EMPTY",    "WINDOW",   False,  "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("extend", True),)),
         ("UV Editor",           "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE", "PRESS",        False,  False,  False,  (("name", "IMAGE_MT_uvs_select_mode"),)),
 
         ("View3D Gesture Circle",   "EMPTY",    "WINDOW",   True,   "CANCEL",               "C",            "RELEASE",      False,  False,  False,  ()),
@@ -92,7 +94,9 @@ def setup_userpreferences():
 
     user_prefs.system.anisotropic_filter = 'FILTER_8'
     user_prefs.system.multi_sample = '4'
-    user_prefs.system.gpu_viewport_quality = 1
+    user_prefs.system.viewport_aa = '5'
+
+    user_prefs.use_preferences_save = False
 
 
 def setup_addons():
