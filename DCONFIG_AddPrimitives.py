@@ -42,6 +42,14 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
+        setop(col, "dconfig.add_primitive", 'MESH_CAPSULE', "8", prim_type='Oval', props=(("radius", 0.25), ("length", 0.25), ("vertices_4", 8), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_CAPSULE', "16", prim_type='Oval', props=(("radius", 0.25), ("length", 0.25), ("vertices_4", 16), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_CAPSULE', "24", prim_type='Oval', props=(("radius", 0.50), ("length", 0.50), ("vertices_4", 24), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_CAPSULE', "32", prim_type='Oval', props=(("radius", 0.50), ("length", 0.50), ("vertices_4", 32), ("align", align)))
+
+        col = split.column(align=True)
+        col.scale_y = 1.25
+        col.scale_x = 1.25
         setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "6", prim_type='Circle', props=(("radius", 0.25), ("vertices", 6), ("align", align)))
         setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "8", prim_type='Circle', props=(("radius", 0.25), ("vertices", 8), ("align", align)))
         setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "16", prim_type='Circle', props=(("radius", 0.50), ("vertices", 16), ("align", align)))
@@ -94,12 +102,14 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     prim_type: bpy.props.StringProperty(name="Type")
-    radius: bpy.props.FloatProperty(name="Radius", default=1.0, step=1, min=0.01)
+    radius: bpy.props.FloatProperty(name="Radius", default=1.0, step=5, min=0.01)
     depth: bpy.props.FloatProperty(name="Depth", default=1.0, step=1, min=0.01)
+    length: bpy.props.FloatProperty(name="Length", default=1.0, step=1, min=0.01)
     size: bpy.props.FloatProperty(name="Size", default=1.0, step=1, min=0.01)
     segments: bpy.props.IntProperty(name="Segments", default=12, min=3, max=40)
     ring_count: bpy.props.IntProperty(name="Rings", default=6, min=3, max=20)
     vertices: bpy.props.IntProperty(name="Vertices", default=8, min=3, max=96)
+    vertices_4: bpy.props.IntProperty(name="Vertices_4", default=8, step=4, min=8, max=32)
     levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
     align: bpy.props.StringProperty(name="Align", default='WORLD')
 
@@ -114,6 +124,10 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         elif self.prim_type == 'Circle':
             layout.prop(self, "radius")
             layout.prop(self, "vertices")
+        elif self.prim_type == 'Oval':
+            layout.prop(self, "radius")
+            layout.prop(self, "length")
+            layout.prop(self, "vertices_4")
         elif self.prim_type == 'Cylinder':
             layout.prop(self, "radius")
             layout.prop(self, "depth")
@@ -142,11 +156,34 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         elif self.prim_type == 'Sphere':
             bpy.ops.mesh.primitive_uv_sphere_add(radius=self.radius, segments=self.segments, ring_count=self.ring_count, align=self.align)
 
+        elif self.prim_type == 'Oval':
+            self.add_oval(context, self.radius, self.length, self.vertices_4)
+
         elif self.prim_type == 'Quad_Sphere':
             self.add_quad_sphere(context, self.radius, self.levels)
 
         if self.align == 'VIEW' and context.mode == 'OBJECT':
             bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+
+    def add_oval(self, context, radius, length, vertices):
+        bm = bmesh.new()
+
+        bmesh.ops.create_circle(bm, cap_ends=False, radius=radius, segments=vertices)
+        bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.y < -0.001], context='VERTS')
+        bmesh.ops.translate(bm, verts=bm.verts, vec=(0.0, length / 2, 0.0))
+        bmesh.ops.mirror(bm, geom=bm.edges, axis='Y', merge_dist=0.0001)
+        bmesh.ops.contextual_create(bm, geom=bm.verts, mat_nr=0, use_smooth=False)
+
+        me = bpy.data.meshes.new("Mesh")
+        bm.to_mesh(me)
+        bm.free()
+
+        obj = bpy.data.objects.new("Oval", me)
+        obj.matrix_world.translation += context.scene.cursor.location
+
+        context.collection.objects.link(obj)
+        context.view_layer.objects.active = obj
+        obj.select_set(True)
 
     def add_quad_sphere(self, context, radius, levels):
         was_edit = False
@@ -196,6 +233,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
             bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+            bpy.ops.object.select_all(action='DESELECT')
             self.add_primitive(context)
 
             # Apply transformation matrix manually...
