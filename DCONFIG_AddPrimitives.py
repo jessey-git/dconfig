@@ -59,9 +59,9 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 1", prim_type='Quad_Sphere', props=(("radius", 0.50), ("levels", 1)))
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 2", prim_type='Quad_Sphere', props=(("radius", 0.50), ("levels", 2)))
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 3", prim_type='Quad_Sphere', props=(("radius", 0.50), ("levels", 3)))
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 1", prim_type='Quad_Sphere', props=(("radius", 0.50), ("levels", 1), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 2", prim_type='Quad_Sphere', props=(("radius", 0.50), ("levels", 2), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 3", prim_type='Quad_Sphere', props=(("radius", 0.50), ("levels", 3), ("align", align)))
 
         # Bottom
         split = pie.split()
@@ -79,7 +79,7 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col.scale_y = 1.25
         col.scale_x = 1.25
         setop(col, "dconfig.add_primitive", 'MESH_PLANE', "Plane", prim_type='Plane', props=(("size", 1), ("align", align)))
-        setop(col, "dconfig.add_primitive", 'MESH_CUBE', "Cube", prim_type='Cube', props=(("size", 1),))
+        setop(col, "dconfig.add_primitive", 'MESH_CUBE', "Cube", prim_type='Cube', props=(("size", 1), ("align", align)))
 
         # Top Left
         split = pie.split()
@@ -92,7 +92,7 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'MESH_CAPSULE', "8", prim_type='Oval', props=(("radius", 0.125), ("length", 0.5), ("vertices_4", 1), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'MESH_CAPSULE', "Capsule", prim_type='Oval', props=(("radius", 0.125), ("length", 0.5), ("vertices_4", 1), ("align", align)))
 
         # Bottom Right
 
@@ -159,7 +159,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             bpy.ops.mesh.primitive_uv_sphere_add(radius=self.radius, segments=self.segments, ring_count=self.ring_count, align=self.align)
 
         elif self.prim_type == 'Oval':
-            self.add_oval(context, self.radius, self.length, self.vertices_4)
+            self.add_oval(context, self.radius, self.length, self.vertices_4, self.align)
 
         elif self.prim_type == 'Quad_Sphere':
             self.add_quad_sphere(context, self.radius, self.levels, self.align)
@@ -167,7 +167,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         if self.align != 'WORLD' and context.mode == 'OBJECT':
             bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
 
-    def add_oval(self, context, radius, length, vertices):
+    def add_oval(self, context, radius, length, vertices, align):
         bm = bmesh.new()
 
         bmesh.ops.create_circle(bm, cap_ends=False, radius=radius, segments=(8 + (vertices - 1) * 4))
@@ -181,6 +181,8 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
                 new_face.normal_flip()
 
         if context.mode == 'OBJECT':
+            bpy.ops.object.select_all(action='DESELECT')
+
             new_geo = bmesh.ops.contextual_create(bm, geom=bm.verts, mat_nr=0, use_smooth=False)
             prepare_face(new_geo['faces'][0])
 
@@ -189,13 +191,30 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             bm.free()
 
             obj = bpy.data.objects.new("Oval", me)
-            obj.matrix_world = context.scene.cursor.matrix.copy()
+            if align == 'CURSOR':
+                obj.matrix_world = context.scene.cursor.matrix.copy()
+            elif align == 'VIEW':
+                mat = context.space_data.region_3d.view_matrix.transposed().to_4x4()
+                mat.translation = context.scene.cursor.location
+                obj.matrix_world = mat
+            else:
+                obj.matrix_world.translation = context.scene.cursor.location
 
-            bpy.ops.object.select_all(action='DESELECT')
             context.collection.objects.link(obj)
             context.view_layer.objects.active = obj
             obj.select_set(True)
         else:
+            bpy.ops.mesh.select_all(action='DESELECT')
+
+            if align == 'CURSOR':
+                bmesh.ops.transform(bm, verts=bm.verts, matrix=context.scene.cursor.matrix)
+            elif align == 'VIEW':
+                mat = context.space_data.region_3d.view_matrix.transposed().to_4x4()
+                mat.translation = context.scene.cursor.location
+                bmesh.ops.transform(bm, verts=bm.verts, matrix=mat)
+            else:
+                bmesh.ops.translate(bm, verts=bm.verts, vec=context.scene.cursor.location)
+
             bm_orig = bmesh.from_edit_mesh(context.active_object.data)
             new_verts = [bm_orig.verts.new(v.co) for v in bm.verts]
             new_geo = bmesh.ops.contextual_create(bm_orig, geom=new_verts, mat_nr=0, use_smooth=False)
