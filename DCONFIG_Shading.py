@@ -42,6 +42,9 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
         context.space_data.shading.curvature_valley_factor = 0.8
         context.space_data.shading.xray_alpha_wireframe = 0
 
+        context.space_data.overlay.show_curve_handles = False
+        context.space_data.overlay.show_curve_normals = False
+
         context.space_data.overlay.wireframe_threshold = 1.0
 
         context.scene.display.matcap_ssao_distance = 1
