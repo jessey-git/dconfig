@@ -81,6 +81,10 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
         context.scene.eevee.use_volumetric_shadows = True
         context.scene.eevee.volumetric_tile_size = '2'
 
+        context.scene.eevee.shadow_method = 'VSM'
+        context.scene.eevee.use_shadow_high_bitdepth = True
+        context.scene.eevee.use_soft_shadows = True
+
         # Cycles
         context.scene.cycles.samples = 20
         context.scene.cycles.preview_samples = 6

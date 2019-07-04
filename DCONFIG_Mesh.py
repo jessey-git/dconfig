@@ -19,19 +19,18 @@ class DCONFIG_MT_quick(bpy.types.Menu):
     def draw(self, context):
         layout = self.layout
 
-        layout.operator("mesh.fill_grid", text="Fill Grid")
-        layout.operator("dconfig.subdivide_cylinder", text="Subdivide Cylinder")
-        layout.operator("dconfig.subd_bevel", text="Sub-D Bevel")
+        layout.operator("mesh.remove_doubles", text="Weld vertices")
 
         layout.separator()
-
         op = layout.operator("mesh.select_face_by_sides", text="Select N-Gons")
         op.type = 'GREATER'
         op.number = 4
         op.extend = False
 
         layout.separator()
-        layout.operator("mesh.remove_doubles", text="Weld vertices")
+        layout.operator("mesh.fill_grid", text="Fill Grid")
+        layout.operator("dconfig.subdivide_cylinder", text="Subdivide Cylinder")
+        layout.operator("dconfig.subd_bevel", text="Sub-D Bevel")
 
 
 class DCONFIG_OT_subdivide_cylinder(bpy.types.Operator):
