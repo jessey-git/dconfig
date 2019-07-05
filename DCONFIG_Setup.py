@@ -42,14 +42,14 @@ def setup_hotkeys():
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",        "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_boolean_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",        "PRESS",    False,  True,   False,  (("name", "DCONFIG_MT_symmetry_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "W",        "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON4MOUSE", "PRESS",    False,  True,   False,  (("focus", False),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON5MOUSE", "PRESS",    False,  True,   False,  (("focus", True),)),
 
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  (("delimit", {'SEAM'}),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("delimit", {'SEAM'}),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.delete_edgeloop",     "X",            "PRESS",        False,  True,   False,  (("use_face_split", False),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.dissolve_mode",       "BACK_SPACE",   "PRESS",        False,  False,  False,  (("use_verts", False), ("use_face_split", False),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE", "PRESS",        False,  False,  False,  (("name", "VIEW3D_MT_edit_mesh_select_mode"),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON4MOUSE", "PRESS",        False,  True,   False,  (("focus", False),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON5MOUSE", "PRESS",        False,  True,   False,  (("focus", True),)),
 
         ("UV Editor",           "EMPTY",    "WINDOW",   False,  "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  ()),
         ("UV Editor",           "EMPTY",    "WINDOW",   False,  "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("extend", True),)),
