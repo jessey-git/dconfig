@@ -25,6 +25,8 @@ def draw_stats(font_id, line_height, final_scale):
         stats = stats[1:4]
     elif bpy.context.mode == 'EDIT_CURVE':
         stats = stats[1:2]
+    elif bpy.context.mode == 'EDIT_LATTICE':
+        stats = stats[1:2]
     elif bpy.context.mode == 'SCULPT':
         stats = stats[1:3]
     else:

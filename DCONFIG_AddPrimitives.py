@@ -341,16 +341,27 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
     resolution: bpy.props.IntProperty(name="Resolution", default=2, min=2, max=4)
 
     @classmethod
+    def active_lattice_selected(cls, context):
+        active_object = context.active_object
+        return active_object is not None and active_object.type == 'LATTICE' and active_object.select_get()
+
+    @classmethod
     def poll(cls, context):
-        return dc.active_mesh_selected(context)
+        return dc.active_mesh_selected(context) or DCONFIG_OT_add_lattice.active_lattice_selected(context)
 
     def execute(self, context):
         dc.trace_enter(self)
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
-        target = context.active_object
-        lattice = self.create_lattice_obj(context, target)
-        self.create_lattice_mod(target, lattice)
+        if context.active_object.type == 'MESH':
+            target = context.active_object
+            lattice = self.create_lattice_obj(context, target)
+            self.create_lattice_mod(target, lattice)
+        else:
+            lattice_data = context.active_object.data
+            lattice_data.points_u = self.resolution
+            lattice_data.points_v = self.resolution
+            lattice_data.points_w = self.resolution
 
         bpy.ops.object.select_all(action='DESELECT')
         context.view_layer.objects.active = lattice
@@ -360,30 +371,30 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
 
     def create_lattice_obj(self, context, target):
         # Create lattice
-        lattice = bpy.data.lattices.new('dc_lattice')
-        lattice_object = bpy.data.objects.new('dc_lattice', lattice)
+        lattice_data = bpy.data.lattices.new('dc_lattice')
+        lattice = bpy.data.objects.new('dc_lattice', lattice_data)
 
-        lattice.points_u = self.resolution
-        lattice.points_v = self.resolution
-        lattice.points_w = self.resolution
+        lattice_data.points_u = self.resolution
+        lattice_data.points_v = self.resolution
+        lattice_data.points_w = self.resolution
 
-        lattice.interpolation_type_u = 'KEY_BSPLINE'
-        lattice.interpolation_type_v = 'KEY_BSPLINE'
-        lattice.interpolation_type_w = 'KEY_BSPLINE'
-        lattice.use_outside = False
+        lattice_data.interpolation_type_u = 'KEY_LINEAR'
+        lattice_data.interpolation_type_v = 'KEY_LINEAR'
+        lattice_data.interpolation_type_w = 'KEY_LINEAR'
+        lattice_data.use_outside = False
 
         # Position + Orientation
-        self.set_transforms(target, lattice_object)
+        self.set_transforms(target, lattice)
 
         # Place in a special collection
         helpers_collection = dc.get_helpers_collection(context)
-        helpers_collection.objects.link(lattice_object)
+        helpers_collection.objects.link(lattice)
 
         # Ensure the lattice is added to local view...
         if context.space_data.local_view is not None:
-            lattice_object.local_view_set(context.space_data, True)
+            lattice.local_view_set(context.space_data, True)
 
-        return lattice_object
+        return lattice
 
     def create_lattice_mod(self, target, lattice):
         mod = target.modifiers.new(lattice.name, "LATTICE")
@@ -391,11 +402,11 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         mod.show_expanded = False
 
     def set_transforms(self, target, lattice):
-        bbox_min, bbox_max = dc.find_world_bbox(target.matrix_world, [v.co for v in target.data.vertices])
+        bbox_min, bbox_max = dc.find_world_bbox(target.matrix_world, map(lambda v: v.co, target.data.vertices))
         size = bbox_max - bbox_min
 
         lattice.location = (bbox_min + bbox_max) / 2
-        lattice.scale = Vector([max(0.1, c) for c in size]) * 1.1
+        lattice.scale = Vector([max(0.1, c * 1.1) for c in size])
         lattice.rotation_euler = target.rotation_euler
 
 
