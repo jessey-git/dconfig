@@ -24,6 +24,7 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
         dc.trace_enter(self)
 
         context.scene.tool_settings.snap_elements = {'VERTEX'}
+        context.scene.tool_settings.snap_target = 'ACTIVE'
 
         context.scene.tool_settings.statvis.type = 'DISTORT'
         context.scene.tool_settings.statvis.distort_min = 0

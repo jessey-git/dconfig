@@ -33,7 +33,7 @@ def setup_hotkeys():
 
         ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "S",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_snap"),)),
         ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu_pie",         "BUTTON4MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_transforms_pie"),)),
-        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "object.origin_set",        "BUTTON5MOUSE", "PRESS",    True,   False,  False,  ()),
+        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON5MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_origin_set"),)),
 
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.view_center_cursor",    "HOME",     "PRESS",    False,  False,  True,   ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.toggle_shading",        "Z",        "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
