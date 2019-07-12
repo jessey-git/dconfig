@@ -14,7 +14,7 @@ import blf
 import bpy
 
 
-def draw_stats(font_id, line_height, final_scale):
+def draw_stats(font_id, line_height, ui_scale):
     view_layer = bpy.context.view_layer
 
     # Gather up stats...
@@ -35,7 +35,7 @@ def draw_stats(font_id, line_height, final_scale):
     # Initial positions and offsets to handle tool region and top text...
     toolbar_width = next((region.width for region in bpy.context.area.regions if region.type == 'TOOLS'), 100)
     top_offset = line_height * 10
-    x_pos = (20 * final_scale) + toolbar_width
+    x_pos = (20 * ui_scale) + toolbar_width
     y_pos = bpy.context.area.height - top_offset
 
     digit_width = blf.dimensions(font_id, "0")[0]
@@ -46,6 +46,8 @@ def draw_stats(font_id, line_height, final_scale):
     lines = []
     for value in stats:
         line_data = [[val, 0] for val in filter(None, re.split("[ :/]", value))]
+        if len(line_data) > 3:
+            line_data = line_data[1:]
         for data in line_data:
             data[1] = blf.dimensions(font_id, data[0])[0]
 
@@ -72,12 +74,11 @@ def draw_func(ignore):
     # Setup font and scaling parameters...
     font_id = draw_settings["font_id"]
     font_size = draw_settings["font_size"]
-    dpi_scale = draw_settings["dpi_scale"]
 
-    ui_scale = bpy.context.preferences.view.ui_scale
-    final_scale = ui_scale * dpi_scale
+    ui_scale = bpy.context.preferences.system.ui_scale
+    dpi = bpy.context.preferences.system.dpi
 
-    blf.size(font_id, int(font_size * ui_scale), int(72 * dpi_scale))
+    blf.size(font_id, int(font_size * ui_scale), dpi)
     blf.enable(font_id, blf.SHADOW)
     blf.shadow(font_id, 5, 0.0, 0.0, 0.0, 0.9)
     blf.shadow_offset(font_id, 1, -1)
@@ -85,29 +86,17 @@ def draw_func(ignore):
     line_height = blf.dimensions(font_id, "M")[1] * 1.55
 
     # Draw all the things...
-    draw_stats(font_id, line_height, final_scale)
-
-
-def get_ppi_win32():
-    LOGPIXELSX = 88
-    user32 = windll.user32
-    user32.SetProcessDPIAware()
-    dc = user32.GetDC(0)
-    pix_per_inch = windll.gdi32.GetDeviceCaps(dc, LOGPIXELSX)
-    user32.ReleaseDC(0, dc)
-    return pix_per_inch
+    draw_stats(font_id, line_height, ui_scale)
 
 
 draw_settings = {
     "font_id": 0,
     "font_size": 11,
-    "dpi_scale": None,
     "handler": None
 }
 
 
 def register():
-    draw_settings["dpi_scale"] = get_ppi_win32() / 96
     draw_settings["handler"] = bpy.types.SpaceView3D.draw_handler_add(draw_func, (None, ), 'WINDOW', 'POST_PIXEL')
 
 
