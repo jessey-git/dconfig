@@ -8,7 +8,6 @@
 # Misc UI
 #
 
-from ctypes import windll
 import re
 import blf
 import bpy
