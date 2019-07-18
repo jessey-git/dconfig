@@ -19,7 +19,10 @@ def draw_stats(font_id, line_height, ui_scale):
     # Gather up stats...
     stats = bpy.context.scene.statistics(view_layer).split("|")
     if bpy.context.mode == 'OBJECT':
-        stats = stats[2:4]
+        if len(stats) == 8:
+            stats = stats[2:4]
+        else:
+            stats = stats[1:3]
     elif bpy.context.mode == 'EDIT_MESH':
         stats = stats[1:4]
     elif bpy.context.mode == 'EDIT_CURVE':
@@ -53,6 +56,7 @@ def draw_stats(font_id, line_height, ui_scale):
         lines.append(line_data)
 
     # Aligned layout using dimensions above (special case first piece of data for the title)...
+    blf.color(font_id, 1, 1, 1, 1)
     for line in lines:
         x = x_pos + longest_title
         for index, data in enumerate(line):
