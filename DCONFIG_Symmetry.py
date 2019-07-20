@@ -42,6 +42,7 @@ class DCONFIG_MT_symmetry_pie(bpy.types.Menu):
 
         # Top Right
         col = pie.column(align=True)
+        col.scale_y = 1.25
         col.operator("dconfig.mirror", text="Mirror World", icon='MOD_MIRROR').local = False
         col.operator("dconfig.mirror_radial", text="Mirror Radial", icon='MOD_ARRAY')
 

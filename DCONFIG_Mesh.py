@@ -19,19 +19,18 @@ class DCONFIG_MT_quick(bpy.types.Menu):
     def draw(self, context):
         layout = self.layout
 
-        layout.operator("mesh.fill_grid", text="Fill Grid")
-        layout.operator("dconfig.subdivide_cylinder", text="Subdivide Cylinder")
-        layout.operator("dconfig.subd_bevel", text="Sub-D Bevel")
+        layout.operator("mesh.remove_doubles", text="Weld vertices")
 
         layout.separator()
-
         op = layout.operator("mesh.select_face_by_sides", text="Select N-Gons")
         op.type = 'GREATER'
         op.number = 4
         op.extend = False
 
         layout.separator()
-        layout.operator("mesh.remove_doubles", text="Weld vertices")
+        layout.operator("mesh.fill_grid", text="Fill Grid")
+        layout.operator("dconfig.subdivide_cylinder", text="Subdivide Cylinder")
+        layout.operator("dconfig.subd_bevel", text="Sub-D Bevel")
 
 
 class DCONFIG_OT_subdivide_cylinder(bpy.types.Operator):
@@ -99,19 +98,21 @@ class DCONFIG_OT_mesh_focus(bpy.types.Operator):
 
     focus: bpy.props.BoolProperty()
 
-    @classmethod
-    def poll(cls, context):
-        return context.mode == 'EDIT_MESH'
-
     def execute(self, context):
         dc.trace_enter(self)
 
         if self.focus:
-            dc.trace(1, "Focus selection")
-            bpy.ops.mesh.hide(unselected=True)
-            bpy.ops.view3d.view_selected(use_all_regions=False)
+            dc.trace(1, "Focus")
+            if context.mode == 'EDIT_MESH':
+                bpy.ops.mesh.hide(unselected=True)
+
+            bpy.ops.view3d.view_selected()
+            bpy.ops.view3d.zoom(delta=-1, use_cursor_init=True)
         else:
-            dc.trace(1, "Reveal hidden")
-            bpy.ops.mesh.reveal(select=False)
+            dc.trace(1, "Unfocus")
+            if context.mode == 'EDIT_MESH':
+                bpy.ops.mesh.reveal(select=False)
+            else:
+                bpy.ops.view3d.view_all()
 
         return dc.trace_exit(self)

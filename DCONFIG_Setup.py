@@ -33,7 +33,7 @@ def setup_hotkeys():
 
         ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "S",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_snap"),)),
         ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu_pie",         "BUTTON4MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_transforms_pie"),)),
-        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "object.origin_set",        "BUTTON5MOUSE", "PRESS",    True,   False,  False,  ()),
+        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON5MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_origin_set"),)),
 
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.view_center_cursor",    "HOME",     "PRESS",    False,  False,  True,   ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.toggle_shading",        "Z",        "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
@@ -42,14 +42,14 @@ def setup_hotkeys():
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",        "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_boolean_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",        "PRESS",    False,  True,   False,  (("name", "DCONFIG_MT_symmetry_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "W",        "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON4MOUSE", "PRESS",    False,  True,   False,  (("focus", False),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON5MOUSE", "PRESS",    False,  True,   False,  (("focus", True),)),
 
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  (("delimit", {'SEAM'}),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("delimit", {'SEAM'}),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.delete_edgeloop",     "X",            "PRESS",        False,  True,   False,  (("use_face_split", False),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.dissolve_mode",       "BACK_SPACE",   "PRESS",        False,  False,  False,  (("use_verts", False), ("use_face_split", False),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE", "PRESS",        False,  False,  False,  (("name", "VIEW3D_MT_edit_mesh_select_mode"),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON4MOUSE", "PRESS",        False,  True,   False,  (("focus", False),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON5MOUSE", "PRESS",        False,  True,   False,  (("focus", True),)),
 
         ("UV Editor",           "EMPTY",    "WINDOW",   False,  "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  ()),
         ("UV Editor",           "EMPTY",    "WINDOW",   False,  "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("extend", True),)),
@@ -91,6 +91,8 @@ def setup_userpreferences():
     user_prefs.view.mini_axis_type = 'MINIMAL'
     user_prefs.view.mini_axis_size = 40
     user_prefs.view.mini_axis_brightness = 10
+
+    user_prefs.filepaths.save_version = 0
 
     user_prefs.system.anisotropic_filter = 'FILTER_8'
     user_prefs.system.multi_sample = '4'
