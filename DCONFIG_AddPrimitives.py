@@ -25,10 +25,9 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        def setop(layout, name, icon, text, prim_type, props):
+        def setop(layout, name, icon, text, **kwargs):
             op = layout.operator(name, icon=icon, text=text)
-            op.prim_type = prim_type
-            for prop, value in props:
+            for prop, value in kwargs.items():
                 setattr(op, prop, value)
 
         align = 'WORLD' if context.space_data.region_3d.is_perspective else 'VIEW'
@@ -37,60 +36,65 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         split = pie.split(align=True)
         col = split.column(align=True)
         col.scale_y = 1.25
-        col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "6", prim_type='Cylinder', props=(("radius", 0.25), ("depth", 0.25), ("vertices", 6), ("align", align)))
-        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "8", prim_type='Cylinder', props=(("radius", 0.25), ("depth", 0.25), ("vertices", 8), ("align", align)))
-        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "16", prim_type='Cylinder', props=(("radius", 0.50), ("depth", 0.50), ("vertices", 16), ("align", align)))
-        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "32", prim_type='Cylinder', props=(("radius", 0.50), ("depth", 0.50), ("vertices", 32), ("align", align)))
+        col.scale_x = 1.1
+        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "6", prim_type='Cylinder', radius=0.25, depth=0.25, vertices=6, align=align)
+        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "8", prim_type='Cylinder', radius=0.25, depth=0.25, vertices=8, align=align)
+        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "16", prim_type='Cylinder', radius=0.50, depth=0.50, vertices=16, align=align)
+        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "32", prim_type='Cylinder', radius=0.50, depth=0.50, vertices=32, align=align)
 
         col.separator()
-        setop(col, "dconfig.add_primitive", 'CURVE_BEZCURVE', "Bezier", prim_type='B_Curve', props=(("radius", 0.50), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'CURVE_BEZCURVE', "Bezier", prim_type='B_Curve', radius=0.50, align=align)
+        col.operator("dconfig.add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
 
         col = split.column(align=True)
         col.scale_y = 1.25
-        col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "6", prim_type='Circle', props=(("radius", 0.25), ("vertices", 6), ("align", align)))
-        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "8", prim_type='Circle', props=(("radius", 0.25), ("vertices", 8), ("align", align)))
-        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "16", prim_type='Circle', props=(("radius", 0.50), ("vertices", 16), ("align", align)))
-        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "32", prim_type='Circle', props=(("radius", 0.50), ("vertices", 32), ("align", align)))
+        col.scale_x = 1.1
+        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "6", prim_type='Circle', radius=0.25, vertices=6, align=align)
+        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "8", prim_type='Circle', radius=0.25, vertices=8, align=align)
+        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "16", prim_type='Circle', radius=0.50, vertices=16, align=align)
+        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "32", prim_type='Circle', radius=0.50, vertices=32, align=align)
 
         col.separator()
-        setop(col, "dconfig.add_primitive", 'CURVE_BEZCIRCLE', "Circle", prim_type='B_Circle', props=(("radius", 0.50), ("align", align)))
-        setop(col, "dconfig.add_primitive", 'MESH_CAPSULE', "Capsule", prim_type='Oval', props=(("radius", 0.125), ("length", 0.5), ("vertices_4", 1), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'CURVE_BEZCIRCLE', "Circle", prim_type='B_Circle', radius=0.50, align=align)
+        setop(col, "dconfig.add_primitive", 'MESH_CAPSULE', "Capsule", prim_type='Oval', radius=0.125, length=0.5, vertices_4=1, align=align)
 
         # Right
         split = pie.split(align=True)
         col = split.column(align=True)
         col.scale_y = 1.25
-        col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "12", prim_type='Sphere', props=(("radius", 0.25), ("segments", 12), ("ring_count", 6), ("align", align)))
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "24", prim_type='Sphere', props=(("radius", 0.50), ("segments", 24), ("ring_count", 12), ("align", align)))
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "32", prim_type='Sphere', props=(("radius", 0.50), ("segments", 32), ("ring_count", 16), ("align", align)))
+        col.scale_x = 1.1
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "12", prim_type='Sphere', radius=0.25, segments=12, ring_count=6, align=align)
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "24", prim_type='Sphere', radius=0.50, segments=24, ring_count=12, align=align)
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "32", prim_type='Sphere', radius=0.50, segments=32, ring_count=16, align=align)
 
-        col = split.column(align=True)
-        col.scale_y = 1.25
-        col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 1", prim_type='Quad_Sphere', props=(("radius", 0.50), ("levels", 1), ("align", align)))
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 2", prim_type='Quad_Sphere', props=(("radius", 0.50), ("levels", 2), ("align", align)))
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 3", prim_type='Quad_Sphere', props=(("radius", 0.50), ("levels", 3), ("align", align)))
-
-        # Bottom
-        split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        col.operator("dconfig.add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
-        col.operator("dconfig.add_lattice", icon='MESH_GRID', text="FFD 2x2x2").resolution = 2
-        col.operator("dconfig.add_lattice", icon='MESH_GRID', text="FFD 3x3x3").resolution = 3
-        col.operator("dconfig.add_lattice", icon='MESH_GRID', text="FFD 4x4x4").resolution = 4
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 1", prim_type='Quad_Sphere', radius=0.50, levels=1, align=align)
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 2", prim_type='Quad_Sphere', radius=0.50, levels=2, align=align)
+        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 3", prim_type='Quad_Sphere', radius=0.50, levels=3, align=align)
+
+        # Bottom
+        split = pie.split(align=True)
+        col = split.column(align=True)
+        col.scale_y = 1.25
+        col.scale_x = 1.1
+        setop(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 2", resolution=2, only_base=True)
+        setop(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 3", resolution=3, only_base=True)
+
+        col = split.column(align=True)
+        col.scale_y = 1.25
+        col.scale_x = 1.1
+        setop(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 2 (All)", resolution=2, only_base=False)
+        setop(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 3 (All)", resolution=3, only_base=False)
 
         # Top
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.25
-        col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'MESH_PLANE', "Plane", prim_type='Plane', props=(("size", 1), ("align", align)))
-        setop(col, "dconfig.add_primitive", 'MESH_CUBE', "Cube", prim_type='Cube', props=(("size", 1), ("align", align)))
+        col.scale_x = 1.1
+        setop(col, "dconfig.add_primitive", 'MESH_PLANE', "Plane", prim_type='Plane', size=1, align=align)
+        setop(col, "dconfig.add_primitive", 'MESH_CUBE', "Cube", prim_type='Cube', size=1, align=align)
 
         # Top Left
         split = pie.split()
@@ -100,19 +104,19 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'EMPTY_DATA', "", prim_type='Empty', props=(("radius", 1), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'EMPTY_DATA', "", prim_type='Empty', radius=1, align=align)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'LIGHT_POINT', "", prim_type='Light', props=(("light_type", 'POINT'), ("radius", 1), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'LIGHT_POINT', "", prim_type='Light', light_type='POINT', radius=1, align=align)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'LIGHT_SUN', "", prim_type='Light', props=(("light_type", 'SUN'), ("radius", 1), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'LIGHT_SUN', "", prim_type='Light', light_type='SUN', radius=1, align=align)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'LIGHT_AREA', "", prim_type='Light', props=(("light_type", 'AREA'), ("radius", 1), ("align", align)))
+        setop(col, "dconfig.add_primitive", 'LIGHT_AREA', "", prim_type='Light', light_type='AREA', radius=1, align=align)
 
         # Bottom Left
         split = pie.split()
@@ -339,6 +343,7 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     resolution: bpy.props.IntProperty(name="Resolution", default=2, min=2, max=4)
+    only_base: bpy.props.BoolProperty(name="Only Base Object", default=True)
 
     @classmethod
     def active_lattice_selected(cls, context):
@@ -348,6 +353,12 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         return dc.active_mesh_selected(context) or DCONFIG_OT_add_lattice.active_lattice_selected(context)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+
+        layout.prop(self, "resolution")
 
     def execute(self, context):
         dc.trace_enter(self)
@@ -401,12 +412,23 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         mod.object = lattice
         mod.show_expanded = False
 
+        # Place just after Booleans...
+        if self.only_base:
+            mod_index = len(target.modifiers) - 1
+            while mod_index > 0 and target.modifiers[mod_index - 1].type != 'BOOLEAN':
+                bpy.ops.object.modifier_move_up(modifier=mod.name)
+                mod_index -= 1
+
     def set_transforms(self, target, lattice):
-        bbox_min, bbox_max = dc.find_world_bbox(target.matrix_world, map(lambda v: v.co, target.data.vertices))
+        if self.only_base:
+            bbox_min, bbox_max = dc.find_world_bbox(target.matrix_world, map(lambda v: v.co, target.data.vertices))
+        else:
+            bbox_min, bbox_max = dc.find_world_bbox(target.matrix_world, map(Vector, target.bound_box))
+
         size = bbox_max - bbox_min
 
         lattice.location = (bbox_min + bbox_max) / 2
-        lattice.scale = Vector([max(0.1, c * 1.1) for c in size])
+        lattice.scale = Vector([max(0.1, c * 1.025) for c in size])
         lattice.rotation_euler = target.rotation_euler
 
 
