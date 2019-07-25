@@ -31,7 +31,7 @@ def setup_hotkeys():
         ("Screen",              "EMPTY",    "WINDOW",   False,  "screen.redo_last",         "BUTTON5MOUSE", "PRESS",    False,  False,  False,  ()),
         ("Screen",              "EMPTY",    "WINDOW",   False,  "script.reload",            "F8",           "PRESS",    False,  False,  False,  ()),
 
-        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "S",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_snap"),)),
+        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "S",            "PRESS",    True,   False,  False,  (("name", "VIEW3D_MT_snap"),)),
         ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu_pie",         "BUTTON4MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_transforms_pie"),)),
         ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON5MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_origin_set"),)),
 
@@ -54,6 +54,9 @@ def setup_hotkeys():
         ("UV Editor",           "EMPTY",    "WINDOW",   False,  "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  ()),
         ("UV Editor",           "EMPTY",    "WINDOW",   False,  "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("extend", True),)),
         ("UV Editor",           "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE", "PRESS",        False,  False,  False,  (("name", "IMAGE_MT_uvs_select_mode"),)),
+        ("UV Editor",           "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "S",            "PRESS",        True,   False,  False,  (("name", "IMAGE_MT_uvs_snap"),)),
+
+        ("Image",               "IMAGE_EDITOR", "WINDOW",   False,  "wm.call_menu",         "BUTTON4MOUSE", "PRESS",        True,   False,  False,  (("name", "DCONFIG_MT_image_pivot"),)),
 
         ("View3D Gesture Circle",   "EMPTY",    "WINDOW",   True,   "CANCEL",               "C",            "RELEASE",      False,  False,  False,  ()),
     )
