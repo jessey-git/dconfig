@@ -104,7 +104,7 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'EMPTY_DATA', "", prim_type='Empty', radius=1, align=align)
+        setop(col, "dconfig.add_primitive", 'EMPTY_DATA', "", prim_type='Empty', radius=0.1, align=align)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
