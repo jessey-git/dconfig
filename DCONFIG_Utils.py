@@ -53,13 +53,15 @@ def get_sorted_meshes(obj_list, active_object):
 #
 
 
-def find_world_bbox(matrix_world, verts):
-    world_verts = map(lambda v, M=matrix_world: M @ v, verts)
+def calculate_bbox(verts, matrix=None):
+    mapped_verts = verts
+    if matrix is not None:
+        mapped_verts = map(lambda v, M=matrix: M @ v, verts)
 
-    bbox_min = Vector(next(world_verts))
+    bbox_min = Vector(next(mapped_verts))
     bbox_max = bbox_min.copy()
 
-    for v in world_verts:
+    for v in mapped_verts:
         if v.x < bbox_min.x:
             bbox_min.x = v.x
         if v.y < bbox_min.y:

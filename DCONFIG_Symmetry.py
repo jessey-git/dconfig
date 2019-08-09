@@ -131,7 +131,7 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
                 original_mode = context.active_object.mode
 
                 bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-                bpy.ops.object.empty_add(type='PLAIN_AXES', align='WORLD', location=(0, 0, 0))
+                bpy.ops.object.empty_add(type='PLAIN_AXES', radius=0.25, align='WORLD', location=(0, 0, 0))
                 mirror_object = context.active_object
                 mirror_object.name = "DC_World_Origin"
                 mirror_object.select_set(state=False)
@@ -208,7 +208,7 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
     def execute_core(self, context, is_execute):
         target = context.active_object
         if not self.init_from_existing(target):
-            self.create_radial_obj(context)
+            self.create_radial_obj(context, target)
             self.create_radial_mod(target)
             self.align_objects(context, target)
             self.adjust_radial_mod(0)
@@ -220,7 +220,8 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
             self.adjust_radial_mod(1)
 
         elif event.type == 'WHEELDOWNMOUSE':
-            self.adjust_radial_mod(-1)
+            if self.radial_mod.count > 1:
+                self.adjust_radial_mod(-1)
 
         if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
             self.radial_object.hide_viewport = True
@@ -232,14 +233,14 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
 
         return {'RUNNING_MODAL'}
 
-    def create_radial_obj(self, context):
+    def create_radial_obj(self, context, target):
         dc.trace(1, "Creating new radial empty")
         prev_cursor_location = tuple(context.scene.cursor.location)
 
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         bpy.ops.view3d.snap_cursor_to_selected()
 
-        bpy.ops.object.empty_add(type='PLAIN_AXES', align='WORLD')
+        bpy.ops.object.empty_add(type='PLAIN_AXES', radius=0.25, align='WORLD')
         self.radial_object = context.active_object
         self.radial_object.name = "DC Radial"
         self.radial_object.select_set(state=True)
@@ -249,6 +250,9 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         helpers_collection = dc.get_helpers_collection(context)
         helpers_collection.objects.link(self.radial_object)
         radial_object_collection.objects.unlink(self.radial_object)
+
+        # Parent empty to the target
+        self.radial_object.parent = target
 
         context.scene.cursor.location = prev_cursor_location
 
