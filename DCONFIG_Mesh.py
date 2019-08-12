@@ -9,7 +9,6 @@
 #
 
 import bpy
-import bmesh
 from . import DCONFIG_Utils as dc
 
 
@@ -75,17 +74,7 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
             bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='EDGE')
             bpy.ops.mesh.edges_select_sharp()
 
-        edge_min = 100
-        bm = bmesh.from_edit_mesh(target.data)
-        for edge in bm.edges:
-            if edge.select:
-                edge_min = min(edge_min, edge.calc_length())
-
-        bevel_offset = max(0.02, edge_min * .02)
-        bevel_offset = min(bevel_offset, edge_min / 3)
-
-        dc.trace(1, "Creating bevel with offset {}", bevel_offset)
-        bpy.ops.mesh.bevel(offset_type='OFFSET', offset=bevel_offset, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
+        bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', offset=0.01, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
 
         return dc.trace_exit(self)
 

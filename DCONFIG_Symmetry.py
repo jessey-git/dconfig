@@ -38,13 +38,13 @@ class DCONFIG_MT_symmetry_pie(bpy.types.Menu):
         pie.operator("dconfig.mesh_symmetry", text="-Z to +Z", icon='TRIA_UP').direction = 'NEGATIVE_Z'
 
         # Top Left
-        pie.operator("dconfig.mirror", text="Mirror Local", icon='MOD_MIRROR').local = True
+        pie.operator("dconfig.mirror", text="Local Mirror", icon='MOD_MIRROR').local = True
 
         # Top Right
         col = pie.column(align=True)
         col.scale_y = 1.25
-        col.operator("dconfig.mirror", text="Mirror World", icon='MOD_MIRROR').local = False
-        col.operator("dconfig.mirror_radial", text="Mirror Radial", icon='MOD_ARRAY')
+        col.operator("dconfig.mirror", text="World Mirror", icon='MOD_MIRROR').local = False
+        col.operator("dconfig.mirror_radial", text="World Radial", icon='MOD_ARRAY')
 
         # Bottom Left
         pie.operator("dconfig.mesh_symmetry", text="+Y to -Y", icon='DOT').direction = 'POSITIVE_Y'
@@ -122,9 +122,10 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
             # Use a special collection
             helpers_collection = dc.get_helpers_collection(context)
 
-            if "DC_World_Origin" in helpers_collection.all_objects:
+            world_origin_name = "dc_world_origin"
+            if world_origin_name in helpers_collection.all_objects:
                 dc.trace(1, "Using existing world-origin empty")
-                mirror_object = helpers_collection.objects["DC_World_Origin"]
+                mirror_object = helpers_collection.objects[world_origin_name]
             else:
                 dc.trace(1, "Creating new world-origin empty")
                 original_object = context.active_object
@@ -133,7 +134,7 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
                 bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
                 bpy.ops.object.empty_add(type='PLAIN_AXES', radius=0.25, align='WORLD', location=(0, 0, 0))
                 mirror_object = context.active_object
-                mirror_object.name = "DC_World_Origin"
+                mirror_object.name = world_origin_name
                 mirror_object.select_set(state=False)
                 mirror_object.hide_viewport = True
 
@@ -151,12 +152,12 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
         dc.trace(1, "Adding {} mirror modifier to {}", "local" if self.local else "world", dc.full_name(target))
 
         if self.local:
-            mod = target.modifiers.new("dc_local", 'MIRROR')
+            mod = target.modifiers.new("dc_local_mirror", 'MIRROR')
             mod.use_axis[0] = True
             mod.use_bisect_axis[0] = True
             mod.use_clip = True
         else:
-            mod = target.modifiers.new("dc_world", 'MIRROR')
+            mod = target.modifiers.new("dc_world_mirror", 'MIRROR')
             mod.use_axis[0] = True
             mod.use_bisect_axis[0] = False
             mod.use_clip = True
@@ -168,7 +169,7 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
         # Local mirrors go before World and after Booleans...
         if self.local:
             mod_index = len(target.modifiers) - 1
-            while mod_index > 0 and target.modifiers[mod_index - 1].type != 'BOOLEAN':
+            while mod_index > 0 and target.modifiers[mod_index - 1].type != 'BOOLEAN' and not target.modifiers[mod_index - 1].name.startswith("dc_local_mirror"):
                 bpy.ops.object.modifier_move_up(modifier=mod.name)
                 mod_index -= 1
 
@@ -242,7 +243,7 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
 
         bpy.ops.object.empty_add(type='PLAIN_AXES', radius=0.25, align='WORLD')
         self.radial_object = context.active_object
-        self.radial_object.name = "DC Radial"
+        self.radial_object.name = target.name + "_world_radial"
         self.radial_object.select_set(state=True)
 
         # Place empty in a helpers collection

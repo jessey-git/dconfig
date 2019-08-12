@@ -116,7 +116,7 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
 
                 bpy.ops.object.duplicate()
                 inset = context.active_object
-                dc.rename(inset, "DC_bool_inset")
+                dc.rename(inset, "dc_bool_inset")
 
                 bpy.ops.object.mode_set(mode='EDIT', toggle=False)
                 bpy.ops.mesh.select_all(action='SELECT')
