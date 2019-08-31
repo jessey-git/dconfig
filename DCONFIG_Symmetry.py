@@ -183,6 +183,8 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
     count: bpy.props.IntProperty(name="count", default=0)
 
     def __init__(self):
+        self.mouse_x = None
+        self.offset_mod = None
         self.radial_mod = None
         self.radial_object = None
 
@@ -217,6 +219,11 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
             self.adjust_radial_mod(self.count - self.radial_mod.count)
 
     def modal(self, context, event):
+        if self.mouse_x is not None:
+            displace_delta = (event.mouse_x - self.mouse_x) / 10
+            self.offset_mod.strength += displace_delta
+        self.mouse_x = event.mouse_x
+
         if event.type == 'WHEELUPMOUSE':
             self.adjust_radial_mod(1)
 
@@ -261,6 +268,12 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         dc.trace(1, "Adding array modifier to {}", dc.full_name(target))
         self.count = 3 if self.count is 0 else self.count
 
+        self.offset_mod = target.modifiers.new("dc_xoffset", 'DISPLACE')
+        self.offset_mod.direction = 'X'
+        self.offset_mod.show_in_editmode = True
+        self.offset_mod.show_on_cage = False
+        self.offset_mod.show_expanded = False
+
         self.radial_mod = target.modifiers.new("dc_radial", 'ARRAY')
         self.radial_mod.fit_type = 'FIXED_COUNT'
         self.radial_mod.count = self.count
@@ -269,8 +282,9 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         self.radial_mod.use_object_offset = True
         self.radial_mod.use_merge_vertices = True
         self.radial_mod.use_merge_vertices_cap = True
+        self.radial_mod.merge_threshold = 0.001
 
-        self.radial_mod.show_on_cage = True
+        self.radial_mod.show_on_cage = False
         self.radial_mod.show_expanded = False
 
     def align_objects(self, context, target):
@@ -318,6 +332,7 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
             bpy.ops.transform.rotate(value=actual_rotation, orient_axis=self.radial_object["dc_axis"], orient_type='GLOBAL',)
 
     def init_from_existing(self, target):
+        self.offset_mod = next((mod for mod in reversed(target.modifiers) if mod.name.startswith("dc_xoffset")), None)
         self.radial_mod = next((mod for mod in reversed(target.modifiers) if mod.name.startswith("dc_radial")), None)
         if self.radial_mod is not None:
             dc.trace(1, "Found existing modifier: {}", self.radial_mod.name)

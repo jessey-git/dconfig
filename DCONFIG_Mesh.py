@@ -27,6 +27,7 @@ class DCONFIG_MT_quick(bpy.types.Menu):
         op.extend = False
 
         layout.separator()
+        layout.operator_context = 'INVOKE_REGION_WIN'
         layout.operator("mesh.fill_grid", text="Fill Grid")
         layout.operator("dconfig.subdivide_cylinder", text="Subdivide Cylinder")
         layout.operator("dconfig.subd_bevel", text="Sub-D Bevel")

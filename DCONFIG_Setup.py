@@ -23,7 +23,7 @@ def setup_hotkeys():
 
     if kc.active.preferences is not None:
         kc.active.preferences.select_mouse = "LEFT"
-        kc.active.preferences.spacebar_action = "SEARCH"
+        kc.active.preferences.spacebar_action = "TOOL"
         kc.active.preferences.use_select_all_toggle = True
 
     new_keymap = (
