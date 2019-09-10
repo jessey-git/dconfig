@@ -122,6 +122,12 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         split = pie.split()
 
         # Bottom Right
+        split = pie.split()
+        col = split.column(align=True)
+        col.scale_y = 1.25
+        col.scale_x = 1.1
+        menu_name = 'VIEW3D_MT_add' if context.mode == 'OBJECT' else 'VIEW3D_MT_mesh_add'
+        col.operator("wm.call_menu", text="All").name = menu_name
 
 
 class DCONFIG_OT_add_primitive(bpy.types.Operator):
@@ -132,14 +138,14 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
     prim_type: bpy.props.StringProperty(name="Type")
     light_type: bpy.props.StringProperty(name="Light Type")
-    radius: bpy.props.FloatProperty(name="Radius", default=1.0, step=1, min=0.01, precision=3)
-    depth: bpy.props.FloatProperty(name="Depth", default=1.0, step=1, min=0.01, precision=3)
-    length: bpy.props.FloatProperty(name="Length", default=1.0, step=1, min=0.01, precision=3)
-    size: bpy.props.FloatProperty(name="Size", default=1.0, step=1, min=0.01, precision=3)
+    radius: bpy.props.FloatProperty(name="Radius", default=1.0, step=1, min=0.01, precision=3, unit='LENGTH')
+    depth: bpy.props.FloatProperty(name="Depth", default=1.0, step=1, min=0.01, precision=3, unit='LENGTH')
+    length: bpy.props.FloatProperty(name="Length", default=1.0, step=1, min=0.01, precision=3, unit='LENGTH')
+    size: bpy.props.FloatProperty(name="Size", default=1.0, step=1, min=0.01, precision=3, unit='LENGTH')
     segments: bpy.props.IntProperty(name="Segments", default=12, min=3, max=40)
     ring_count: bpy.props.IntProperty(name="Rings", default=6, min=3, max=20)
     vertices: bpy.props.IntProperty(name="Vertices", default=8, min=3, max=96)
-    vertices_4: bpy.props.IntProperty(name="Vertices_4", default=1, step=1, min=1, max=7)
+    vertices_4: bpy.props.IntProperty(name="Vertices", default=8, step=4, min=8, max=32)
     levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
     align: bpy.props.StringProperty(name="Align", default='WORLD')
 
@@ -214,7 +220,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
     def add_oval(self, context, radius, length, vertices, align):
         bm = bmesh.new()
 
-        bmesh.ops.create_circle(bm, cap_ends=False, radius=radius, segments=(8 + (vertices - 1) * 4))
+        bmesh.ops.create_circle(bm, cap_ends=False, radius=radius, segments=vertices)
         bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.y < -0.001], context='VERTS')
         bmesh.ops.translate(bm, verts=bm.verts, vec=(0.0, length / 2, 0.0))
         bmesh.ops.mirror(bm, geom=bm.verts, axis='Y', merge_dist=0.0001)

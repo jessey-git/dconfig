@@ -67,6 +67,8 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
         dc.trace_enter(self)
 
         target = context.active_object
+        target.update_from_editmode()
+
         if target.data.total_edge_sel > 0:
             dc.trace(1, "Using existing set of {} selected edges", target.data.total_edge_sel)
         else:
