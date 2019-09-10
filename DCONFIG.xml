@@ -530,19 +530,19 @@
         >
         <space>
           <ThemeSpaceGeneric
-            back="#353535"
+            back="#333333"
             title="#ffffff"
             text="#e6e6e6"
             text_hi="#ffffff"
             header="#2e2e2eff"
             header_text="#eeeeee"
             header_text_hi="#ffffff"
-            button="#424242ff"
+            button="#4b4b4bff"
             button_title="#ffffff"
             button_text="#e5e5e5"
             button_text_hi="#ffffff"
             navigation_bar="#00000000"
-            execution_buts="#00000000"
+            execution_buts="#444444ff"
             tab_active="#4b4b4b"
             tab_inactive="#2b2b2b"
             tab_back="#232323ff"
@@ -550,8 +550,8 @@
             >
             <panelcolors>
               <ThemePanelColors
-                header="#424242cc"
-                back="#333333b3"
+                header="#4b4b4bff"
+                back="#404040ff"
                 sub_back="#0000003e"
                 >
               </ThemePanelColors>
@@ -973,7 +973,8 @@
     <outliner>
       <ThemeOutliner
         match="#337f33"
-        selected_highlight="#314e78"
+        selected_highlight="#223a5b"
+        active="#3b5689"
         selected_object="#f13a00"
         active_object="#ffcc40"
         edited_object="#00806266"
@@ -1416,11 +1417,11 @@
       <ThemeFontStyle
         points="12"
         font_kerning_style="FITTED"
-        shadow="1"
+        shadow="3"
         shadow_offset_x="0"
         shadow_offset_y="-1"
-        shadow_alpha="0.15"
-        shadow_value="1"
+        shadow_alpha="0.5"
+        shadow_value="0"
         >
       </ThemeFontStyle>
     </panel_title>
@@ -1431,8 +1432,8 @@
         shadow="3"
         shadow_offset_x="0"
         shadow_offset_y="-1"
-        shadow_alpha="0.15"
-        shadow_value="1"
+        shadow_alpha="0.5"
+        shadow_value="0"
         >
       </ThemeFontStyle>
     </widget_label>
@@ -1440,10 +1441,10 @@
       <ThemeFontStyle
         points="11"
         font_kerning_style="FITTED"
-        shadow="0"
+        shadow="1"
         shadow_offset_x="0"
-        shadow_offset_y="0"
-        shadow_alpha="0.25"
+        shadow_offset_y="-1"
+        shadow_alpha="0.5"
         shadow_value="0"
         >
       </ThemeFontStyle>
