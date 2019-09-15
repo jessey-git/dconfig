@@ -27,8 +27,9 @@ class DCONFIG_MT_transforms_pie(bpy.types.Menu):
         col.prop(context.scene.tool_settings, "transform_pivot_point", expand=True)
 
         col.separator()
-        col.prop(context.scene.tool_settings, "use_transform_data_origin")
-        col.prop(context.scene.tool_settings, "use_transform_pivot_point_align")
+        col.prop(context.tool_settings, "use_transform_data_origin", text="Origins")
+        col.prop(context.tool_settings, "use_transform_pivot_point_align", text="Locations")
+        col.prop(context.tool_settings, "use_transform_skip_children", text="Parents")
 
         # Right
         split = pie.split()
