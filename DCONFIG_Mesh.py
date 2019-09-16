@@ -82,18 +82,24 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
         return dc.trace_exit(self)
 
 
+focus_settings = {
+    "EDIT_MESH": True,
+    "OBJECT": True
+}
+
+
 class DCONFIG_OT_mesh_focus(bpy.types.Operator):
     bl_idname = "dconfig.mesh_focus"
     bl_label = "DC Mesh Focus"
     bl_description = "Focus on selected mesh elements and hide everything else"
     bl_options = {'REGISTER'}
 
-    focus: bpy.props.BoolProperty()
-
     def execute(self, context):
         dc.trace_enter(self)
 
-        if self.focus:
+        current_focus = focus_settings[context.mode]
+
+        if current_focus:
             dc.trace(1, "Focus")
             if context.mode == 'EDIT_MESH':
                 bpy.ops.mesh.hide(unselected=True)
@@ -106,5 +112,7 @@ class DCONFIG_OT_mesh_focus(bpy.types.Operator):
                 bpy.ops.mesh.reveal(select=False)
             else:
                 bpy.ops.view3d.view_all()
+
+        focus_settings[context.mode] = not current_focus
 
         return dc.trace_exit(self)

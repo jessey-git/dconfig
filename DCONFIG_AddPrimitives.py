@@ -126,7 +126,11 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        menu_name = 'VIEW3D_MT_add' if context.mode == 'OBJECT' else 'VIEW3D_MT_mesh_add'
+        menu_name = 'VIEW3D_MT_add'
+        if context.mode == 'EDIT':
+            menu_name = 'VIEW3D_MT_mesh_add'
+        elif context.mode == 'EDIT_CURVE':
+            menu_name = 'VIEW3D_MT_curve_add'
         col.operator("wm.call_menu", text="All").name = menu_name
 
 
