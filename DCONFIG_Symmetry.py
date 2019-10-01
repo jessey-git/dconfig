@@ -187,6 +187,9 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         self.offset_mod = None
         self.radial_mod = None
         self.radial_object = None
+        self.existing_strength = None
+        self.existing_direction = None
+        self.existing_count = None
 
     @classmethod
     def poll(cls, context):
@@ -214,13 +217,14 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
             self.create_radial_obj(context, target)
             self.create_radial_mod(target)
             self.align_objects(context, target)
-            self.adjust_radial_mod(0)
+            self.adjust_radial_mod(0, init=True)
         elif is_execute and self.count != self.radial_mod.count:
             self.adjust_radial_mod(self.count - self.radial_mod.count)
 
     def modal(self, context, event):
         if self.mouse_x is not None:
-            displace_delta = (event.mouse_x - self.mouse_x) / 10
+            scale = 100 if event.shift else 10
+            displace_delta = (event.mouse_x - self.mouse_x) / scale
             self.offset_mod.strength += displace_delta
         self.mouse_x = event.mouse_x
 
@@ -231,11 +235,17 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
             if self.radial_mod.count > 1:
                 self.adjust_radial_mod(-1)
 
-        if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
+        elif event.type in {'X', 'Y', 'Z'} and event.value == 'RELEASE':
+            self.offset_mod.direction = event.type
+
+        elif event.type == 'LEFTMOUSE':
             self.radial_object.hide_viewport = True
             return dc.trace_exit(self)
 
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
+            self.offset_mod.strength = self.existing_strength
+            self.offset_mod.direction = self.existing_direction
+            self.adjust_radial_mod(self.existing_count - self.radial_mod.count)
             self.radial_object.hide_viewport = True
             return dc.user_canceled(self)
 
@@ -316,9 +326,12 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         context.view_layer.objects.active = self.radial_object
         context.view_layer.objects.active.select_set(True)
 
-    def adjust_radial_mod(self, delta):
+    def adjust_radial_mod(self, delta, init=False):
         dc.trace(1, "Delta: {}", delta)
-        current_rotation = math.radians(360 / self.radial_mod.count if delta != 0 else 0)
+        if init:
+            current_rotation = 0
+        else:
+            current_rotation = math.radians(360 / self.radial_mod.count)
 
         self.count += delta
         self.radial_mod.count = self.count
@@ -338,6 +351,10 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
             dc.trace(1, "Found existing modifier: {}", self.radial_mod.name)
             self.radial_object = self.radial_mod.offset_object
             self.radial_object.hide_viewport = False
+
+            self.existing_strength = self.offset_mod.strength
+            self.existing_direction = self.offset_mod.direction
+            self.existing_count = self.radial_mod.count
 
             target.select_set(state=False)
             self.radial_object.select_set(state=True)

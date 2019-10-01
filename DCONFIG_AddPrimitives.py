@@ -417,8 +417,8 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
 
         # Parent target to the lattice...
         context.view_layer.update()
-        target.parent = lattice
-        target.matrix_parent_inverse = lattice.matrix_world.inverted()
+        lattice.parent = target
+        lattice.matrix_parent_inverse = target.matrix_world.inverted()
 
         return lattice
 

@@ -83,6 +83,7 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
 
 
 focus_settings = {
+    "EDIT_CURVE": True,
     "EDIT_MESH": True,
     "OBJECT": True
 }
@@ -103,6 +104,8 @@ class DCONFIG_OT_mesh_focus(bpy.types.Operator):
             dc.trace(1, "Focus")
             if context.mode == 'EDIT_MESH':
                 bpy.ops.mesh.hide(unselected=True)
+            elif context.mode == 'EDIT_CURVE':
+                bpy.ops.curve.hide(unselected=True)
 
             bpy.ops.view3d.view_selected()
             bpy.ops.view3d.zoom(delta=-1, use_cursor_init=True)
@@ -110,6 +113,8 @@ class DCONFIG_OT_mesh_focus(bpy.types.Operator):
             dc.trace(1, "Unfocus")
             if context.mode == 'EDIT_MESH':
                 bpy.ops.mesh.reveal(select=False)
+            elif context.mode == 'EDIT_CURVE':
+                bpy.ops.curve.reveal(select=False)
             else:
                 bpy.ops.view3d.view_all()
 
