@@ -98,26 +98,28 @@ class DCONFIG_OT_mesh_focus(bpy.types.Operator):
     def execute(self, context):
         dc.trace_enter(self)
 
-        current_focus = focus_settings[context.mode]
-
-        if current_focus:
-            dc.trace(1, "Focus")
-            if context.mode == 'EDIT_MESH':
-                bpy.ops.mesh.hide(unselected=True)
-            elif context.mode == 'EDIT_CURVE':
-                bpy.ops.curve.hide(unselected=True)
-
+        if context.mode == 'OBJECT':
+            dc.trace(1, "View selected")
             bpy.ops.view3d.view_selected()
             bpy.ops.view3d.zoom(delta=-1, use_cursor_init=True)
         else:
-            dc.trace(1, "Unfocus")
-            if context.mode == 'EDIT_MESH':
-                bpy.ops.mesh.reveal(select=False)
-            elif context.mode == 'EDIT_CURVE':
-                bpy.ops.curve.reveal(select=False)
-            else:
-                bpy.ops.view3d.view_all()
+            current_focus = focus_settings[context.mode]
+            if current_focus:
+                dc.trace(1, "Focus")
+                if context.mode == 'EDIT_MESH':
+                    bpy.ops.mesh.hide(unselected=True)
+                elif context.mode == 'EDIT_CURVE':
+                    bpy.ops.curve.hide(unselected=True)
 
-        focus_settings[context.mode] = not current_focus
+                bpy.ops.view3d.view_selected()
+                bpy.ops.view3d.zoom(delta=-1, use_cursor_init=True)
+            else:
+                dc.trace(1, "Unfocus")
+                if context.mode == 'EDIT_MESH':
+                    bpy.ops.mesh.reveal(select=False)
+                elif context.mode == 'EDIT_CURVE':
+                    bpy.ops.curve.reveal(select=False)
+
+            focus_settings[context.mode] = not current_focus
 
         return dc.trace_exit(self)
