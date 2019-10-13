@@ -79,9 +79,8 @@ def draw_func(ignore):
     font_size = draw_settings["font_size"]
 
     ui_scale = bpy.context.preferences.system.ui_scale
-    dpi = bpy.context.preferences.system.dpi
 
-    blf.size(font_id, int(font_size * ui_scale), dpi)
+    blf.size(font_id, round(font_size * ui_scale), 72)
     blf.enable(font_id, blf.SHADOW)
     blf.shadow(font_id, 5, 0.0, 0.0, 0.0, 0.9)
     blf.shadow_offset(font_id, 1, -1)

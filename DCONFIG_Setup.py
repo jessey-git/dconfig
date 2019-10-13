@@ -22,18 +22,23 @@ def setup_hotkeys():
     kc = bpy.context.window_manager.keyconfigs
 
     if kc.active.preferences is not None:
-        kc.active.preferences.select_mouse = "LEFT"
-        kc.active.preferences.spacebar_action = "SEARCH"
+        kc.active.preferences.select_mouse = 'LEFT'
+        kc.active.preferences.spacebar_action = 'TOOL'
+        kc.active.preferences.gizmo_action = 'DRAG'
+        kc.active.preferences.v3d_tilde_action = 'GIZMO'
         kc.active.preferences.use_select_all_toggle = True
 
     new_keymap = (
         # Keymap Name           Space       Region      Modal   Type                        Key             Action      SHIFT   CTRL    ALT     Properties
         ("Screen",              "EMPTY",    "WINDOW",   False,  "screen.redo_last",         "BUTTON5MOUSE", "PRESS",    False,  False,  False,  ()),
-        ("Screen",              "EMPTY",    "WINDOW",   False,  "script.reload",            "F8",           "PRESS",    False,  False,  False,  ()),
 
-        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "S",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_snap"),)),
+        ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "S",            "PRESS",    True,   False,  False,  (("name", "VIEW3D_MT_snap"),)),
         ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu_pie",         "BUTTON4MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_transforms_pie"),)),
         ("Object Non-modal",    "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON5MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_origin_set"),)),
+
+        ("Object Mode",         "EMPTY",    "WINDOW",   False,  "wm.call_menu_pie",         "A",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "wm.call_menu_pie",         "A",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
+        ("Curve",               "EMPTY",    "WINDOW",   False,  "wm.call_menu_pie",         "A",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
 
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.view_center_cursor",    "HOME",     "PRESS",    False,  False,  True,   ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.toggle_shading",        "Z",        "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
@@ -41,19 +46,20 @@ def setup_hotkeys():
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu",                 "Q",        "PRESS",    False,  False,  False,  (("name", "DCONFIG_MT_quick"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",        "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_boolean_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",        "PRESS",    False,  True,   False,  (("name", "DCONFIG_MT_symmetry_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "W",        "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON4MOUSE", "PRESS",    False,  True,   False,  (("focus", False),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON5MOUSE", "PRESS",    False,  True,   False,  (("focus", True),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",         "BUTTON4MOUSE", "PRESS",    False,  False,  False,  (("name", "VIEW3D_MT_transform_gizmo_pie"),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.localview",         "BUTTON5MOUSE", "PRESS",    False,  True,   False,  (("frame_selected", True),)),
 
-        ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  (("delimit", {'SEAM'}),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("delimit", {'SEAM'}),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  (("delimit", set()),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("delimit", set()),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.delete_edgeloop",     "X",            "PRESS",        False,  True,   False,  (("use_face_split", False),)),
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "mesh.dissolve_mode",       "BACK_SPACE",   "PRESS",        False,  False,  False,  (("use_verts", False), ("use_face_split", False),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE", "PRESS",        False,  False,  False,  (("name", "VIEW3D_MT_edit_mesh_select_mode"),)),
 
         ("UV Editor",           "EMPTY",    "WINDOW",   False,  "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  ()),
         ("UV Editor",           "EMPTY",    "WINDOW",   False,  "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("extend", True),)),
-        ("UV Editor",           "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "BUTTON4MOUSE", "PRESS",        False,  False,  False,  (("name", "IMAGE_MT_uvs_select_mode"),)),
+        ("UV Editor",           "EMPTY",    "WINDOW",   False,  "wm.call_menu",             "S",            "PRESS",        True,   False,  False,  (("name", "IMAGE_MT_uvs_snap"),)),
+
+        ("Image",               "IMAGE_EDITOR", "WINDOW",   False,  "wm.call_menu",         "BUTTON4MOUSE", "PRESS",        True,   False,  False,  (("name", "DCONFIG_MT_image_pivot"),)),
 
         ("View3D Gesture Circle",   "EMPTY",    "WINDOW",   True,   "CANCEL",               "C",            "RELEASE",      False,  False,  False,  ()),
     )
@@ -87,6 +93,8 @@ def setup_userpreferences():
 
     user_prefs.view.show_tooltips_python = True
     user_prefs.view.show_developer_ui = True
+    user_prefs.view.show_navigate_ui = False
+    user_prefs.view.show_splash = False
 
     user_prefs.view.mini_axis_type = 'MINIMAL'
     user_prefs.view.mini_axis_size = 40

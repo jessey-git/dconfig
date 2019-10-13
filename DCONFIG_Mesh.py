@@ -9,7 +9,6 @@
 #
 
 import bpy
-import bmesh
 from . import DCONFIG_Utils as dc
 
 
@@ -28,6 +27,7 @@ class DCONFIG_MT_quick(bpy.types.Menu):
         op.extend = False
 
         layout.separator()
+        layout.operator_context = 'INVOKE_REGION_WIN'
         layout.operator("mesh.fill_grid", text="Fill Grid")
         layout.operator("dconfig.subdivide_cylinder", text="Subdivide Cylinder")
         layout.operator("dconfig.subd_bevel", text="Sub-D Bevel")
@@ -67,6 +67,8 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
         dc.trace_enter(self)
 
         target = context.active_object
+        target.update_from_editmode()
+
         if target.data.total_edge_sel > 0:
             dc.trace(1, "Using existing set of {} selected edges", target.data.total_edge_sel)
         else:
@@ -75,19 +77,16 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
             bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='EDGE')
             bpy.ops.mesh.edges_select_sharp()
 
-        edge_min = 100
-        bm = bmesh.from_edit_mesh(target.data)
-        for edge in bm.edges:
-            if edge.select:
-                edge_min = min(edge_min, edge.calc_length())
-
-        bevel_offset = max(0.02, edge_min * .02)
-        bevel_offset = min(bevel_offset, edge_min / 3)
-
-        dc.trace(1, "Creating bevel with offset {}", bevel_offset)
-        bpy.ops.mesh.bevel(offset_type='OFFSET', offset=bevel_offset, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
+        bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', offset=0.01, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
 
         return dc.trace_exit(self)
+
+
+focus_settings = {
+    "EDIT_CURVE": True,
+    "EDIT_MESH": True,
+    "OBJECT": True
+}
 
 
 class DCONFIG_OT_mesh_focus(bpy.types.Operator):
@@ -96,23 +95,31 @@ class DCONFIG_OT_mesh_focus(bpy.types.Operator):
     bl_description = "Focus on selected mesh elements and hide everything else"
     bl_options = {'REGISTER'}
 
-    focus: bpy.props.BoolProperty()
-
     def execute(self, context):
         dc.trace_enter(self)
 
-        if self.focus:
-            dc.trace(1, "Focus")
-            if context.mode == 'EDIT_MESH':
-                bpy.ops.mesh.hide(unselected=True)
-
+        if context.mode == 'OBJECT':
+            dc.trace(1, "View selected")
             bpy.ops.view3d.view_selected()
             bpy.ops.view3d.zoom(delta=-1, use_cursor_init=True)
         else:
-            dc.trace(1, "Unfocus")
-            if context.mode == 'EDIT_MESH':
-                bpy.ops.mesh.reveal(select=False)
+            current_focus = focus_settings[context.mode]
+            if current_focus:
+                dc.trace(1, "Focus")
+                if context.mode == 'EDIT_MESH':
+                    bpy.ops.mesh.hide(unselected=True)
+                elif context.mode == 'EDIT_CURVE':
+                    bpy.ops.curve.hide(unselected=True)
+
+                bpy.ops.view3d.view_selected()
+                bpy.ops.view3d.zoom(delta=-1, use_cursor_init=True)
             else:
-                bpy.ops.view3d.view_all()
+                dc.trace(1, "Unfocus")
+                if context.mode == 'EDIT_MESH':
+                    bpy.ops.mesh.reveal(select=False)
+                elif context.mode == 'EDIT_CURVE':
+                    bpy.ops.curve.reveal(select=False)
+
+            focus_settings[context.mode] = not current_focus
 
         return dc.trace_exit(self)

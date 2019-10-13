@@ -38,13 +38,13 @@ class DCONFIG_MT_symmetry_pie(bpy.types.Menu):
         pie.operator("dconfig.mesh_symmetry", text="-Z to +Z", icon='TRIA_UP').direction = 'NEGATIVE_Z'
 
         # Top Left
-        pie.operator("dconfig.mirror", text="Mirror Local", icon='MOD_MIRROR').local = True
+        pie.operator("dconfig.mirror", text="Local Mirror", icon='MOD_MIRROR').local = True
 
         # Top Right
         col = pie.column(align=True)
         col.scale_y = 1.25
-        col.operator("dconfig.mirror", text="Mirror World", icon='MOD_MIRROR').local = False
-        col.operator("dconfig.mirror_radial", text="Mirror Radial", icon='MOD_ARRAY')
+        col.operator("dconfig.mirror", text="World Mirror", icon='MOD_MIRROR').local = False
+        col.operator("dconfig.mirror_radial", text="World Radial", icon='MOD_ARRAY')
 
         # Bottom Left
         pie.operator("dconfig.mesh_symmetry", text="+Y to -Y", icon='DOT').direction = 'POSITIVE_Y'
@@ -122,18 +122,19 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
             # Use a special collection
             helpers_collection = dc.get_helpers_collection(context)
 
-            if "DC_World_Origin" in helpers_collection.all_objects:
+            world_origin_name = "dc_world_origin"
+            if world_origin_name in helpers_collection.all_objects:
                 dc.trace(1, "Using existing world-origin empty")
-                mirror_object = helpers_collection.objects["DC_World_Origin"]
+                mirror_object = helpers_collection.objects[world_origin_name]
             else:
                 dc.trace(1, "Creating new world-origin empty")
                 original_object = context.active_object
                 original_mode = context.active_object.mode
 
                 bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-                bpy.ops.object.empty_add(type='PLAIN_AXES', align='WORLD', location=(0, 0, 0))
+                bpy.ops.object.empty_add(type='PLAIN_AXES', radius=0.25, align='WORLD', location=(0, 0, 0))
                 mirror_object = context.active_object
-                mirror_object.name = "DC_World_Origin"
+                mirror_object.name = world_origin_name
                 mirror_object.select_set(state=False)
                 mirror_object.hide_viewport = True
 
@@ -151,12 +152,12 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
         dc.trace(1, "Adding {} mirror modifier to {}", "local" if self.local else "world", dc.full_name(target))
 
         if self.local:
-            mod = target.modifiers.new("dc_local", 'MIRROR')
+            mod = target.modifiers.new("dc_local_mirror", 'MIRROR')
             mod.use_axis[0] = True
             mod.use_bisect_axis[0] = True
             mod.use_clip = True
         else:
-            mod = target.modifiers.new("dc_world", 'MIRROR')
+            mod = target.modifiers.new("dc_world_mirror", 'MIRROR')
             mod.use_axis[0] = True
             mod.use_bisect_axis[0] = False
             mod.use_clip = True
@@ -168,7 +169,7 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
         # Local mirrors go before World and after Booleans...
         if self.local:
             mod_index = len(target.modifiers) - 1
-            while mod_index > 0 and target.modifiers[mod_index - 1].type != 'BOOLEAN':
+            while mod_index > 0 and target.modifiers[mod_index - 1].type != 'BOOLEAN' and not target.modifiers[mod_index - 1].name.startswith("dc_local_mirror"):
                 bpy.ops.object.modifier_move_up(modifier=mod.name)
                 mod_index -= 1
 
@@ -182,8 +183,13 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
     count: bpy.props.IntProperty(name="count", default=0)
 
     def __init__(self):
+        self.mouse_x = None
+        self.offset_mod = None
         self.radial_mod = None
         self.radial_object = None
+        self.existing_strength = None
+        self.existing_direction = None
+        self.existing_count = None
 
     @classmethod
     def poll(cls, context):
@@ -208,40 +214,53 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
     def execute_core(self, context, is_execute):
         target = context.active_object
         if not self.init_from_existing(target):
-            self.create_radial_obj(context)
+            self.create_radial_obj(context, target)
             self.create_radial_mod(target)
             self.align_objects(context, target)
-            self.adjust_radial_mod(0)
+            self.adjust_radial_mod(0, init=True)
         elif is_execute and self.count != self.radial_mod.count:
             self.adjust_radial_mod(self.count - self.radial_mod.count)
 
     def modal(self, context, event):
+        if self.mouse_x is not None:
+            scale = 100 if event.shift else 10
+            displace_delta = (event.mouse_x - self.mouse_x) / scale
+            self.offset_mod.strength += displace_delta
+        self.mouse_x = event.mouse_x
+
         if event.type == 'WHEELUPMOUSE':
             self.adjust_radial_mod(1)
 
         elif event.type == 'WHEELDOWNMOUSE':
-            self.adjust_radial_mod(-1)
+            if self.radial_mod.count > 1:
+                self.adjust_radial_mod(-1)
 
-        if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
+        elif event.type in {'X', 'Y', 'Z'} and event.value == 'RELEASE':
+            self.offset_mod.direction = event.type
+
+        elif event.type == 'LEFTMOUSE':
             self.radial_object.hide_viewport = True
             return dc.trace_exit(self)
 
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
+            self.offset_mod.strength = self.existing_strength
+            self.offset_mod.direction = self.existing_direction
+            self.adjust_radial_mod(self.existing_count - self.radial_mod.count)
             self.radial_object.hide_viewport = True
             return dc.user_canceled(self)
 
         return {'RUNNING_MODAL'}
 
-    def create_radial_obj(self, context):
+    def create_radial_obj(self, context, target):
         dc.trace(1, "Creating new radial empty")
         prev_cursor_location = tuple(context.scene.cursor.location)
 
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         bpy.ops.view3d.snap_cursor_to_selected()
 
-        bpy.ops.object.empty_add(type='PLAIN_AXES', align='WORLD')
+        bpy.ops.object.empty_add(type='PLAIN_AXES', radius=0.25, align='WORLD')
         self.radial_object = context.active_object
-        self.radial_object.name = "DC Radial"
+        self.radial_object.name = target.name + "_world_radial"
         self.radial_object.select_set(state=True)
 
         # Place empty in a helpers collection
@@ -250,11 +269,20 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         helpers_collection.objects.link(self.radial_object)
         radial_object_collection.objects.unlink(self.radial_object)
 
+        # Parent empty to the target
+        self.radial_object.parent = target
+
         context.scene.cursor.location = prev_cursor_location
 
     def create_radial_mod(self, target):
         dc.trace(1, "Adding array modifier to {}", dc.full_name(target))
         self.count = 3 if self.count is 0 else self.count
+
+        self.offset_mod = target.modifiers.new("dc_xoffset", 'DISPLACE')
+        self.offset_mod.direction = 'X'
+        self.offset_mod.show_in_editmode = True
+        self.offset_mod.show_on_cage = False
+        self.offset_mod.show_expanded = False
 
         self.radial_mod = target.modifiers.new("dc_radial", 'ARRAY')
         self.radial_mod.fit_type = 'FIXED_COUNT'
@@ -264,8 +292,9 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         self.radial_mod.use_object_offset = True
         self.radial_mod.use_merge_vertices = True
         self.radial_mod.use_merge_vertices_cap = True
+        self.radial_mod.merge_threshold = 0.001
 
-        self.radial_mod.show_on_cage = True
+        self.radial_mod.show_on_cage = False
         self.radial_mod.show_expanded = False
 
     def align_objects(self, context, target):
@@ -297,9 +326,12 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
         context.view_layer.objects.active = self.radial_object
         context.view_layer.objects.active.select_set(True)
 
-    def adjust_radial_mod(self, delta):
+    def adjust_radial_mod(self, delta, init=False):
         dc.trace(1, "Delta: {}", delta)
-        current_rotation = math.radians(360 / self.radial_mod.count if delta != 0 else 0)
+        if init:
+            current_rotation = 0
+        else:
+            current_rotation = math.radians(360 / self.radial_mod.count)
 
         self.count += delta
         self.radial_mod.count = self.count
@@ -313,11 +345,16 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
             bpy.ops.transform.rotate(value=actual_rotation, orient_axis=self.radial_object["dc_axis"], orient_type='GLOBAL',)
 
     def init_from_existing(self, target):
+        self.offset_mod = next((mod for mod in reversed(target.modifiers) if mod.name.startswith("dc_xoffset")), None)
         self.radial_mod = next((mod for mod in reversed(target.modifiers) if mod.name.startswith("dc_radial")), None)
         if self.radial_mod is not None:
             dc.trace(1, "Found existing modifier: {}", self.radial_mod.name)
             self.radial_object = self.radial_mod.offset_object
             self.radial_object.hide_viewport = False
+
+            self.existing_strength = self.offset_mod.strength
+            self.existing_direction = self.offset_mod.direction
+            self.existing_count = self.radial_mod.count
 
             target.select_set(state=False)
             self.radial_object.select_set(state=True)

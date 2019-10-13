@@ -13,25 +13,6 @@ from mathutils import (Vector)
 from . import DCONFIG_Utils as dc
 
 
-class DCONFIG_MT_snap(bpy.types.Menu):
-    bl_label = "Snap"
-
-    def draw(self, context):
-        layout = self.layout
-
-        layout.operator("view3d.snap_selected_to_grid", text="Selection to Grid")
-        layout.operator("view3d.snap_selected_to_cursor", text="Selection to Cursor").use_offset = False
-        layout.operator("view3d.snap_selected_to_cursor", text="Selection to Cursor (Keep Offset)").use_offset = True
-        layout.operator("view3d.snap_selected_to_active", text="Selection to Active")
-
-        layout.separator()
-
-        layout.operator("view3d.snap_cursor_to_selected", text="Cursor to Selected")
-        layout.operator("view3d.snap_cursor_to_center", text="Cursor to World Origin")
-        layout.operator("view3d.snap_cursor_to_grid", text="Cursor to Grid")
-        layout.operator("view3d.snap_cursor_to_active", text="Cursor to Active")
-
-
 class DCONFIG_MT_transforms_pie(bpy.types.Menu):
     bl_label = "Transforms"
 
@@ -45,11 +26,25 @@ class DCONFIG_MT_transforms_pie(bpy.types.Menu):
         col.scale_y = 1.25
         col.prop(context.scene.tool_settings, "transform_pivot_point", expand=True)
 
+        col.separator()
+        col.prop(context.tool_settings, "use_transform_data_origin", text="Origins")
+        col.prop(context.tool_settings, "use_transform_pivot_point_align", text="Locations")
+        col.prop(context.tool_settings, "use_transform_skip_children", text="Parents")
+
         # Right
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.25
         col.prop(context.scene.transform_orientation_slots[0], "type", expand=True)
+
+
+class DCONFIG_MT_image_pivot(bpy.types.Menu):
+    bl_label = "Pivot"
+
+    def draw(self, context):
+        layout = self.layout
+
+        layout.prop(context.space_data, "pivot_point", expand=True)
 
 
 class DCONFIG_MT_origin_set(bpy.types.Menu):
@@ -125,7 +120,7 @@ class DCONFIG_OT_center_collection(bpy.types.Operator):
                 return dc.warn_canceled(self, "Object {} has {} unapplied modifiers", dc.full_name(obj), len(obj.modifiers))
 
             obj.select_set(True)
-            bbox_min, bbox_max = dc.find_world_bbox(obj.matrix_world, map(Vector, obj.bound_box))
+            bbox_min, bbox_max = dc.calculate_bbox(map(Vector, obj.bound_box), obj.matrix_world)
             self.merge_bbox(bbox_min, bbox_max)
 
         dc.trace(1, "Bounding box min:{}  max:{}", self.bbox_min, self.bbox_max)

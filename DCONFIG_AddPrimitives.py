@@ -104,7 +104,7 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'EMPTY_DATA', "", prim_type='Empty', radius=1, align=align)
+        setop(col, "dconfig.add_primitive", 'EMPTY_DATA', "", prim_type='Empty', radius=0.25, align=align)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
@@ -122,6 +122,16 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         split = pie.split()
 
         # Bottom Right
+        split = pie.split()
+        col = split.column(align=True)
+        col.scale_y = 1.25
+        col.scale_x = 1.1
+        menu_name = 'VIEW3D_MT_add'
+        if context.mode == 'EDIT':
+            menu_name = 'VIEW3D_MT_mesh_add'
+        elif context.mode == 'EDIT_CURVE':
+            menu_name = 'VIEW3D_MT_curve_add'
+        col.operator("wm.call_menu", text="All").name = menu_name
 
 
 class DCONFIG_OT_add_primitive(bpy.types.Operator):
@@ -132,14 +142,14 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
     prim_type: bpy.props.StringProperty(name="Type")
     light_type: bpy.props.StringProperty(name="Light Type")
-    radius: bpy.props.FloatProperty(name="Radius", default=1.0, step=1, min=0.01, precision=3)
-    depth: bpy.props.FloatProperty(name="Depth", default=1.0, step=1, min=0.01, precision=3)
-    length: bpy.props.FloatProperty(name="Length", default=1.0, step=1, min=0.01, precision=3)
-    size: bpy.props.FloatProperty(name="Size", default=1.0, step=1, min=0.01, precision=3)
+    radius: bpy.props.FloatProperty(name="Radius", default=1.0, step=1, min=0.01, precision=3, unit='LENGTH')
+    depth: bpy.props.FloatProperty(name="Depth", default=1.0, step=1, min=0.01, precision=3, unit='LENGTH')
+    length: bpy.props.FloatProperty(name="Length", default=1.0, step=1, min=0.01, precision=3, unit='LENGTH')
+    size: bpy.props.FloatProperty(name="Size", default=1.0, step=1, min=0.01, precision=3, unit='LENGTH')
     segments: bpy.props.IntProperty(name="Segments", default=12, min=3, max=40)
     ring_count: bpy.props.IntProperty(name="Rings", default=6, min=3, max=20)
     vertices: bpy.props.IntProperty(name="Vertices", default=8, min=3, max=96)
-    vertices_4: bpy.props.IntProperty(name="Vertices_4", default=1, step=1, min=1, max=7)
+    vertices_4: bpy.props.IntProperty(name="Vertices", default=8, step=4, min=8, max=32)
     levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
     align: bpy.props.StringProperty(name="Align", default='WORLD')
 
@@ -214,7 +224,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
     def add_oval(self, context, radius, length, vertices, align):
         bm = bmesh.new()
 
-        bmesh.ops.create_circle(bm, cap_ends=False, radius=radius, segments=(8 + (vertices - 1) * 4))
+        bmesh.ops.create_circle(bm, cap_ends=False, radius=radius, segments=vertices)
         bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.y < -0.001], context='VERTS')
         bmesh.ops.translate(bm, verts=bm.verts, vec=(0.0, length / 2, 0.0))
         bmesh.ops.mirror(bm, geom=bm.verts, axis='Y', merge_dist=0.0001)
@@ -368,15 +378,15 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
             target = context.active_object
             lattice = self.create_lattice_obj(context, target)
             self.create_lattice_mod(target, lattice)
+
+            context.view_layer.objects.active = lattice
+            lattice.select_set(True)
+            target.select_set(False)
         else:
             lattice_data = context.active_object.data
             lattice_data.points_u = self.resolution
             lattice_data.points_v = self.resolution
             lattice_data.points_w = self.resolution
-
-        bpy.ops.object.select_all(action='DESELECT')
-        context.view_layer.objects.active = lattice
-        lattice.select_set(True)
 
         return dc.trace_exit(self)
 
@@ -385,17 +395,17 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         lattice_data = bpy.data.lattices.new('dc_lattice')
         lattice = bpy.data.objects.new('dc_lattice', lattice_data)
 
-        lattice_data.points_u = self.resolution
-        lattice_data.points_v = self.resolution
-        lattice_data.points_w = self.resolution
+        # Position + Orientation (resolution is affected for 0 dimensions)
+        safe_res = self.set_transforms(target, lattice)
+
+        lattice_data.points_u = safe_res[0]
+        lattice_data.points_v = safe_res[1]
+        lattice_data.points_w = safe_res[2]
 
         lattice_data.interpolation_type_u = 'KEY_LINEAR'
         lattice_data.interpolation_type_v = 'KEY_LINEAR'
         lattice_data.interpolation_type_w = 'KEY_LINEAR'
         lattice_data.use_outside = False
-
-        # Position + Orientation
-        self.set_transforms(target, lattice)
 
         # Place in a special collection
         helpers_collection = dc.get_helpers_collection(context)
@@ -404,6 +414,11 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         # Ensure the lattice is added to local view...
         if context.space_data.local_view is not None:
             lattice.local_view_set(context.space_data, True)
+
+        # Parent target to the lattice...
+        context.view_layer.update()
+        lattice.parent = target
+        lattice.matrix_parent_inverse = target.matrix_world.inverted()
 
         return lattice
 
@@ -421,15 +436,19 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
 
     def set_transforms(self, target, lattice):
         if self.only_base:
-            bbox_min, bbox_max = dc.find_world_bbox(target.matrix_world, map(lambda v: v.co, target.data.vertices))
+            bbox_min, bbox_max = dc.calculate_bbox(map(lambda v: v.co, target.data.vertices))
+            vert_avg = sum(map(lambda v: v.co, target.data.vertices), Vector()) / len(target.data.vertices)
+            box_center = ((bbox_min + vert_avg) + (bbox_max - vert_avg)) / 2
+            box_dims = bbox_max - bbox_min
         else:
-            bbox_min, bbox_max = dc.find_world_bbox(target.matrix_world, map(Vector, target.bound_box))
+            box_center = sum(map(Vector, target.bound_box), Vector()) / 8
+            box_dims = target.dimensions
 
-        size = bbox_max - bbox_min
+        target_loc, target_rot, _ = target.matrix_world.decompose()
+        lattice.matrix_world = (Matrix.Translation(target_loc) @ target_rot.to_matrix().to_4x4() @ Matrix.Translation(box_center))
+        lattice.dimensions = [max(0.01, d * 1.01) for d in box_dims]
 
-        lattice.location = (bbox_min + bbox_max) / 2
-        lattice.scale = Vector([max(0.1, c * 1.025) for c in size])
-        lattice.rotation_euler = target.rotation_euler
+        return [self.resolution if d > 0.0 else 1 for d in box_dims]
 
 
 class DCONFIG_OT_add_edge_curve(bpy.types.Operator):

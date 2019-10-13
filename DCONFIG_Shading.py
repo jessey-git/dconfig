@@ -23,15 +23,12 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
     def execute(self, context):
         dc.trace_enter(self)
 
-        context.scene.tool_settings.snap_elements = {'VERTEX'}
-        context.scene.tool_settings.snap_target = 'ACTIVE'
-
-        context.scene.tool_settings.statvis.type = 'DISTORT'
-        context.scene.tool_settings.statvis.distort_min = 0
-        context.scene.tool_settings.statvis.distort_max = math.radians(40)
+        context.space_data.show_region_tool_header = False
 
         context.space_data.clip_end = 100
         context.space_data.clip_start = 0.02
+
+        context.space_data.lock_camera = True
 
         context.space_data.shading.light = 'MATCAP'
         context.space_data.shading.show_shadows = False
@@ -43,19 +40,18 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
         context.space_data.shading.curvature_valley_factor = 0.8
         context.space_data.shading.xray_alpha_wireframe = 0
 
-        context.space_data.overlay.show_curve_handles = False
+        context.space_data.overlay.show_curve_handles = True
         context.space_data.overlay.show_curve_normals = False
 
         context.space_data.overlay.wireframe_threshold = 1.0
 
         context.scene.display.matcap_ssao_distance = 1
 
-        area = next((area for area in context.screen.areas if area.type == 'OUTLINER'), None)
-        if area is not None:
-            area.spaces.active.show_restrict_column_select = True
-            area.spaces.active.show_restrict_column_hide = True
-            area.spaces.active.show_restrict_column_viewport = True
-            area.spaces.active.show_restrict_column_render = True
+        context.scene.tool_settings.snap_elements = {'VERTEX'}
+        context.scene.tool_settings.snap_target = 'ACTIVE'
+        context.scene.tool_settings.statvis.type = 'DISTORT'
+        context.scene.tool_settings.statvis.distort_min = 0
+        context.scene.tool_settings.statvis.distort_max = math.radians(40)
 
         return dc.trace_exit(self)
 
@@ -77,12 +73,13 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
         context.scene.eevee.use_ssr = True
         context.scene.eevee.use_ssr_halfres = False
         context.scene.eevee.use_ssr_refraction = True
+
         context.scene.eevee.use_gtao = True
+        context.scene.eevee.gtao_distance = 0.4
 
         context.scene.eevee.use_volumetric_shadows = True
         context.scene.eevee.volumetric_tile_size = '2'
 
-        context.scene.eevee.shadow_method = 'VSM'
         context.scene.eevee.use_shadow_high_bitdepth = True
         context.scene.eevee.use_soft_shadows = True
 
@@ -119,14 +116,20 @@ def menu_func(self, context):
 def load_handler(ignore):
     # Only apply settings when the file being loaded is from startup.blend (aka. '')
     if bpy.data.filepath == '':
-        area = next((area for area in bpy.context.screen.areas if area.type == 'VIEW_3D'), None)
-        if area is not None:
-            region = next((region for region in area.regions if region.type == 'WINDOW'), None)
+        bpy.ops.dconfig.engine_defaults()
 
-        if region is not None:
-            override = {'area': area, 'region': region}
-            bpy.ops.dconfig.viewport_defaults(override)
-            bpy.ops.dconfig.engine_defaults(override)
+        for screen in bpy.data.screens:
+            for area in (a for a in screen.areas if a.type == 'OUTLINER'):
+                area.spaces.active.show_restrict_column_select = True
+                area.spaces.active.show_restrict_column_hide = True
+                area.spaces.active.show_restrict_column_viewport = True
+                area.spaces.active.show_restrict_column_render = True
+
+            for area in (a for a in screen.areas if a.type == 'VIEW_3D'):
+                region = next((region for region in area.regions if region.type == 'WINDOW'), None)
+                if region is not None:
+                    override = {'area': area, 'region': region}
+                    bpy.ops.dconfig.viewport_defaults(override)
 
 
 def register():
