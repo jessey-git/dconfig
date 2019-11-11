@@ -56,7 +56,7 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
 
         col.separator()
         setop(col, "dconfig.add_primitive", 'CURVE_BEZCIRCLE', "Circle", prim_type='B_Circle', radius=0.50, align=align)
-        setop(col, "dconfig.add_primitive", 'MESH_CAPSULE', "Capsule", prim_type='Oval', radius=0.125, length=0.5, vertices_4=1, align=align)
+        setop(col, "dconfig.add_primitive", 'MESH_CAPSULE', "Capsule", prim_type='Oval', radius=0.125, length=0.5, vertices_4=8, align=align)
 
         # Right
         split = pie.split(align=True)
@@ -125,13 +125,31 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.25
-        col.scale_x = 1.1
+        col.scale_x = 1.25
         menu_name = 'VIEW3D_MT_add'
         if context.mode == 'EDIT':
             menu_name = 'VIEW3D_MT_mesh_add'
         elif context.mode == 'EDIT_CURVE':
             menu_name = 'VIEW3D_MT_curve_add'
         col.operator("wm.call_menu", text="All").name = menu_name
+
+        has_collections = bool(bpy.data.collections)
+        if has_collections:
+            if len(bpy.data.collections) > 10:
+                col.operator_context = 'INVOKE_REGION_WIN'
+                col.operator(
+                    "object.collection_instance_add",
+                    text="Collections...",
+                    icon='OUTLINER_OB_GROUP_INSTANCE',
+                )
+            else:
+                col.operator_context = 'EXEC_REGION_WIN'
+                col.operator_menu_enum(
+                    "object.collection_instance_add",
+                    "collection",
+                    text="Collections",
+                    icon='OUTLINER_OB_GROUP_INSTANCE',
+                )
 
 
 class DCONFIG_OT_add_primitive(bpy.types.Operator):
@@ -149,7 +167,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
     segments: bpy.props.IntProperty(name="Segments", default=12, min=3, max=40)
     ring_count: bpy.props.IntProperty(name="Rings", default=6, min=3, max=20)
     vertices: bpy.props.IntProperty(name="Vertices", default=8, min=3, max=96)
-    vertices_4: bpy.props.IntProperty(name="Vertices", default=8, step=4, min=8, max=32)
+    vertices_4: bpy.props.IntProperty(name="Vertices", default=8, step=2, min=6, max=32)
     levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
     align: bpy.props.StringProperty(name="Align", default='WORLD')
 

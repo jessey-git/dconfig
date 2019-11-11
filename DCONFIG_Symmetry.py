@@ -278,6 +278,7 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
 
         # Parent empty to the target
         self.radial_object.parent = target
+        self.radial_object.matrix_parent_inverse = target.matrix_world.inverted()
 
         context.scene.cursor.location = prev_cursor_location
 
