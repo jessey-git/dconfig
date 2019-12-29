@@ -8,6 +8,8 @@
 # Mesh modeling helper ops
 #
 
+import math
+
 import bpy
 from . import DCONFIG_Utils as dc
 
@@ -29,8 +31,29 @@ class DCONFIG_MT_quick(bpy.types.Menu):
         layout.separator()
         layout.operator_context = 'INVOKE_REGION_WIN'
         layout.operator("mesh.fill_grid", text="Fill Grid")
+        layout.operator("dconfig.make_quads", text="Make Quads")
         layout.operator("dconfig.subdivide_cylinder", text="Subdivide Cylinder")
         layout.operator("dconfig.subd_bevel", text="Sub-D Bevel")
+
+
+class DCONFIG_OT_make_quads(bpy.types.Operator):
+    bl_idname = "dconfig.make_quads"
+    bl_label = "DC Make Quads"
+    bl_description = "Triangulate and then convert to Quads"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'EDIT_MESH' and dc.active_mesh_available(context)
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        angle = math.radians(60)
+        bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
+        bpy.ops.mesh.tris_convert_to_quads(face_threshold=angle, shape_threshold=angle)
+
+        return dc.trace_exit(self)
 
 
 class DCONFIG_OT_subdivide_cylinder(bpy.types.Operator):
@@ -78,6 +101,37 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
             bpy.ops.mesh.edges_select_sharp()
 
         bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', offset=0.01, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
+
+        return dc.trace_exit(self)
+
+
+class DCONFIG_OT_subd_toggle(bpy.types.Operator):
+    bl_idname = "dconfig.subd_toggle"
+    bl_label = "DC Sub-D Toggle"
+    bl_description = "Toggle subdivision surface modifier"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
+
+    @classmethod
+    def poll(cls, context):
+        return dc.active_mesh_available(context)
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        target = context.active_object
+        mod_subd = next((mod for mod in reversed(target.modifiers) if mod.type == 'SUBSURF'), None)
+        if mod_subd is None:
+            mod_subd = target.modifiers.new("Subdivision", 'SUBSURF')
+            mod_subd.levels = self.levels
+            mod_subd.show_only_control_edges = True
+        else:
+            if self.levels != mod_subd.levels:
+                mod_subd.levels = self.levels
+                mod_subd.show_viewport = True
+            else:
+                mod_subd.show_viewport = not mod_subd.show_viewport
 
         return dc.trace_exit(self)
 

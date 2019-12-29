@@ -40,6 +40,13 @@ def setup_hotkeys():
         ("Mesh",                "EMPTY",    "WINDOW",   False,  "wm.call_menu_pie",         "A",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
         ("Curve",               "EMPTY",    "WINDOW",   False,  "wm.call_menu_pie",         "A",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
 
+        ("Object Mode",         "EMPTY",    "WINDOW",   False,  "dconfig.subd_toggle",      "ONE",          "PRESS",    False,  False,  True,   (("levels", 1),)),
+        ("Object Mode",         "EMPTY",    "WINDOW",   False,  "dconfig.subd_toggle",      "TWO",          "PRESS",    False,  False,  True,   (("levels", 2),)),
+        ("Object Mode",         "EMPTY",    "WINDOW",   False,  "dconfig.subd_toggle",      "THREE",        "PRESS",    False,  False,  True,   (("levels", 3),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "dconfig.subd_toggle",      "ONE",          "PRESS",    False,  False,  True,   (("levels", 1),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "dconfig.subd_toggle",      "TWO",          "PRESS",    False,  False,  True,   (("levels", 2),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   False,  "dconfig.subd_toggle",      "THREE",        "PRESS",    False,  False,  True,   (("levels", 3),)),
+
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.view_center_cursor",    "HOME",     "PRESS",    False,  False,  True,   ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.toggle_shading",        "Z",        "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.toggle_wireframe",     "Z",        "PRESS",    True,   False,  False,  ()),
