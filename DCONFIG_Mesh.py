@@ -139,7 +139,6 @@ class DCONFIG_OT_subd_toggle(bpy.types.Operator):
 focus_settings = {
     "EDIT_CURVE": True,
     "EDIT_MESH": True,
-    "OBJECT": True
 }
 
 
@@ -156,6 +155,9 @@ class DCONFIG_OT_mesh_focus(bpy.types.Operator):
             dc.trace(1, "View selected")
             bpy.ops.view3d.view_selected()
             bpy.ops.view3d.zoom(delta=-1, use_cursor_init=True)
+        elif context.mode == 'SCULPT':
+            dc.trace(1, "View selected")
+            bpy.ops.view3d.view_selected()
         else:
             current_focus = focus_settings[context.mode]
             if current_focus:
