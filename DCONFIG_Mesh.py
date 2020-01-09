@@ -20,20 +20,17 @@ class DCONFIG_MT_quick(bpy.types.Menu):
     def draw(self, context):
         layout = self.layout
 
-        layout.operator("mesh.remove_doubles", text="Weld vertices")
+        dc.setup_op(layout, "mesh.remove_doubles", text="Weld vertices")
 
         layout.separator()
-        op = layout.operator("mesh.select_face_by_sides", text="Select N-Gons")
-        op.type = 'GREATER'
-        op.number = 4
-        op.extend = False
+        dc.setup_op(layout, "mesh.select_face_by_sides", text="Select N-Gons", type='GREATER', number=4, extend=False)
 
         layout.separator()
         layout.operator_context = 'INVOKE_REGION_WIN'
-        layout.operator("mesh.fill_grid", text="Fill Grid")
-        layout.operator("dconfig.make_quads", text="Make Quads")
-        layout.operator("dconfig.subdivide_cylinder", text="Subdivide Cylinder")
-        layout.operator("dconfig.subd_bevel", text="Sub-D Bevel")
+        dc.setup_op(layout, "mesh.fill_grid", text="Fill Grid")
+        dc.setup_op(layout, "dconfig.make_quads", text="Make Quads")
+        dc.setup_op(layout, "dconfig.subdivide_cylinder", text="Subdivide Cylinder")
+        dc.setup_op(layout, "dconfig.subd_bevel", text="Sub-D Bevel")
 
 
 class DCONFIG_OT_make_quads(bpy.types.Operator):

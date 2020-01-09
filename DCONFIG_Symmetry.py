@@ -26,31 +26,31 @@ class DCONFIG_MT_symmetry_pie(bpy.types.Menu):
         pie = layout.menu_pie()
 
         # Left
-        pie.operator("dconfig.mesh_symmetry", text="+X to -X", icon='TRIA_LEFT').direction = 'POSITIVE_X'
+        dc.setup_op(pie, "dconfig.mesh_symmetry", 'TRIA_LEFT', "+X to -X", direction='POSITIVE_X')
 
         # Right
-        pie.operator("dconfig.mesh_symmetry", text="-X to +X", icon='TRIA_RIGHT').direction = 'NEGATIVE_X'
+        dc.setup_op(pie, "dconfig.mesh_symmetry", 'TRIA_RIGHT', "-X to +X", direction='NEGATIVE_X')
 
         # Bottom
-        pie.operator("dconfig.mesh_symmetry", text="+Z to -Z", icon='TRIA_DOWN').direction = 'POSITIVE_Z'
+        dc.setup_op(pie, "dconfig.mesh_symmetry", 'TRIA_DOWN', "+Z to -Z", direction='POSITIVE_Z')
 
         # Top
-        pie.operator("dconfig.mesh_symmetry", text="-Z to +Z", icon='TRIA_UP').direction = 'NEGATIVE_Z'
+        dc.setup_op(pie, "dconfig.mesh_symmetry", 'TRIA_UP', "-Z to +Z", direction='NEGATIVE_Z')
 
         # Top Left
-        pie.operator("dconfig.mirror", text="Local Mirror", icon='MOD_MIRROR').local = True
+        dc.setup_op(pie, "dconfig.mirror", 'MOD_MIRROR', "Local Mirror", local=True)
 
         # Top Right
         col = pie.column(align=True)
         col.scale_y = 1.25
-        col.operator("dconfig.mirror", text="World Mirror", icon='MOD_MIRROR').local = False
-        col.operator("dconfig.mirror_radial", text="World Radial", icon='MOD_ARRAY')
+        dc.setup_op(col, "dconfig.mirror", 'MOD_MIRROR', "World Mirror", local=False)
+        dc.setup_op(col, "dconfig.mirror_radial", 'MOD_ARRAY', "World Radial")
 
         # Bottom Left
-        pie.operator("dconfig.mesh_symmetry", text="+Y to -Y", icon='DOT').direction = 'POSITIVE_Y'
+        dc.setup_op(pie, "dconfig.mesh_symmetry", 'DOT', "+Y to -Y", direction='POSITIVE_Y')
 
         # Bottom Right
-        pie.operator("dconfig.mesh_symmetry", text="-Y to +Y", icon='DOT').direction = 'NEGATIVE_Y'
+        dc.setup_op(pie, "dconfig.mesh_symmetry", 'DOT', "-Y to +Y", direction='NEGATIVE_Y')
 
 
 class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):

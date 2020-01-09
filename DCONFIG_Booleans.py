@@ -37,50 +37,27 @@ class DCONFIG_MT_boolean_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
 
-        prop = col.operator("dconfig.boolean_immediate", text="Add", icon='DOT')
-        prop.bool_operation = 'UNION'
-
-        prop = col.operator("dconfig.boolean_immediate", text="Intersect", icon='DOT')
-        prop.bool_operation = 'INTERSECT'
-
-        prop = col.operator("dconfig.boolean_immediate", text="Subtract", icon='DOT')
-        prop.bool_operation = 'DIFFERENCE'
+        dc.setup_op(col, "dconfig.boolean_immediate", 'DOT', "Add", bool_operation='UNION')
+        dc.setup_op(col, "dconfig.boolean_immediate", 'DOT', "Intersect", bool_operation='INTERSECT')
+        dc.setup_op(col, "dconfig.boolean_immediate", 'DOT', "Subtract", bool_operation='DIFFERENCE')
 
         # Right
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.25
 
-        prop = col.operator("dconfig.boolean_live", text="Live Add", icon='MOD_BOOLEAN')
-        prop.bool_operation = 'UNION'
-        prop.cutline = False
-        prop.insetted = False
+        dc.setup_op(col, "dconfig.boolean_live", 'MOD_BOOLEAN', "Live Add", bool_operation='UNION', cutline=False, insetted=False)
+        dc.setup_op(col, "dconfig.boolean_live", 'MOD_BOOLEAN', "Live Intersect", bool_operation='INTERSECT', cutline=False, insetted=False)
+        dc.setup_op(col, "dconfig.boolean_live", 'MOD_BOOLEAN', "Live Subtract", bool_operation='DIFFERENCE', cutline=False, insetted=False)
 
-        prop = col.operator("dconfig.boolean_live", text="Live Intersect", icon='MOD_BOOLEAN')
-        prop.bool_operation = 'INTERSECT'
-        prop.cutline = False
-        prop.insetted = False
-
-        prop = col.operator("dconfig.boolean_live", text="Live Subtract", icon='MOD_BOOLEAN')
-        prop.bool_operation = 'DIFFERENCE'
-        prop.cutline = False
-        prop.insetted = False
-
-        prop = col.operator("dconfig.boolean_live", text="Live Subtract Inset", icon='MOD_BOOLEAN')
-        prop.bool_operation = 'DIFFERENCE'
-        prop.cutline = False
-        prop.insetted = True
-
-        prop = col.operator("dconfig.boolean_live", text="Live Cutline", icon='MOD_BOOLEAN')
-        prop.bool_operation = 'DIFFERENCE'
-        prop.cutline = True
-        prop.insetted = False
+        dc.setup_op(col, "dconfig.boolean_live", 'MOD_BOOLEAN', "Live Subtract Inset", bool_operation='DIFFERENCE', cutline=False, insetted=True)
+        dc.setup_op(col, "dconfig.boolean_live", 'MOD_BOOLEAN', "Live Cutline", bool_operation='DIFFERENCE', cutline=True, insetted=False)
 
         # Bottom
-        pie.operator("dconfig.boolean_toggle", text="Toggle Live Booleans", icon='HIDE_OFF')
+        dc.setup_op(pie, "dconfig.boolean_toggle", 'HIDE_OFF', "Toggle Live Booleans")
 
         # Top
-        pie.operator("dconfig.boolean_apply", text="Apply")
+        dc.setup_op(pie, "dconfig.boolean_apply", text="Apply")
 
 
 class DCONFIG_OT_boolean_live(bpy.types.Operator):
