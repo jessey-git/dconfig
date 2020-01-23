@@ -8,6 +8,8 @@
 # Mesh modeling helper ops
 #
 
+import math
+
 import bpy
 from . import DCONFIG_Utils as dc
 
@@ -18,19 +20,37 @@ class DCONFIG_MT_quick(bpy.types.Menu):
     def draw(self, context):
         layout = self.layout
 
-        layout.operator("mesh.remove_doubles", text="Weld vertices")
+        dc.setup_op(layout, "mesh.remove_doubles", text="Weld vertices")
 
         layout.separator()
-        op = layout.operator("mesh.select_face_by_sides", text="Select N-Gons")
-        op.type = 'GREATER'
-        op.number = 4
-        op.extend = False
+        dc.setup_op(layout, "mesh.select_face_by_sides", text="Select N-Gons", type='GREATER', number=4, extend=False)
 
         layout.separator()
         layout.operator_context = 'INVOKE_REGION_WIN'
-        layout.operator("mesh.fill_grid", text="Fill Grid")
-        layout.operator("dconfig.subdivide_cylinder", text="Subdivide Cylinder")
-        layout.operator("dconfig.subd_bevel", text="Sub-D Bevel")
+        dc.setup_op(layout, "mesh.fill_grid", text="Fill Grid")
+        dc.setup_op(layout, "dconfig.make_quads", text="Make Quads")
+        dc.setup_op(layout, "dconfig.subdivide_cylinder", text="Subdivide Cylinder")
+        dc.setup_op(layout, "dconfig.subd_bevel", text="Sub-D Bevel")
+
+
+class DCONFIG_OT_make_quads(bpy.types.Operator):
+    bl_idname = "dconfig.make_quads"
+    bl_label = "DC Make Quads"
+    bl_description = "Triangulate and then convert to Quads"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'EDIT_MESH' and dc.active_mesh_available(context)
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        angle = math.radians(60)
+        bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
+        bpy.ops.mesh.tris_convert_to_quads(face_threshold=angle, shape_threshold=angle)
+
+        return dc.trace_exit(self)
 
 
 class DCONFIG_OT_subdivide_cylinder(bpy.types.Operator):
@@ -82,10 +102,40 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
         return dc.trace_exit(self)
 
 
+class DCONFIG_OT_subd_toggle(bpy.types.Operator):
+    bl_idname = "dconfig.subd_toggle"
+    bl_label = "DC Sub-D Toggle"
+    bl_description = "Toggle subdivision surface modifier"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
+
+    @classmethod
+    def poll(cls, context):
+        return dc.active_mesh_available(context)
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        target = context.active_object
+        mod_subd = next((mod for mod in reversed(target.modifiers) if mod.type == 'SUBSURF'), None)
+        if mod_subd is None:
+            mod_subd = target.modifiers.new("Subdivision", 'SUBSURF')
+            mod_subd.levels = self.levels
+            mod_subd.show_only_control_edges = True
+        else:
+            if self.levels != mod_subd.levels:
+                mod_subd.levels = self.levels
+                mod_subd.show_viewport = True
+            else:
+                mod_subd.show_viewport = not mod_subd.show_viewport
+
+        return dc.trace_exit(self)
+
+
 focus_settings = {
     "EDIT_CURVE": True,
     "EDIT_MESH": True,
-    "OBJECT": True
 }
 
 
@@ -102,6 +152,9 @@ class DCONFIG_OT_mesh_focus(bpy.types.Operator):
             dc.trace(1, "View selected")
             bpy.ops.view3d.view_selected()
             bpy.ops.view3d.zoom(delta=-1, use_cursor_init=True)
+        elif context.mode == 'SCULPT':
+            dc.trace(1, "View selected")
+            bpy.ops.view3d.view_selected()
         else:
             current_focus = focus_settings[context.mode]
             if current_focus:

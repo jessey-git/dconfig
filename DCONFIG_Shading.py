@@ -30,6 +30,10 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
 
         context.space_data.lock_camera = True
 
+        context.space_data.shading.type = 'MATERIAL'
+        context.space_data.shading.studio_light = 'city.exr'
+
+        context.space_data.shading.type = 'SOLID'
         context.space_data.shading.light = 'MATCAP'
         context.space_data.shading.show_shadows = False
         context.space_data.shading.show_cavity = True

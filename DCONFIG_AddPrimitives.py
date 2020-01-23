@@ -25,11 +25,6 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        def setop(layout, name, icon, text, **kwargs):
-            op = layout.operator(name, icon=icon, text=text)
-            for prop, value in kwargs.items():
-                setattr(op, prop, value)
-
         align = 'WORLD' if context.space_data.region_3d.is_perspective else 'VIEW'
 
         # Left
@@ -37,64 +32,64 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "6", prim_type='Cylinder', radius=0.25, depth=0.25, vertices=6, align=align)
-        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "8", prim_type='Cylinder', radius=0.25, depth=0.25, vertices=8, align=align)
-        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "16", prim_type='Cylinder', radius=0.50, depth=0.50, vertices=16, align=align)
-        setop(col, "dconfig.add_primitive", 'MESH_CYLINDER', "32", prim_type='Cylinder', radius=0.50, depth=0.50, vertices=32, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "6", prim_type='Cylinder', radius=0.25, depth=0.25, vertices=6, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "8", prim_type='Cylinder', radius=0.25, depth=0.25, vertices=8, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "16", prim_type='Cylinder', radius=0.50, depth=0.50, vertices=16, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "32", prim_type='Cylinder', radius=0.50, depth=0.50, vertices=32, align=align)
 
         col.separator()
-        setop(col, "dconfig.add_primitive", 'CURVE_BEZCURVE', "Bezier", prim_type='B_Curve', radius=0.50, align=align)
-        col.operator("dconfig.add_edge_curve", icon='CURVE_NCIRCLE', text="Edge Curve")
+        dc.setup_op(col, "dconfig.add_primitive", 'CURVE_BEZCURVE', "Bezier", prim_type='B_Curve', radius=0.50, align=align)
+        dc.setup_op(col, "dconfig.add_edge_curve", 'CURVE_NCIRCLE', "Edge Curve")
 
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "6", prim_type='Circle', radius=0.25, vertices=6, align=align)
-        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "8", prim_type='Circle', radius=0.25, vertices=8, align=align)
-        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "16", prim_type='Circle', radius=0.50, vertices=16, align=align)
-        setop(col, "dconfig.add_primitive", 'MESH_CIRCLE', "32", prim_type='Circle', radius=0.50, vertices=32, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "6", prim_type='Circle', radius=0.25, vertices=6, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "8", prim_type='Circle', radius=0.25, vertices=8, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "16", prim_type='Circle', radius=0.50, vertices=16, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "32", prim_type='Circle', radius=0.50, vertices=32, align=align)
 
         col.separator()
-        setop(col, "dconfig.add_primitive", 'CURVE_BEZCIRCLE', "Circle", prim_type='B_Circle', radius=0.50, align=align)
-        setop(col, "dconfig.add_primitive", 'MESH_CAPSULE', "Capsule", prim_type='Oval', radius=0.125, length=0.5, vertices_4=1, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'CURVE_BEZCIRCLE', "Circle", prim_type='B_Circle', radius=0.50, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CAPSULE', "Capsule", prim_type='Oval', radius=0.125, length=0.5, vertices_4=8, align=align)
 
         # Right
         split = pie.split(align=True)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "12", prim_type='Sphere', radius=0.25, segments=12, ring_count=6, align=align)
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "24", prim_type='Sphere', radius=0.50, segments=24, ring_count=12, align=align)
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "32", prim_type='Sphere', radius=0.50, segments=32, ring_count=16, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "12", prim_type='Sphere', radius=0.25, segments=12, ring_count=6, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "24", prim_type='Sphere', radius=0.50, segments=24, ring_count=12, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "32", prim_type='Sphere', radius=0.50, segments=32, ring_count=16, align=align)
 
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 1", prim_type='Quad_Sphere', radius=0.50, levels=1, align=align)
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 2", prim_type='Quad_Sphere', radius=0.50, levels=2, align=align)
-        setop(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 3", prim_type='Quad_Sphere', radius=0.50, levels=3, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 1", prim_type='Quad_Sphere', radius=0.50, levels=1, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 2", prim_type='Quad_Sphere', radius=0.50, levels=2, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 3", prim_type='Quad_Sphere', radius=0.50, levels=3, align=align)
 
         # Bottom
         split = pie.split(align=True)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        setop(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 2", resolution=2, only_base=True)
-        setop(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 3", resolution=3, only_base=True)
+        dc.setup_op(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 2", resolution=2, only_base=True)
+        dc.setup_op(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 3", resolution=3, only_base=True)
 
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        setop(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 2 (All)", resolution=2, only_base=False)
-        setop(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 3 (All)", resolution=3, only_base=False)
+        dc.setup_op(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 2 (All)", resolution=2, only_base=False)
+        dc.setup_op(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 3 (All)", resolution=3, only_base=False)
 
         # Top
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        setop(col, "dconfig.add_primitive", 'MESH_PLANE', "Plane", prim_type='Plane', size=1, align=align)
-        setop(col, "dconfig.add_primitive", 'MESH_CUBE', "Cube", prim_type='Cube', size=1, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_PLANE', "Plane", prim_type='Plane', size=1, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CUBE', "Cube", prim_type='Cube', size=1, align=align)
 
         # Top Left
         split = pie.split()
@@ -104,19 +99,19 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'EMPTY_DATA', "", prim_type='Empty', radius=0.25, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'EMPTY_DATA', "", prim_type='Empty', radius=0.25, align=align)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'LIGHT_POINT', "", prim_type='Light', light_type='POINT', radius=1, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'LIGHT_POINT', "", prim_type='Light', light_type='POINT', radius=1, align=align)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'LIGHT_SUN', "", prim_type='Light', light_type='SUN', radius=1, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'LIGHT_SUN', "", prim_type='Light', light_type='SUN', radius=1, align=align)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
-        setop(col, "dconfig.add_primitive", 'LIGHT_AREA', "", prim_type='Light', light_type='AREA', radius=1, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'LIGHT_AREA', "", prim_type='Light', light_type='AREA', radius=1, align=align)
 
         # Bottom Left
         split = pie.split()
@@ -125,13 +120,29 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.25
-        col.scale_x = 1.1
+        col.scale_x = 1.25
+
         menu_name = 'VIEW3D_MT_add'
         if context.mode == 'EDIT':
             menu_name = 'VIEW3D_MT_mesh_add'
         elif context.mode == 'EDIT_CURVE':
             menu_name = 'VIEW3D_MT_curve_add'
-        col.operator("wm.call_menu", text="All").name = menu_name
+
+        dc.setup_op(col, "wm.call_menu", 'DOT', "All", name=menu_name)
+
+        has_collections = bool(bpy.data.collections)
+        if has_collections:
+            if len(bpy.data.collections) > 10:
+                col.operator_context = 'INVOKE_REGION_WIN'
+                dc.setup_op(col, "object.collection_instance_add", 'OUTLINER_OB_GROUP_INSTANCE', "Collections...")
+            else:
+                col.operator_context = 'EXEC_REGION_WIN'
+                col.operator_menu_enum(
+                    "object.collection_instance_add",
+                    "collection",
+                    text="Collections",
+                    icon='OUTLINER_OB_GROUP_INSTANCE',
+                )
 
 
 class DCONFIG_OT_add_primitive(bpy.types.Operator):
@@ -149,7 +160,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
     segments: bpy.props.IntProperty(name="Segments", default=12, min=3, max=40)
     ring_count: bpy.props.IntProperty(name="Rings", default=6, min=3, max=20)
     vertices: bpy.props.IntProperty(name="Vertices", default=8, min=3, max=96)
-    vertices_4: bpy.props.IntProperty(name="Vertices", default=8, step=4, min=8, max=32)
+    vertices_4: bpy.props.IntProperty(name="Vertices", default=8, step=2, min=6, max=32)
     levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
     align: bpy.props.StringProperty(name="Align", default='WORLD')
 
