@@ -284,7 +284,7 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
 
     def create_radial_mod(self, target):
         dc.trace(1, "Adding array modifier to {}", dc.full_name(target))
-        self.count = 3 if self.count is 0 else self.count
+        self.count = 3 if self.count == 0 else self.count
 
         self.offset_mod = target.modifiers.new("dc_xoffset", 'DISPLACE')
         self.offset_mod.direction = 'X'
