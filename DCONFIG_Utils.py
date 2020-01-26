@@ -49,11 +49,11 @@ def get_sorted_meshes(obj_list, active_object):
     return sorted(get_meshes(obj_list), key=lambda x: 0 if x == active_object else 1)
 
 
-def setup_op(layout, id, icon=None, text='', **kwargs):
+def setup_op(layout, operator, icon=None, text='', **kwargs):
     if icon is not None:
-        op = layout.operator(id, icon=icon, text=text)
+        op = layout.operator(operator, icon=icon, text=text)
     else:
-        op = layout.operator(id, text=text)
+        op = layout.operator(operator, text=text)
 
     for prop, value in kwargs.items():
         setattr(op, prop, value)

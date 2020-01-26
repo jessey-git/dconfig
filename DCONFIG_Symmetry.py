@@ -11,6 +11,8 @@
 import math
 
 import bpy
+
+from mathutils import (Vector, Matrix)
 from . import DCONFIG_Utils as dc
 
 
@@ -26,31 +28,16 @@ class DCONFIG_MT_symmetry_pie(bpy.types.Menu):
         pie = layout.menu_pie()
 
         # Left
-        dc.setup_op(pie, "dconfig.mesh_symmetry", 'TRIA_LEFT', "+X to -X", direction='POSITIVE_X')
+        dc.setup_op(pie, "dconfig.mesh_symmetry", 'DOT', "Symmetry")
 
         # Right
-        dc.setup_op(pie, "dconfig.mesh_symmetry", 'TRIA_RIGHT', "-X to +X", direction='NEGATIVE_X')
+        dc.setup_op(pie, "dconfig.mirror_radial", 'MOD_ARRAY', "World Radial")
 
         # Bottom
-        dc.setup_op(pie, "dconfig.mesh_symmetry", 'TRIA_DOWN', "+Z to -Z", direction='POSITIVE_Z')
-
-        # Top
-        dc.setup_op(pie, "dconfig.mesh_symmetry", 'TRIA_UP', "-Z to +Z", direction='NEGATIVE_Z')
-
-        # Top Left
         dc.setup_op(pie, "dconfig.mirror", 'MOD_MIRROR', "Local Mirror", local=True)
 
-        # Top Right
-        col = pie.column(align=True)
-        col.scale_y = 1.25
-        dc.setup_op(col, "dconfig.mirror", 'MOD_MIRROR', "World Mirror", local=False)
-        dc.setup_op(col, "dconfig.mirror_radial", 'MOD_ARRAY', "World Radial")
-
-        # Bottom Left
-        dc.setup_op(pie, "dconfig.mesh_symmetry", 'DOT', "+Y to -Y", direction='POSITIVE_Y')
-
-        # Bottom Right
-        dc.setup_op(pie, "dconfig.mesh_symmetry", 'DOT', "-Y to +Y", direction='NEGATIVE_Y')
+        # Top
+        dc.setup_op(pie, "dconfig.mirror", 'MOD_MIRROR', "World Mirror", local=False)
 
 
 class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
@@ -76,6 +63,8 @@ class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
         get=None,
         set=None)
 
+    dc_gizmo_active: False
+
     @classmethod
     def poll(cls, context):
         return dc.active_mesh_selected(context)
@@ -91,6 +80,19 @@ class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
             bpy.ops.mesh.select_all(action='SELECT')
             bpy.ops.mesh.symmetrize(direction=self.direction)
             bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+
+        wm = context.window_manager
+        wm.gizmo_group_type_unlink_delayed("DCONFIG_GGT_symmetry_gizmo")
+
+        return dc.trace_exit(self)
+
+    def invoke(self, context, event):
+        dc.trace_enter(self)
+
+        if context.space_data.type == 'VIEW_3D':
+            self.dc_gizmo_active = True
+            wm = context.window_manager
+            wm.gizmo_group_type_ensure("DCONFIG_GGT_symmetry_gizmo")
 
         return dc.trace_exit(self)
 
@@ -368,3 +370,114 @@ class DCONFIG_OT_mirror_radial(bpy.types.Operator):
             self.radial_object.select_set(state=True)
 
         return self.radial_mod is not None
+
+
+class DCONFIG_GT_symmetry_gizmo(bpy.types.Gizmo):
+    __slots__ = (
+        "custom_shape",
+        "op",
+        "direction",
+        "draw_offset",
+    )
+
+    cube_tri_verts = (
+        (-0.5, -0.5, 0.5), (-0.5, 0.5, -0.5), (-0.5, -0.5, -0.5),
+        (-0.5, 0.5, 0.5), (0.5, 0.5, -0.5), (-0.5, 0.5, -0.5),
+        (0.5, 0.5, 0.5), (0.5, -0.5, -0.5), (0.5, 0.5, -0.5),
+        (0.5, -0.5, 0.5), (-0.5, -0.5, -0.5), (0.5, -0.5, -0.5),
+        (0.5, 0.5, -0.5), (-0.5, -0.5, -0.5), (-0.5, 0.5, -0.5),
+        (-0.5, 0.5, 0.5), (0.5, -0.5, 0.5), (0.5, 0.5, 0.5),
+        (-0.5, -0.5, 0.5), (-0.5, 0.5, 0.5), (-0.5, 0.5, -0.5),
+        (-0.5, 0.5, 0.5), (0.5, 0.5, 0.5), (0.5, 0.5, -0.5),
+        (0.5, 0.5, 0.5), (0.5, -0.5, 0.5), (0.5, -0.5, -0.5),
+        (0.5, -0.5, 0.5), (-0.5, -0.5, 0.5), (-0.5, -0.5, -0.5),
+        (0.5, 0.5, -0.5), (0.5, -0.5, -0.5), (-0.5, -0.5, -0.5),
+        (-0.5, 0.5, 0.5), (-0.5, -0.5, 0.5), (0.5, -0.5, 0.5),
+    )
+
+    def draw(self, context):
+        self.draw_custom_shape(self.custom_shape)
+
+    def draw_select(self, context, select_id):
+        self.draw_custom_shape(self.custom_shape, select_id=select_id)
+
+    def setup(self):
+        if not hasattr(self, "custom_shape"):
+            self.custom_shape = self.new_custom_shape('TRIS', self.cube_tri_verts)
+
+    def update(self, mat_target):
+        mat_t = Matrix.Translation(self.draw_offset * 0.25)
+        self.matrix_basis = mat_t @ mat_target
+
+    def invoke(self, context, event):
+        return {'RUNNING_MODAL'}
+
+    def exit(self, context, cancel):
+        context.area.header_text_set(None)
+
+    def modal(self, context, event, tweak):
+        if event.value == 'PRESS':
+            self.op.direction = self.direction
+            self.op.execute(context)
+            return {'FINISHED'}
+
+        return {'RUNNING_MODAL'}
+
+
+class DCONFIG_GGT_symmetry_gizmo(bpy.types.GizmoGroup):
+    bl_label = "Symmetry Gizmo Group"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'WINDOW'
+    bl_options = {'3D'}
+
+    @staticmethod
+    def my_target_operator(context):
+        wm = context.window_manager
+        op = wm.operators[-1] if wm.operators else None
+        return op if getattr(op, "dc_gizmo_active", False) else None
+
+    @classmethod
+    def poll(cls, context):
+        op = cls.my_target_operator(context)
+        if op is None:
+            wm = context.window_manager
+            wm.gizmo_group_type_unlink_delayed("DCONFIG_GGT_symmetry_gizmo")
+            return False
+        return True
+
+    def setup(self, context):
+        def setup_widget(direction, draw_offset, color):
+            mpr = self.gizmos.new("DCONFIG_GT_symmetry_gizmo")
+            mpr.op = DCONFIG_GGT_symmetry_gizmo.my_target_operator(context)
+            mpr.direction = direction
+            mpr.draw_offset = draw_offset
+
+            mpr.use_select_background = True
+            mpr.use_event_handle_all = False
+
+            mpr.color = color
+            mpr.alpha = 0.3
+
+            mpr.use_draw_scale = True
+            mpr.select_bias = 0.02
+            mpr.scale_basis = 0.2
+            mpr.use_select_background = True
+            mpr.use_event_handle_all = False
+            mpr.use_grab_cursor = True
+
+            mpr.color_highlight = 1.0, 1.0, 1.0
+            mpr.alpha_highlight = 0.5
+
+        setup_widget("POSITIVE_X", Vector((-1, 0, 0)), Vector((1.0, 0.2, 0.32)))
+        setup_widget("NEGATIVE_X", Vector((1, 0, 0)), Vector((1.0, 0.2, 0.32)))
+        setup_widget("POSITIVE_Y", Vector((0, -1, 0)), Vector((0.545, 0.863, 0)))
+        setup_widget("NEGATIVE_Y", Vector((0, 1, 0)), Vector((0.545, 0.863, 0)))
+        setup_widget("POSITIVE_Z", Vector((0, 0, -1)), Vector((0.157, 0.565, 1)))
+        setup_widget("NEGATIVE_Z", Vector((0, 0, 1)), Vector((0.157, 0.565, 1)))
+
+    def refresh(self, context):
+        target = context.active_object
+
+        mat_target = target.matrix_world.normalized()
+        for mpr in self.gizmos:
+            mpr.update(mat_target)
