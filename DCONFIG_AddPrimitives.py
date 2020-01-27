@@ -74,14 +74,20 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        dc.setup_op(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 2", resolution=2, only_base=True)
-        dc.setup_op(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 3", resolution=3, only_base=True)
 
-        col = split.column(align=True)
-        col.scale_y = 1.25
-        col.scale_x = 1.1
-        dc.setup_op(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 2 (All)", resolution=2, only_base=False)
-        dc.setup_op(col, "dconfig.add_lattice", 'MESH_GRID', "FFD 3 (All)", resolution=3, only_base=False)
+        has_collections = bool(bpy.data.collections)
+        if has_collections:
+            if len(bpy.data.collections) > 10:
+                col.operator_context = 'INVOKE_REGION_WIN'
+                dc.setup_op(col, "object.collection_instance_add", 'OUTLINER_OB_GROUP_INSTANCE', "Collections...")
+            else:
+                col.operator_context = 'EXEC_REGION_WIN'
+                col.operator_menu_enum(
+                    "object.collection_instance_add",
+                    "collection",
+                    text="Collections",
+                    icon='OUTLINER_OB_GROUP_INSTANCE',
+                )
 
         # Top
         split = pie.split()
@@ -129,20 +135,6 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
             menu_name = 'VIEW3D_MT_curve_add'
 
         dc.setup_op(col, "wm.call_menu", 'DOT', "All", name=menu_name)
-
-        has_collections = bool(bpy.data.collections)
-        if has_collections:
-            if len(bpy.data.collections) > 10:
-                col.operator_context = 'INVOKE_REGION_WIN'
-                dc.setup_op(col, "object.collection_instance_add", 'OUTLINER_OB_GROUP_INSTANCE', "Collections...")
-            else:
-                col.operator_context = 'EXEC_REGION_WIN'
-                col.operator_menu_enum(
-                    "object.collection_instance_add",
-                    "collection",
-                    text="Collections",
-                    icon='OUTLINER_OB_GROUP_INSTANCE',
-                )
 
 
 class DCONFIG_OT_add_primitive(bpy.types.Operator):
@@ -355,111 +347,6 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         context.scene.cursor.matrix = prev_cursor_matrix
         context.scene.cursor.location = prev_cursor_location
         return dc.trace_exit(self)
-
-
-class DCONFIG_OT_add_lattice(bpy.types.Operator):
-    bl_idname = "dconfig.add_lattice"
-    bl_label = "DC Add Lattice"
-    bl_description = "Add pre-configured lattice surrounding the selected geometry"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    resolution: bpy.props.IntProperty(name="Resolution", default=2, min=2, max=4)
-    only_base: bpy.props.BoolProperty(name="Only Base Object", default=True)
-
-    @classmethod
-    def active_lattice_selected(cls, context):
-        active_object = context.active_object
-        return active_object is not None and active_object.type == 'LATTICE' and active_object.select_get()
-
-    @classmethod
-    def poll(cls, context):
-        return dc.active_mesh_selected(context) or DCONFIG_OT_add_lattice.active_lattice_selected(context)
-
-    def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-
-        layout.prop(self, "resolution")
-
-    def execute(self, context):
-        dc.trace_enter(self)
-        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-
-        if context.active_object.type == 'MESH':
-            target = context.active_object
-            lattice = self.create_lattice_obj(context, target)
-            self.create_lattice_mod(target, lattice)
-
-            context.view_layer.objects.active = lattice
-            lattice.select_set(True)
-            target.select_set(False)
-        else:
-            lattice_data = context.active_object.data
-            lattice_data.points_u = self.resolution
-            lattice_data.points_v = self.resolution
-            lattice_data.points_w = self.resolution
-
-        return dc.trace_exit(self)
-
-    def create_lattice_obj(self, context, target):
-        # Create lattice
-        lattice_data = bpy.data.lattices.new('dc_lattice')
-        lattice = bpy.data.objects.new('dc_lattice', lattice_data)
-
-        # Position + Orientation (resolution is affected for 0 dimensions)
-        safe_res = self.set_transforms(target, lattice)
-
-        lattice_data.points_u = safe_res[0]
-        lattice_data.points_v = safe_res[1]
-        lattice_data.points_w = safe_res[2]
-
-        lattice_data.interpolation_type_u = 'KEY_LINEAR'
-        lattice_data.interpolation_type_v = 'KEY_LINEAR'
-        lattice_data.interpolation_type_w = 'KEY_LINEAR'
-        lattice_data.use_outside = False
-
-        # Place in a special collection
-        helpers_collection = dc.get_helpers_collection(context)
-        helpers_collection.objects.link(lattice)
-
-        # Ensure the lattice is added to local view...
-        if context.space_data.local_view is not None:
-            lattice.local_view_set(context.space_data, True)
-
-        # Parent target to the lattice...
-        context.view_layer.update()
-        lattice.parent = target
-        lattice.matrix_parent_inverse = target.matrix_world.inverted()
-
-        return lattice
-
-    def create_lattice_mod(self, target, lattice):
-        mod = target.modifiers.new(lattice.name, "LATTICE")
-        mod.object = lattice
-        mod.show_expanded = False
-
-        # Place just after Booleans...
-        if self.only_base:
-            mod_index = len(target.modifiers) - 1
-            while mod_index > 0 and target.modifiers[mod_index - 1].type != 'BOOLEAN':
-                bpy.ops.object.modifier_move_up(modifier=mod.name)
-                mod_index -= 1
-
-    def set_transforms(self, target, lattice):
-        if self.only_base:
-            bbox_min, bbox_max = dc.calculate_bbox(map(lambda v: v.co, target.data.vertices))
-            vert_avg = sum(map(lambda v: v.co, target.data.vertices), Vector()) / len(target.data.vertices)
-            box_center = ((bbox_min + vert_avg) + (bbox_max - vert_avg)) / 2
-            box_dims = bbox_max - bbox_min
-        else:
-            box_center = sum(map(Vector, target.bound_box), Vector()) / 8
-            box_dims = target.dimensions
-
-        target_loc, target_rot, _ = target.matrix_world.decompose()
-        lattice.matrix_world = (Matrix.Translation(target_loc) @ target_rot.to_matrix().to_4x4() @ Matrix.Translation(box_center))
-        lattice.dimensions = [max(0.01, d * 1.01) for d in box_dims]
-
-        return [self.resolution if d > 0.0 else 1 for d in box_dims]
 
 
 class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
