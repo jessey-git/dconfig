@@ -26,14 +26,14 @@ class DCONFIG_MT_modifiers(bpy.types.Menu):
         layout = self.layout
 
         layout.operator_context = 'INVOKE_REGION_WIN'
-        dc.setup_op(layout, "dconfig.mirror_radial", 'MOD_ARRAY', "World Radial")
         dc.setup_op(layout, "dconfig.mirror", 'MOD_MIRROR', "Local Mirror", local=True)
         dc.setup_op(layout, "dconfig.mirror", 'MOD_MIRROR', "World Mirror", local=False)
 
-        dc.setup_op(layout, "dconfig.add_lattice", 'MESH_GRID', "FFD 2", resolution=2, only_base=True)
-        dc.setup_op(layout, "dconfig.add_lattice", 'MESH_GRID', "FFD 3", resolution=3, only_base=True)
-        dc.setup_op(layout, "dconfig.add_lattice", 'MESH_GRID', "FFD 2 (All)", resolution=2, only_base=False)
-        dc.setup_op(layout, "dconfig.add_lattice", 'MESH_GRID', "FFD 3 (All)", resolution=3, only_base=False)
+        layout.separator()
+        dc.setup_op(layout, "dconfig.mirror_radial", 'MOD_ARRAY', "World Radial")
+
+        layout.separator()
+        dc.setup_op(layout, "dconfig.add_lattice", 'MESH_GRID', "FFD", resolution=2, only_base=True)
 
 
 class DCONFIG_OT_mirror(bpy.types.Operator):
@@ -315,102 +315,127 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
     bl_idname = "dconfig.add_lattice"
     bl_label = "DC Add Lattice"
     bl_description = "Add pre-configured lattice surrounding the selected geometry"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER'}
 
-    resolution: bpy.props.IntProperty(name="Resolution", default=2, min=2, max=4)
+    resolution: bpy.props.IntProperty(name="Resolution", default=2, min=2, max=6)
     only_base: bpy.props.BoolProperty(name="Only Base Object", default=True)
 
     @classmethod
-    def active_lattice_selected(cls, context):
-        active_object = context.active_object
-        return active_object is not None and active_object.type == 'LATTICE' and active_object.select_get()
-
-    @classmethod
     def poll(cls, context):
-        return dc.active_mesh_selected(context) or DCONFIG_OT_add_lattice.active_lattice_selected(context)
+        return dc.active_mesh_selected(context)
 
-    def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
+    def __init__(self):
+        self.target = None
+        self.lattice = None
+        self.mod = None
 
-        layout.prop(self, "resolution")
+    def invoke(self, context, event):
+        dc.trace_enter(self)
+
+        self.execute_core(context)
+
+        context.window_manager.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
 
     def execute(self, context):
         dc.trace_enter(self)
-        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
-        if context.active_object.type == 'MESH':
-            target = context.active_object
-            lattice = self.create_lattice_obj(context, target)
-            self.create_lattice_mod(target, lattice)
-
-            context.view_layer.objects.active = lattice
-            lattice.select_set(True)
-            target.select_set(False)
-        else:
-            lattice_data = context.active_object.data
-            lattice_data.points_u = self.resolution
-            lattice_data.points_v = self.resolution
-            lattice_data.points_w = self.resolution
+        self.target = context.active_object
+        self.execute_core(context)
+        self.make_lattice_active(context)
 
         return dc.trace_exit(self)
 
-    def create_lattice_obj(self, context, target):
+    def execute_core(self, context):
+        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+
+        self.target = context.active_object
+        self.create_lattice_obj(context)
+        self.create_lattice_mod()
+
+    def modal(self, context, event):
+        if event.type == 'WHEELUPMOUSE':
+            self.resolution += 1
+            self.execute_core(context)
+        elif event.type == 'WHEELDOWNMOUSE':
+            self.resolution -= 1
+            self.execute_core(context)
+        elif event.type in {'B'} and event.value == 'RELEASE':
+            self.only_base = not self.only_base
+            self.execute_core(context)
+
+        elif event.type == 'LEFTMOUSE':
+            self.make_lattice_active(context)
+            return dc.trace_exit(self)
+
+        elif event.type in {'RIGHTMOUSE', 'ESC'}:
+            return dc.user_canceled(self)
+
+        return {'RUNNING_MODAL'}
+
+    def make_lattice_active(self, context):
+        context.view_layer.objects.active = self.lattice
+        self.lattice.select_set(True)
+        self.target.select_set(False)
+
+    def create_lattice_obj(self, context):
         # Create lattice
-        lattice_data = bpy.data.lattices.new('dc_lattice')
-        lattice = bpy.data.objects.new('dc_lattice', lattice_data)
+        if self.lattice is None:
+            lattice_data = bpy.data.lattices.new('dc_lattice')
+            self.lattice = bpy.data.objects.new('dc_lattice', lattice_data)
+
+            self.lattice.data.interpolation_type_u = 'KEY_LINEAR'
+            self.lattice.data.interpolation_type_v = 'KEY_LINEAR'
+            self.lattice.data.interpolation_type_w = 'KEY_LINEAR'
+            self.lattice.data.use_outside = False
+
+            # Place in a special collection
+            helpers_collection = dc.get_helpers_collection(context)
+            helpers_collection.objects.link(self.lattice)
+
+            # Ensure the lattice is added to local view...
+            if context.space_data.local_view is not None:
+                self.lattice.local_view_set(context.space_data, True)
+
+            # Parent target to the lattice...
+            context.view_layer.update()
+            self.lattice.parent = self.target
+            self.lattice.matrix_parent_inverse = self.target.matrix_world.inverted()
 
         # Position + Orientation (resolution is affected for 0 dimensions)
-        safe_res = self.set_transforms(target, lattice)
+        self.set_transforms()
 
-        lattice_data.points_u = safe_res[0]
-        lattice_data.points_v = safe_res[1]
-        lattice_data.points_w = safe_res[2]
+    def create_lattice_mod(self):
+        if self.mod is None:
+            self.mod = self.target.modifiers.new(self.lattice.name, "LATTICE")
+            self.mod.object = self.lattice
+            self.mod.show_expanded = False
 
-        lattice_data.interpolation_type_u = 'KEY_LINEAR'
-        lattice_data.interpolation_type_v = 'KEY_LINEAR'
-        lattice_data.interpolation_type_w = 'KEY_LINEAR'
-        lattice_data.use_outside = False
-
-        # Place in a special collection
-        helpers_collection = dc.get_helpers_collection(context)
-        helpers_collection.objects.link(lattice)
-
-        # Ensure the lattice is added to local view...
-        if context.space_data.local_view is not None:
-            lattice.local_view_set(context.space_data, True)
-
-        # Parent target to the lattice...
-        context.view_layer.update()
-        lattice.parent = target
-        lattice.matrix_parent_inverse = target.matrix_world.inverted()
-
-        return lattice
-
-    def create_lattice_mod(self, target, lattice):
-        mod = target.modifiers.new(lattice.name, "LATTICE")
-        mod.object = lattice
-        mod.show_expanded = False
-
-        # Place just after Booleans...
+        # Place just after Booleans (or at end)...
         if self.only_base:
-            mod_index = len(target.modifiers) - 1
-            while mod_index > 0 and target.modifiers[mod_index - 1].type != 'BOOLEAN':
-                bpy.ops.object.modifier_move_up(modifier=mod.name)
+            mod_index = next((i for i, v in enumerate(self.target.modifiers) if v.name == self.mod.name), -1)
+            while mod_index > 0 and self.target.modifiers[mod_index - 1].type != 'BOOLEAN':
+                bpy.ops.object.modifier_move_up(modifier=self.mod.name)
                 mod_index -= 1
+        else:
+            while self.target.modifiers[-1].name != self.mod.name:
+                bpy.ops.object.modifier_move_down(modifier=self.mod.name)
 
-    def set_transforms(self, target, lattice):
+    def set_transforms(self):
         if self.only_base:
-            bbox_min, bbox_max = dc.calculate_bbox(map(lambda v: v.co, target.data.vertices))
-            vert_avg = sum(map(lambda v: v.co, target.data.vertices), Vector()) / len(target.data.vertices)
+            bbox_min, bbox_max = dc.calculate_bbox(map(lambda v: v.co, self.target.data.vertices))
+            vert_avg = sum(map(lambda v: v.co, self.target.data.vertices), Vector()) / len(self.target.data.vertices)
             box_center = ((bbox_min + vert_avg) + (bbox_max - vert_avg)) / 2
             box_dims = bbox_max - bbox_min
         else:
-            box_center = sum(map(Vector, target.bound_box), Vector()) / 8
-            box_dims = target.dimensions
+            box_center = sum(map(Vector, self.target.bound_box), Vector()) / 8
+            box_dims = self.target.dimensions
 
-        target_loc, target_rot, _ = target.matrix_world.decompose()
-        lattice.matrix_world = (Matrix.Translation(target_loc) @ target_rot.to_matrix().to_4x4() @ Matrix.Translation(box_center))
-        lattice.dimensions = [max(0.01, d * 1.01) for d in box_dims]
+        target_loc, target_rot, _ = self.target.matrix_world.decompose()
+        self.lattice.matrix_world = (Matrix.Translation(target_loc) @ target_rot.to_matrix().to_4x4() @ Matrix.Translation(box_center))
+        self.lattice.dimensions = [max(0.01, d * 1.01) for d in box_dims]
 
-        return [self.resolution if d > 0.0 else 1 for d in box_dims]
+        safe_res = [self.resolution if d > 0.0 else 1 for d in box_dims]
+        self.lattice.data.points_u = safe_res[0]
+        self.lattice.data.points_v = safe_res[1]
+        self.lattice.data.points_w = safe_res[2]
