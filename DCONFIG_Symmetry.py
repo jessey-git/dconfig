@@ -37,7 +37,7 @@ class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
         get=None,
         set=None)
 
-    dc_gizmo_active: False
+    dc_uses_symmetry_gizmo = True
 
     @classmethod
     def poll(cls, context):
@@ -57,6 +57,7 @@ class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
 
         wm = context.window_manager
         wm.gizmo_group_type_unlink_delayed("DCONFIG_GGT_symmetry_gizmo")
+        DCONFIG_GT_symmetry_gizmo.restore_gizmos(context)
 
         return dc.trace_exit(self)
 
@@ -64,7 +65,13 @@ class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
         dc.trace_enter(self)
 
         if context.space_data.type == 'VIEW_3D':
-            self.dc_gizmo_active = True
+            DCONFIG_GT_symmetry_gizmo.save_gizmos(context)
+
+            bpy.context.space_data.show_gizmo_object_translate = False
+            bpy.context.space_data.show_gizmo_object_rotate = False
+            bpy.context.space_data.show_gizmo_object_scale = False
+            bpy.context.space_data.show_gizmo = True
+
             wm = context.window_manager
             wm.gizmo_group_type_ensure("DCONFIG_GGT_symmetry_gizmo")
 
@@ -93,6 +100,22 @@ class DCONFIG_GT_symmetry_gizmo(bpy.types.Gizmo):
         (0.5, 0.5, -0.5), (0.5, -0.5, -0.5), (-0.5, -0.5, -0.5),
         (-0.5, 0.5, 0.5), (-0.5, -0.5, 0.5), (0.5, -0.5, 0.5),
     )
+
+    gizmo_state = {}
+
+    @classmethod
+    def save_gizmos(cls, context):
+        cls.gizmo_state['show_gizmo_object_translate'] = context.space_data.show_gizmo_object_translate
+        cls.gizmo_state['show_gizmo_object_rotate'] = context.space_data.show_gizmo_object_rotate
+        cls.gizmo_state['show_gizmo_object_scale'] = context.space_data.show_gizmo_object_scale
+        cls.gizmo_state['show_gizmo'] = context.space_data.show_gizmo
+
+    @classmethod
+    def restore_gizmos(cls, context):
+        bpy.context.space_data.show_gizmo_object_translate = cls.gizmo_state['show_gizmo_object_translate']
+        bpy.context.space_data.show_gizmo_object_rotate = cls.gizmo_state['show_gizmo_object_rotate']
+        bpy.context.space_data.show_gizmo_object_scale = cls.gizmo_state['show_gizmo_object_scale']
+        bpy.context.space_data.show_gizmo = cls.gizmo_state['show_gizmo']
 
     def draw(self, context):
         self.draw_custom_shape(self.custom_shape)
@@ -133,7 +156,7 @@ class DCONFIG_GGT_symmetry_gizmo(bpy.types.GizmoGroup):
     def my_target_operator(context):
         wm = context.window_manager
         op = wm.operators[-1] if wm.operators else None
-        return op if getattr(op, "dc_gizmo_active", False) else None
+        return op if getattr(op, "dc_uses_symmetry_gizmo", False) else None
 
     @classmethod
     def poll(cls, context):
@@ -141,6 +164,7 @@ class DCONFIG_GGT_symmetry_gizmo(bpy.types.GizmoGroup):
         if op is None:
             wm = context.window_manager
             wm.gizmo_group_type_unlink_delayed("DCONFIG_GGT_symmetry_gizmo")
+            DCONFIG_GT_symmetry_gizmo.restore_gizmos(context)
             return False
         return True
 
@@ -151,28 +175,26 @@ class DCONFIG_GGT_symmetry_gizmo(bpy.types.GizmoGroup):
             mpr.direction = direction
             mpr.draw_offset = draw_offset
 
-            mpr.use_select_background = True
-            mpr.use_event_handle_all = False
-
             mpr.color = color
             mpr.alpha = 0.3
-
-            mpr.use_draw_scale = True
-            mpr.select_bias = 0.02
-            mpr.scale_basis = 0.2
-            mpr.use_select_background = True
-            mpr.use_event_handle_all = False
-            mpr.use_grab_cursor = True
-
-            mpr.color_highlight = 1.0, 1.0, 1.0
+            mpr.color_highlight = color
             mpr.alpha_highlight = 0.5
 
-        setup_widget("POSITIVE_X", Vector((-1, 0, 0)), Vector((1.0, 0.2, 0.32)))
-        setup_widget("NEGATIVE_X", Vector((1, 0, 0)), Vector((1.0, 0.2, 0.32)))
-        setup_widget("POSITIVE_Y", Vector((0, -1, 0)), Vector((0.545, 0.863, 0)))
-        setup_widget("NEGATIVE_Y", Vector((0, 1, 0)), Vector((0.545, 0.863, 0)))
-        setup_widget("POSITIVE_Z", Vector((0, 0, -1)), Vector((0.157, 0.565, 1)))
-        setup_widget("NEGATIVE_Z", Vector((0, 0, 1)), Vector((0.157, 0.565, 1)))
+            mpr.select_bias = 0
+            mpr.scale_basis = 0.2
+
+            mpr.use_select_background = True
+            mpr.use_draw_scale = True
+            mpr.use_select_background = True
+            mpr.use_event_handle_all = False
+
+        ui_theme_prefs = context.preferences.themes[0].user_interface
+        setup_widget("POSITIVE_X", Vector((-1, 0, 0)), ui_theme_prefs.axis_x)
+        setup_widget("NEGATIVE_X", Vector((1, 0, 0)), ui_theme_prefs.axis_x)
+        setup_widget("POSITIVE_Y", Vector((0, -1, 0)), ui_theme_prefs.axis_y)
+        setup_widget("NEGATIVE_Y", Vector((0, 1, 0)), ui_theme_prefs.axis_y)
+        setup_widget("POSITIVE_Z", Vector((0, 0, -1)), ui_theme_prefs.axis_z)
+        setup_widget("NEGATIVE_Z", Vector((0, 0, 1)), ui_theme_prefs.axis_z)
 
     def refresh(self, context):
         target = context.active_object
