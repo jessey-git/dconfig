@@ -134,9 +134,6 @@ class DCONFIG_GT_symmetry_gizmo(bpy.types.Gizmo):
     def invoke(self, context, event):
         return {'RUNNING_MODAL'}
 
-    def exit(self, context, cancel):
-        context.area.header_text_set(None)
-
     def modal(self, context, event, tweak):
         if event.value == 'PRESS':
             self.op.direction = self.direction

@@ -53,7 +53,6 @@ def setup_hotkeys():
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.mesh_symmetry",        "T",        "PRESS",    True,   False,  False,  ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu",                 "Q",        "PRESS",    False,  False,  False,  (("name", "DCONFIG_MT_quick"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",        "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_boolean_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu",                 "Q",        "PRESS",    False,  False,  True,   (("name", "DCONFIG_MT_modifiers"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",         "BUTTON4MOUSE", "PRESS",    False,  False,  False,  (("name", "VIEW3D_MT_transform_gizmo_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.localview",         "BUTTON5MOUSE", "PRESS",    False,  True,   False,  (("frame_selected", True),)),

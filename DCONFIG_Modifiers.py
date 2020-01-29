@@ -30,7 +30,8 @@ class DCONFIG_MT_modifiers(bpy.types.Menu):
         dc.setup_op(layout, "dconfig.mirror", 'MOD_MIRROR', "World Mirror", local=False)
 
         layout.separator()
-        dc.setup_op(layout, "dconfig.mirror_radial", 'MOD_ARRAY', "World Radial")
+        dc.setup_op(layout, "dconfig.radial_array", 'MOD_ARRAY', "Radial Array")
+        dc.setup_op(layout, "dconfig.bend360", 'MOD_SIMPLEDEFORM', "Bend 360")
 
         layout.separator()
         dc.setup_op(layout, "dconfig.add_lattice", 'MESH_GRID', "FFD", resolution=2, only_base=True)
@@ -115,10 +116,10 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
                 mod_index -= 1
 
 
-class DCONFIG_OT_mirror_radial(bpy.types.Operator):
-    bl_idname = "dconfig.mirror_radial"
-    bl_label = "DC Mirror Radial"
-    bl_description = "Mirror mesh in a radial fashion"
+class DCONFIG_OT_radial_array(bpy.types.Operator):
+    bl_idname = "dconfig.radial_array"
+    bl_label = "DC Radial Array"
+    bl_description = "Array mesh in a radial fashion"
     bl_options = {'REGISTER', 'UNDO'}
 
     count: bpy.props.IntProperty(name="count", default=0)
@@ -439,3 +440,68 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         self.lattice.data.points_u = safe_res[0]
         self.lattice.data.points_v = safe_res[1]
         self.lattice.data.points_w = safe_res[2]
+
+
+class DCONFIG_OT_bend360(bpy.types.Operator):
+    bl_idname = "dconfig.bend360"
+    bl_label = "DC Bend 360"
+    bl_description = "Bend mesh"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return dc.active_mesh_selected(context)
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        target = context.active_object
+        bend_object = self.create_bend_obj(context, target)
+        self.create_bend_mod(target, bend_object)
+
+        bend_object.select_set(state=False)
+        bend_object.hide_viewport = True
+
+        context.view_layer.objects.active = target
+        target.select_set(state=True)
+
+        return dc.trace_exit(self)
+
+    def create_bend_obj(self, context, target):
+        dc.trace(1, "Creating new bend empty")
+        prev_cursor_location = tuple(context.scene.cursor.location)
+
+        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        bpy.ops.view3d.snap_cursor_to_selected()
+
+        bpy.ops.object.empty_add(type='PLAIN_AXES', radius=0.25, align='WORLD')
+        bend_object = context.active_object
+        bend_object.name = target.name + "_bender"
+        bend_object.select_set(state=True)
+
+        # Place empty in a helpers collection
+        bend_object_collection = dc.find_collection(context, bend_object)
+        helpers_collection = dc.get_helpers_collection(context)
+        helpers_collection.objects.link(bend_object)
+        bend_object_collection.objects.unlink(bend_object)
+
+        # Parent empty to the target
+        bend_object.parent = target
+        bend_object.matrix_parent_inverse = target.matrix_world.inverted()
+
+        context.scene.cursor.location = prev_cursor_location
+        return bend_object
+
+    def create_bend_mod(self, target, bend_object):
+        array_mod = target.modifiers.new("dc_array", 'ARRAY')
+        array_mod.fit_type = 'FIXED_COUNT'
+        array_mod.count = 4
+        array_mod.use_merge_vertices = True
+        array_mod.use_merge_vertices_cap = True
+        array_mod.merge_threshold = 0.001
+
+        bend_mod = target.modifiers.new("dc_bend", 'SIMPLE_DEFORM')
+        bend_mod.deform_method = 'BEND'
+        bend_mod.deform_axis = 'Z'
+        bend_mod.angle = math.radians(360)
+        bend_mod.origin = bend_object
