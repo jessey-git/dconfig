@@ -55,9 +55,7 @@ class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
             bpy.ops.mesh.symmetrize(direction=self.direction)
             bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
-        wm = context.window_manager
-        wm.gizmo_group_type_unlink_delayed("DCONFIG_GGT_symmetry_gizmo")
-        DCONFIG_GT_symmetry_gizmo.restore_gizmos(context)
+        DCONFIG_GGT_symmetry_gizmo.destroy(context)
 
         return dc.trace_exit(self)
 
@@ -65,15 +63,7 @@ class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
         dc.trace_enter(self)
 
         if context.space_data.type == 'VIEW_3D':
-            DCONFIG_GT_symmetry_gizmo.save_gizmos(context)
-
-            bpy.context.space_data.show_gizmo_object_translate = False
-            bpy.context.space_data.show_gizmo_object_rotate = False
-            bpy.context.space_data.show_gizmo_object_scale = False
-            bpy.context.space_data.show_gizmo = True
-
-            wm = context.window_manager
-            wm.gizmo_group_type_ensure("DCONFIG_GGT_symmetry_gizmo")
+            DCONFIG_GGT_symmetry_gizmo.create(context)
 
         return dc.trace_exit(self)
 
@@ -100,22 +90,6 @@ class DCONFIG_GT_symmetry_gizmo(bpy.types.Gizmo):
         (0.5, 0.5, -0.5), (0.5, -0.5, -0.5), (-0.5, -0.5, -0.5),
         (-0.5, 0.5, 0.5), (-0.5, -0.5, 0.5), (0.5, -0.5, 0.5),
     )
-
-    gizmo_state = {}
-
-    @classmethod
-    def save_gizmos(cls, context):
-        cls.gizmo_state['show_gizmo_object_translate'] = context.space_data.show_gizmo_object_translate
-        cls.gizmo_state['show_gizmo_object_rotate'] = context.space_data.show_gizmo_object_rotate
-        cls.gizmo_state['show_gizmo_object_scale'] = context.space_data.show_gizmo_object_scale
-        cls.gizmo_state['show_gizmo'] = context.space_data.show_gizmo
-
-    @classmethod
-    def restore_gizmos(cls, context):
-        bpy.context.space_data.show_gizmo_object_translate = cls.gizmo_state['show_gizmo_object_translate']
-        bpy.context.space_data.show_gizmo_object_rotate = cls.gizmo_state['show_gizmo_object_rotate']
-        bpy.context.space_data.show_gizmo_object_scale = cls.gizmo_state['show_gizmo_object_scale']
-        bpy.context.space_data.show_gizmo = cls.gizmo_state['show_gizmo']
 
     def draw(self, context):
         self.draw_custom_shape(self.custom_shape)
@@ -149,6 +123,8 @@ class DCONFIG_GGT_symmetry_gizmo(bpy.types.GizmoGroup):
     bl_region_type = 'WINDOW'
     bl_options = {'3D'}
 
+    gizmo_state = {}
+
     @staticmethod
     def my_target_operator(context):
         wm = context.window_manager
@@ -159,11 +135,36 @@ class DCONFIG_GGT_symmetry_gizmo(bpy.types.GizmoGroup):
     def poll(cls, context):
         op = cls.my_target_operator(context)
         if op is None:
-            wm = context.window_manager
-            wm.gizmo_group_type_unlink_delayed("DCONFIG_GGT_symmetry_gizmo")
-            DCONFIG_GT_symmetry_gizmo.restore_gizmos(context)
+            DCONFIG_GGT_symmetry_gizmo.destroy(context)
             return False
         return True
+
+    @classmethod
+    def create(cls, context):
+        cls.gizmo_state['show_gizmo_object_translate'] = context.space_data.show_gizmo_object_translate
+        cls.gizmo_state['show_gizmo_object_rotate'] = context.space_data.show_gizmo_object_rotate
+        cls.gizmo_state['show_gizmo_object_scale'] = context.space_data.show_gizmo_object_scale
+        cls.gizmo_state['show_gizmo'] = context.space_data.show_gizmo
+
+        context.space_data.show_gizmo_object_translate = False
+        context.space_data.show_gizmo_object_rotate = False
+        context.space_data.show_gizmo_object_scale = False
+        context.space_data.show_gizmo = True
+
+        wm = context.window_manager
+        wm.gizmo_group_type_ensure("DCONFIG_GGT_symmetry_gizmo")
+
+    @classmethod
+    def destroy(cls, context):
+        wm = context.window_manager
+        wm.gizmo_group_type_unlink_delayed("DCONFIG_GGT_symmetry_gizmo")
+
+        if cls.gizmo_state:
+            context.space_data.show_gizmo_object_translate = cls.gizmo_state['show_gizmo_object_translate']
+            context.space_data.show_gizmo_object_rotate = cls.gizmo_state['show_gizmo_object_rotate']
+            context.space_data.show_gizmo_object_scale = cls.gizmo_state['show_gizmo_object_scale']
+            context.space_data.show_gizmo = cls.gizmo_state['show_gizmo']
+            cls.gizmo_state.clear()
 
     def setup(self, context):
         def setup_widget(direction, draw_offset, color):

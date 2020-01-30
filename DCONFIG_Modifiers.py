@@ -12,6 +12,7 @@ import math
 
 import bpy
 from mathutils import (Vector, Matrix)
+from . import DCONFIG_Symmetry as symmetry
 from . import DCONFIG_Utils as dc
 
 
@@ -44,6 +45,24 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     local: bpy.props.BoolProperty()
+    direction: bpy.props.EnumProperty(
+        items=(
+            ('POSITIVE_X', "+X to -X", "+X to -X", 0),
+            ('NEGATIVE_X', "-X to +X", "-X to +X", 1),
+            ('POSITIVE_Y', "+Y to -Y", "+Y to -Y", 2),
+            ('NEGATIVE_Y', "-Y to +Y", "-Y to +Y", 3),
+            ('POSITIVE_Z', "+Z to -Z", "+Z to -Z", 4),
+            ('NEGATIVE_Z', "-Z to +Z", "-Z to +Z", 5),
+        ),
+        name="Direction",
+        description="which side to copy from",
+        default='POSITIVE_X',
+        options={'ANIMATABLE'},
+        update=None,
+        get=None,
+        set=None)
+
+    dc_uses_symmetry_gizmo = True
 
     @classmethod
     def poll(cls, context):
@@ -55,6 +74,16 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
         target = context.active_object
         mirror_object = self.create_mirror_obj(context)
         self.create_mirror_mod(target, mirror_object)
+
+        symmetry.DCONFIG_GGT_symmetry_gizmo.destroy(context)
+
+        return dc.trace_exit(self)
+
+    def invoke(self, context, event):
+        dc.trace_enter(self)
+
+        if context.space_data.type == 'VIEW_3D':
+            symmetry.DCONFIG_GGT_symmetry_gizmo.create(context)
 
         return dc.trace_exit(self)
 
@@ -95,16 +124,20 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
 
         if self.local:
             mod = target.modifiers.new("dc_local_mirror", 'MIRROR')
-            mod.use_axis[0] = True
-            mod.use_bisect_axis[0] = True
             mod.use_clip = True
         else:
             mod = target.modifiers.new("dc_world_mirror", 'MIRROR')
-            mod.use_axis[0] = True
-            mod.use_bisect_axis[0] = False
             mod.use_clip = True
             mod.mirror_object = mirror_object
 
+        axis = 0 if self.direction in {'POSITIVE_X', 'NEGATIVE_X'} else 1 if self.direction in {'POSITIVE_Y', 'NEGATIVE_Y'} else 2
+        should_bisect = self.local
+        should_flip = should_bisect and self.direction.startswith('NEGATIVE')
+
+        mod.use_axis = (False, False, False)
+        mod.use_axis[axis] = True
+        mod.use_bisect_axis[axis] = should_bisect
+        mod.use_bisect_flip_axis[axis] = should_flip
         mod.show_on_cage = True
         mod.show_expanded = False
 
