@@ -102,8 +102,8 @@ class DCONFIG_GT_symmetry_gizmo(bpy.types.Gizmo):
             self.custom_shape = self.new_custom_shape('TRIS', self.cube_tri_verts)
 
     def update(self, mat_target):
-        mat_t = Matrix.Translation(self.draw_offset * 3)
-        self.matrix_offset = mat_t @ mat_target
+        self.matrix_basis = mat_target
+        self.matrix_offset = Matrix.Translation(self.draw_offset * 3)
 
     def invoke(self, context, event):
         return {'RUNNING_MODAL'}
