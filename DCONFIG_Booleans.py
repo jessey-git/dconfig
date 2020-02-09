@@ -26,7 +26,7 @@ class DCONFIG_MT_boolean_pie(bpy.types.Menu):
 
     @classmethod
     def poll(cls, context):
-        return dc.active_mesh_available(context)
+        return dc.active_object_available(context, {'MESH'})
 
     def draw(self, context):
         layout = self.layout
@@ -123,21 +123,25 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
             mod_index -= 1
 
     def prepare_objects(self, context):
+        source_separated = False
         if context.mode == 'EDIT_MESH':
             if context.active_object.data.total_vert_sel > 0:
                 bpy.ops.mesh.select_linked()
                 bpy.ops.mesh.normals_make_consistent(inside=False)
                 bpy.ops.mesh.separate(type='SELECTED')
+                source_separated = True
         else:
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
             bpy.ops.mesh.select_all()
             bpy.ops.mesh.normals_make_consistent(inside=False)
 
+        return source_separated
+
     def prepare_data(self, context):
         bool_targets = []
 
         # Cleanup and separate if necessary...
-        self.prepare_objects(context)
+        source_separated = self.prepare_objects(context)
 
         # We should have at least 2 mesh objects (1 target, 1 source) at this point now...
         selected_meshes = dc.get_sorted_meshes(context.selected_objects, context.active_object)
@@ -151,6 +155,8 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
 
         # Last object is the boolean source
         source = selected_meshes[-1]
+        if source_separated:
+            source.modifiers.clear()
         source_collection = dc.find_collection(context, source)
         bool_source = BoolData(source, source_collection)
 

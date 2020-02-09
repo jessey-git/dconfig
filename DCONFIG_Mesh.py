@@ -48,7 +48,7 @@ class DCONFIG_OT_make_quads(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.mode == 'EDIT_MESH' and dc.active_mesh_available(context)
+        return context.mode == 'EDIT_MESH' and dc.active_object_available(context, {'MESH'})
 
     def execute(self, context):
         dc.trace_enter(self)
@@ -68,7 +68,7 @@ class DCONFIG_OT_subdivide_cylinder(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.mode == 'EDIT_MESH' and dc.active_mesh_available(context)
+        return context.mode == 'EDIT_MESH' and dc.active_object_available(context, {'MESH'})
 
     def execute(self, context):
         dc.trace_enter(self)
@@ -88,7 +88,7 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return dc.active_mesh_available(context) and context.mode == 'EDIT_MESH'
+        return context.mode == 'EDIT_MESH' and dc.active_object_available(context, {'MESH'})
 
     def execute(self, context):
         dc.trace_enter(self)
@@ -119,7 +119,7 @@ class DCONFIG_OT_subd_toggle(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return dc.active_mesh_available(context)
+        return dc.active_object_available(context, {'MESH', 'CURVE', 'FONT'})
 
     def execute(self, context):
         dc.trace_enter(self)

@@ -31,11 +31,6 @@ def rename(obj, new_name):
     obj.data.name = new_name
 
 
-def active_mesh_available(context):
-    active_object = context.active_object
-    return active_object is not None and active_object.type == 'MESH'
-
-
 def active_object_available(context, obj_types):
     active_object = context.active_object
     return active_object is not None and active_object.type in obj_types
@@ -98,7 +93,6 @@ def calculate_bbox(verts, matrix=None):
 def get_view_orientation_from_quaternion(view_quat):
     def r(x):
         return round(x, 2)
-    view_rot = view_quat.to_euler()
 
     orientation_dict = {(0.0, 0.0, 0.0): 'TOP',
                         (r(math.pi), 0.0, 0.0): 'BOTTOM',
@@ -107,6 +101,7 @@ def get_view_orientation_from_quaternion(view_quat):
                         (r(math.pi / 2), 0.0, r(-math.pi / 2)): 'LEFT',
                         (r(math.pi / 2), 0.0, r(math.pi / 2)): 'RIGHT'}
 
+    view_rot = view_quat.to_euler()
     return orientation_dict.get(tuple(map(r, view_rot)), None)
 
 #
