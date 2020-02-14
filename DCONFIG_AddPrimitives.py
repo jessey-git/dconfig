@@ -496,16 +496,17 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
             for vertex in rings[i]:
                 vertex.select = True
 
-            # Create Rotation Matrices
-            rotation_axis = normals[i].cross(z_axis)
-            rotation_angle = normals[i].angle(z_axis)
-            rotation_matrix = Matrix.Rotation(rotation_angle, 4, rotation_axis)
-            backrotation_matrix = Matrix.Rotation(-rotation_angle, 4, rotation_axis)
+            if normals[i].length >= 0.001:
+                # Create Rotation Matrices
+                rotation_axis = normals[i].cross(z_axis)
+                rotation_angle = normals[i].angle(z_axis)
+                rotation_matrix = Matrix.Rotation(rotation_angle, 4, rotation_axis)
+                backrotation_matrix = Matrix.Rotation(-rotation_angle, 4, rotation_axis)
 
-            # Rotate, Scale, Rotate Back
-            bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=rotation_matrix, verts=rings[i])
-            bpy.ops.transform.resize(value=(radius_adjustments[i], radius_adjustments[i], 1), constraint_axis=(True, True, False))
-            bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=backrotation_matrix, verts=rings[i])
+                # Rotate, Scale, Rotate Back
+                bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=rotation_matrix, verts=rings[i])
+                bpy.ops.transform.resize(value=(radius_adjustments[i], radius_adjustments[i], 1), constraint_axis=(True, True, False))
+                bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=backrotation_matrix, verts=rings[i])
 
             for vertex in rings[i]:
                 vertex.select = False
