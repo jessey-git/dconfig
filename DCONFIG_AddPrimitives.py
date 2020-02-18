@@ -73,7 +73,7 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         split = pie.split(align=True)
         col = split.column(align=True)
         col.scale_y = 1.25
-        col.scale_x = 1.1
+        col.scale_x = 1.2
 
         has_collections = bool(bpy.data.collections)
         if has_collections:

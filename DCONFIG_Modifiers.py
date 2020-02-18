@@ -155,7 +155,7 @@ class DCONFIG_OT_radial_array(bpy.types.Operator):
     bl_description = "Array mesh in a radial fashion"
     bl_options = {'REGISTER', 'UNDO'}
 
-    count: bpy.props.IntProperty(name="count", default=0)
+    count: bpy.props.IntProperty(name="count", default=3, min=1, max=360)
 
     def __init__(self):
         self.mouse_x = None
@@ -197,11 +197,14 @@ class DCONFIG_OT_radial_array(bpy.types.Operator):
             self.adjust_radial_mod(self.count - self.radial_mod.count)
 
     def modal(self, context, event):
-        if self.mouse_x is not None:
-            scale = 100 if event.shift else 10
-            displace_delta = (event.mouse_x - self.mouse_x) / scale
-            self.offset_mod.strength += displace_delta
-        self.mouse_x = event.mouse_x
+        if event.type == 'MOUSEMOVE' and event.ctrl:
+            if self.mouse_x is not None:
+                scale = 100 if event.shift else 10
+                displace_delta = (event.mouse_x - self.mouse_x) / scale
+                self.offset_mod.strength += displace_delta
+            self.mouse_x = event.mouse_x
+        elif not event.ctrl:
+            self.mouse_x = None
 
         if event.type == 'WHEELUPMOUSE':
             self.adjust_radial_mod(1)
@@ -259,9 +262,8 @@ class DCONFIG_OT_radial_array(bpy.types.Operator):
 
     def create_radial_mod(self, target):
         dc.trace(1, "Adding array modifier to {}", dc.full_name(target))
-        self.count = 3 if self.count == 0 else self.count
 
-        self.offset_mod = target.modifiers.new("dc_xoffset", 'DISPLACE')
+        self.offset_mod = target.modifiers.new("dc_offset", 'DISPLACE')
         self.offset_mod.direction = 'X'
         self.offset_mod.show_in_editmode = True
         self.offset_mod.show_on_cage = False
@@ -281,28 +283,21 @@ class DCONFIG_OT_radial_array(bpy.types.Operator):
         self.radial_mod.show_expanded = False
 
     def align_objects(self, context, target):
-        if context.scene.transform_orientation_slots[0].type == 'Face':
-            target.select_set(state=True)
-            dc.trace(1, "Using Face axis alignment: {}", [o.name for o in context.selected_objects])
+        is_ortho = not context.space_data.region_3d.is_perspective
+        if is_ortho:
+            view = dc.get_view_orientation_from_quaternion(context.space_data.region_3d.view_rotation)
 
-            self.radial_object["dc_axis"] = None
-            bpy.ops.transform.transform(mode='ALIGN', value=(0, 0, 0, 0), constraint_axis=(False, False, False), orient_type='Face')
+            dc.trace(1, "Using Ortho axis: {}", view)
+
+            if view == 'TOP' or view == 'BOTTOM':
+                self.radial_object["dc_axis"] = 'Z'
+            elif view == 'LEFT' or view == 'RIGHT':
+                self.radial_object["dc_axis"] = 'X'
+            elif view == 'FRONT' or view == 'BACK':
+                self.radial_object["dc_axis"] = 'Y'
         else:
-            is_ortho = not context.space_data.region_3d.is_perspective
-            if is_ortho:
-                view = dc.get_view_orientation_from_quaternion(context.space_data.region_3d.view_rotation)
-
-                dc.trace(1, "Using Ortho axis: {}", view)
-
-                if view == 'TOP' or view == 'BOTTOM':
-                    self.radial_object["dc_axis"] = 'Z'
-                elif view == 'LEFT' or view == 'RIGHT':
-                    self.radial_object["dc_axis"] = 'X'
-                elif view == 'FRONT' or view == 'BACK':
-                    self.radial_object["dc_axis"] = 'Y'
-            else:
-                dc.trace(1, "Using Global-Z axis")
-                self.radial_object["dc_axis"] = None
+            dc.trace(1, "Using Global-Z axis")
+            self.radial_object["dc_axis"] = None
 
         # Ensure the proper object is active/selected for further bpy.ops
         bpy.ops.object.select_all(action='DESELECT')
@@ -316,8 +311,7 @@ class DCONFIG_OT_radial_array(bpy.types.Operator):
         else:
             current_rotation = math.radians(360 / self.radial_mod.count)
 
-        self.count += delta
-        self.radial_mod.count = self.count
+        self.radial_mod.count += delta
 
         required_rotation = math.radians(360 / self.radial_mod.count)
         actual_rotation = current_rotation - required_rotation
@@ -328,7 +322,7 @@ class DCONFIG_OT_radial_array(bpy.types.Operator):
             bpy.ops.transform.rotate(value=actual_rotation, orient_axis=self.radial_object["dc_axis"], orient_type='GLOBAL',)
 
     def init_from_existing(self, target):
-        self.offset_mod = next((mod for mod in reversed(target.modifiers) if mod.name.startswith("dc_xoffset")), None)
+        self.offset_mod = next((mod for mod in reversed(target.modifiers) if mod.name.startswith("dc_offset")), None)
         self.radial_mod = next((mod for mod in reversed(target.modifiers) if mod.name.startswith("dc_radial")), None)
         if self.radial_mod is not None:
             dc.trace(1, "Found existing modifier: {}", self.radial_mod.name)
