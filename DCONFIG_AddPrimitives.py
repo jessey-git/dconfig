@@ -151,8 +151,8 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
     size: bpy.props.FloatProperty(name="Size", default=1.0, step=1, min=0.01, precision=3, unit='LENGTH')
     segments: bpy.props.IntProperty(name="Segments", default=12, min=3, max=40)
     ring_count: bpy.props.IntProperty(name="Rings", default=6, min=3, max=20)
-    vertices: bpy.props.IntProperty(name="Vertices", default=8, min=3, max=96)
-    vertices_4: bpy.props.IntProperty(name="Vertices", default=8, step=2, min=6, max=32)
+    vertices: bpy.props.IntProperty(name="Vertices", default=8, min=3, max=150)
+    vertices_4: bpy.props.IntProperty(name="Vertices", default=8, step=4, min=8, max=32)
     levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
     align: bpy.props.StringProperty(name="Align", default='WORLD')
 

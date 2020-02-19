@@ -264,7 +264,8 @@ class DCONFIG_OT_radial_array(bpy.types.Operator):
         dc.trace(1, "Adding array modifier to {}", dc.full_name(target))
 
         self.offset_mod = target.modifiers.new("dc_offset", 'DISPLACE')
-        self.offset_mod.direction = 'X'
+        self.offset_mod.strength = 0
+        self.offset_mod.direction = 'Y'
         self.offset_mod.show_in_editmode = True
         self.offset_mod.show_on_cage = False
         self.offset_mod.show_expanded = False
