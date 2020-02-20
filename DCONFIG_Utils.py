@@ -41,12 +41,12 @@ def active_mesh_selected(context):
     return active_object is not None and active_object.type == 'MESH' and (context.mode == 'EDIT_MESH' or active_object.select_get())
 
 
-def get_meshes(obj_list):
-    return [obj for obj in obj_list if obj.type == 'MESH']
+def get_objects(obj_list, obj_types):
+    return [obj for obj in obj_list if obj.type in obj_types]
 
 
 def get_sorted_meshes(obj_list, active_object):
-    return sorted(get_meshes(obj_list), key=lambda x: 0 if x == active_object else 1)
+    return sorted(get_objects(obj_list, {'MESH'}), key=lambda x: 0 if x == active_object else 1)
 
 
 def setup_op(layout, operator, icon=None, text='', **kwargs):

@@ -288,7 +288,7 @@ class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
         bool_targets = []
 
         # We should have at least 2 mesh objects (1 target, 1 source) at this point now...
-        selected_meshes = dc.get_meshes(context.selected_objects)
+        selected_meshes = dc.get_objects(context.selected_objects, {'MESH'})
         if len(selected_meshes) < 2:
             return None, None
 
@@ -353,7 +353,7 @@ class DCONFIG_OT_boolean_apply(bpy.types.Operator):
         dc.trace_enter(self)
 
         # Process all selected objects...
-        for current_object in dc.get_meshes(context.selected_objects):
+        for current_object in dc.get_objects(context.selected_objects, {'MESH'}):
             dc.trace(1, "Processing: {}", dc.full_name(current_object))
 
             bpy.ops.object.select_all(action='DESELECT')

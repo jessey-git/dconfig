@@ -331,7 +331,7 @@ class Validator:
         context.scene.dc_validation_collection = self.collection.name
         self.examine_collection()
 
-        for obj in dc.get_meshes(self.collection.all_objects):
+        for obj in dc.get_objects(self.collection.all_objects, {'MESH'}):
             print('Checking object : ', obj.name)
             self.examine_object(context, obj)
 

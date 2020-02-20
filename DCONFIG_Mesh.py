@@ -126,18 +126,38 @@ class DCONFIG_OT_subd_toggle(bpy.types.Operator):
     def execute(self, context):
         dc.trace_enter(self)
 
-        target = context.active_object
-        mod_subd = next((mod for mod in reversed(target.modifiers) if mod.type == 'SUBSURF'), None)
-        if mod_subd is None:
-            mod_subd = target.modifiers.new("Subdivision", 'SUBSURF')
-            mod_subd.levels = self.levels
-            mod_subd.show_only_control_edges = True
-        else:
-            if self.levels != mod_subd.levels:
-                mod_subd.levels = self.levels
-                mod_subd.show_viewport = True
+        objects = dc.get_objects(context.selected_objects, {'MESH', 'CURVE', 'FONT'})
+        subd_visible = False
+        subd_invisible = False
+
+        # Track visibility states for all required objects...
+        for obj in objects:
+            mod_subd = next((mod for mod in reversed(obj.modifiers) if mod.type == 'SUBSURF'), None)
+            if mod_subd is None:
+                subd_invisible = True
             else:
-                mod_subd.show_viewport = not mod_subd.show_viewport
+                if mod_subd.show_viewport:
+                    subd_visible = True
+                else:
+                    subd_invisible = True
+
+        # If there's a mix, then push them towards visible, otherwise just toggle...
+        show_viewport_toggle = None
+        if subd_invisible and subd_visible:
+            show_viewport_toggle = True
+
+        for obj in objects:
+            mod_subd = next((mod for mod in reversed(obj.modifiers) if mod.type == 'SUBSURF'), None)
+            if mod_subd is None:
+                mod_subd = obj.modifiers.new("Subdivision", 'SUBSURF')
+                mod_subd.levels = self.levels
+                mod_subd.show_only_control_edges = True
+            else:
+                if self.levels != mod_subd.levels:
+                    mod_subd.levels = self.levels
+                    mod_subd.show_viewport = True
+                else:
+                    mod_subd.show_viewport = show_viewport_toggle if show_viewport_toggle is not None else not mod_subd.show_viewport
 
         return dc.trace_exit(self)
 
