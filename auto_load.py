@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Copyright(c) 2019 Jesse Yurkovich
+# Copyright(c) 2020 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
@@ -135,7 +135,8 @@ def get_register_base_types():
         "Panel", "Operator", "PropertyGroup",
         "AddonPreferences", "Header", "Menu",
         "Node", "NodeSocket", "NodeTree",
-        "UIList", "RenderEngine"
+        "UIList", "RenderEngine",
+        "Gizmo", "GizmoGroup"
     ])
 
 

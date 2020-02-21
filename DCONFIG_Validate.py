@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Copyright(c) 2019 Jesse Yurkovich
+# Copyright(c) 2020 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
@@ -331,7 +331,7 @@ class Validator:
         context.scene.dc_validation_collection = self.collection.name
         self.examine_collection()
 
-        for obj in dc.get_meshes(self.collection.all_objects):
+        for obj in dc.get_objects(self.collection.all_objects, {'MESH'}):
             print('Checking object : ', obj.name)
             self.examine_object(context, obj)
 

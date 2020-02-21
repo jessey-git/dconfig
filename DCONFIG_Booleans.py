@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Copyright(c) 2019 Jesse Yurkovich
+# Copyright(c) 2020 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
@@ -26,7 +26,7 @@ class DCONFIG_MT_boolean_pie(bpy.types.Menu):
 
     @classmethod
     def poll(cls, context):
-        return dc.active_mesh_available(context)
+        return dc.active_object_available(context, {'MESH'})
 
     def draw(self, context):
         layout = self.layout
@@ -123,21 +123,25 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
             mod_index -= 1
 
     def prepare_objects(self, context):
+        source_separated = False
         if context.mode == 'EDIT_MESH':
             if context.active_object.data.total_vert_sel > 0:
                 bpy.ops.mesh.select_linked()
                 bpy.ops.mesh.normals_make_consistent(inside=False)
                 bpy.ops.mesh.separate(type='SELECTED')
+                source_separated = True
         else:
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
             bpy.ops.mesh.select_all()
             bpy.ops.mesh.normals_make_consistent(inside=False)
 
+        return source_separated
+
     def prepare_data(self, context):
         bool_targets = []
 
         # Cleanup and separate if necessary...
-        self.prepare_objects(context)
+        source_separated = self.prepare_objects(context)
 
         # We should have at least 2 mesh objects (1 target, 1 source) at this point now...
         selected_meshes = dc.get_sorted_meshes(context.selected_objects, context.active_object)
@@ -151,6 +155,8 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
 
         # Last object is the boolean source
         source = selected_meshes[-1]
+        if source_separated:
+            source.modifiers.clear()
         source_collection = dc.find_collection(context, source)
         bool_source = BoolData(source, source_collection)
 
@@ -282,7 +288,7 @@ class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
         bool_targets = []
 
         # We should have at least 2 mesh objects (1 target, 1 source) at this point now...
-        selected_meshes = dc.get_meshes(context.selected_objects)
+        selected_meshes = dc.get_objects(context.selected_objects, {'MESH'})
         if len(selected_meshes) < 2:
             return None, None
 
@@ -347,7 +353,7 @@ class DCONFIG_OT_boolean_apply(bpy.types.Operator):
         dc.trace_enter(self)
 
         # Process all selected objects...
-        for current_object in dc.get_meshes(context.selected_objects):
+        for current_object in dc.get_objects(context.selected_objects, {'MESH'}):
             dc.trace(1, "Processing: {}", dc.full_name(current_object))
 
             bpy.ops.object.select_all(action='DESELECT')

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Copyright(c) 2019 Jesse Yurkovich
+# Copyright(c) 2020 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
@@ -50,9 +50,9 @@ def setup_hotkeys():
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.view_center_cursor",    "HOME",     "PRESS",    False,  False,  True,   ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.toggle_shading",        "Z",        "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.toggle_wireframe",     "Z",        "PRESS",    True,   False,  False,  ()),
+        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.mesh_symmetry",        "T",        "PRESS",    True,   False,  False,  ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu",                 "Q",        "PRESS",    False,  False,  False,  (("name", "DCONFIG_MT_quick"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",        "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_boolean_pie"),)),
-        ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",             "Q",        "PRESS",    False,  True,   False,  (("name", "DCONFIG_MT_symmetry_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "wm.call_menu_pie",         "BUTTON4MOUSE", "PRESS",    False,  False,  False,  (("name", "VIEW3D_MT_transform_gizmo_pie"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "dconfig.mesh_focus",       "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   False,  "view3d.localview",         "BUTTON5MOUSE", "PRESS",    False,  True,   False,  (("frame_selected", True),)),

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Copyright(c) 2019 Jesse Yurkovich
+# Copyright(c) 2020 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
@@ -113,7 +113,7 @@ class DCONFIG_OT_center_collection(bpy.types.Operator):
         bpy.ops.object.select_all(action='DESELECT')
 
         # Process all objects to determine the collection's bounding box
-        all_meshes = dc.get_meshes(collection.all_objects)
+        all_meshes = dc.get_objects(collection.all_objects, {'MESH'})
         for obj in all_meshes:
             if obj.modifiers:
                 # It's too risky to move the object's origin if there are modifiers present...

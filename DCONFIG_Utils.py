@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Copyright(c) 2019 Jesse Yurkovich
+# Copyright(c) 2020 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
@@ -31,9 +31,9 @@ def rename(obj, new_name):
     obj.data.name = new_name
 
 
-def active_mesh_available(context):
+def active_object_available(context, obj_types):
     active_object = context.active_object
-    return active_object is not None and active_object.type == 'MESH'
+    return active_object is not None and active_object.type in obj_types
 
 
 def active_mesh_selected(context):
@@ -41,19 +41,19 @@ def active_mesh_selected(context):
     return active_object is not None and active_object.type == 'MESH' and (context.mode == 'EDIT_MESH' or active_object.select_get())
 
 
-def get_meshes(obj_list):
-    return [obj for obj in obj_list if obj.type == 'MESH']
+def get_objects(obj_list, obj_types):
+    return [obj for obj in obj_list if obj.type in obj_types]
 
 
 def get_sorted_meshes(obj_list, active_object):
-    return sorted(get_meshes(obj_list), key=lambda x: 0 if x == active_object else 1)
+    return sorted(get_objects(obj_list, {'MESH'}), key=lambda x: 0 if x == active_object else 1)
 
 
-def setup_op(layout, id, icon=None, text='', **kwargs):
+def setup_op(layout, operator, icon=None, text='', **kwargs):
     if icon is not None:
-        op = layout.operator(id, icon=icon, text=text)
+        op = layout.operator(operator, icon=icon, text=text)
     else:
-        op = layout.operator(id, text=text)
+        op = layout.operator(operator, text=text)
 
     for prop, value in kwargs.items():
         setattr(op, prop, value)
@@ -93,7 +93,6 @@ def calculate_bbox(verts, matrix=None):
 def get_view_orientation_from_quaternion(view_quat):
     def r(x):
         return round(x, 2)
-    view_rot = view_quat.to_euler()
 
     orientation_dict = {(0.0, 0.0, 0.0): 'TOP',
                         (r(math.pi), 0.0, 0.0): 'BOTTOM',
@@ -102,6 +101,7 @@ def get_view_orientation_from_quaternion(view_quat):
                         (r(math.pi / 2), 0.0, r(-math.pi / 2)): 'LEFT',
                         (r(math.pi / 2), 0.0, r(math.pi / 2)): 'RIGHT'}
 
+    view_rot = view_quat.to_euler()
     return orientation_dict.get(tuple(map(r, view_rot)), None)
 
 #
