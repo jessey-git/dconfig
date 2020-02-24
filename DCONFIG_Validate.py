@@ -324,7 +324,6 @@ class Validator:
         print("--------------------------------")
 
         self.results.clear()
-        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         bpy.ops.object.select_all(action='DESELECT')
 
         print('Checking collection : ', self.collection.name)
@@ -348,6 +347,8 @@ class Validator:
         obj.hide_viewport = False
 
         context.view_layer.objects.active = obj
+
+        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         obj.select_set(True)
 
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
@@ -456,3 +457,4 @@ def unregister():
     bpy.types.OUTLINER_MT_collection.remove(menu_func)
     del bpy.types.Scene.dc_validation_results
     del bpy.types.Scene.dc_validation_results_index
+    del bpy.types.Scene.dc_validation_collection
