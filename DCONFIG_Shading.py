@@ -87,6 +87,8 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
         context.scene.eevee.use_shadow_high_bitdepth = True
         context.scene.eevee.use_soft_shadows = True
 
+        context.scene.render.use_high_quality_normals = True
+
         # Cycles
         context.scene.cycles.samples = 20
         context.scene.cycles.preview_samples = 6

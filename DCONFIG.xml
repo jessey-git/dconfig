@@ -405,6 +405,7 @@
         bone_pose="#50c8ff"
         bone_pose_active="#8cffff"
         bone_solid="#b2b2b2"
+        bone_locked_weight="#ff000080"
         bundle_solid="#c8c8c8"
         camera_path="#000000"
         skin_root="#b44d4d"
@@ -437,7 +438,7 @@
             >
             <gradients>
               <ThemeGradientColors
-                show_grad="FALSE"
+                background_type="SINGLE_COLOR"
                 high_gradient="#393939"
                 gradient="#000000"
                 >
@@ -460,6 +461,8 @@
         grid="#2a2a2a"
         frame_current="#5680c2"
         time_scrub_background="#292929e6"
+        time_marker_line="#00000060"
+        time_marker_line_selected="#ffffff60"
         window_sliders="#969696"
         channels_region="#333333"
         dopesheet_channel="#0f2c4d"
@@ -496,7 +499,7 @@
             header="#2e2e2eff"
             header_text="#eeeeee"
             header_text_hi="#ffffff"
-            button="#282828ff"
+            button="#424242ff"
             button_title="#ffffff"
             button_text="#e5e5e5"
             button_text_hi="#ffffff"
@@ -522,7 +525,7 @@
             list="#282828"
             list_title="#ffffff"
             list_text="#b8b8b8"
-            list_text_hi="#ffffff"
+            list_text_hi="#ffaf29"
             >
           </ThemeSpaceListGeneric>
         </space_list>
@@ -587,6 +590,8 @@
         keyframe_border_selected="#000000ff"
         frame_current="#5680c2"
         time_scrub_background="#292929e6"
+        time_marker_line="#00000060"
+        time_marker_line_selected="#ffffff60"
         >
         <space>
           <ThemeSpaceGeneric
@@ -597,7 +602,7 @@
             header="#424242ff"
             header_text="#eeeeee"
             header_text_hi="#ffffff"
-            button="#282828ff"
+            button="#424242ff"
             button_title="#ffffff"
             button_text="#e5e5e5"
             button_text_hi="#ffffff"
@@ -623,7 +628,7 @@
             list="#282828"
             list_title="#ffffff"
             list_text="#b8b8b8"
-            list_text_hi="#ffffff"
+            list_text_hi="#ffaf29"
             >
           </ThemeSpaceListGeneric>
         </space_list>
@@ -634,6 +639,8 @@
         grid="#2a2a2a"
         frame_current="#5680c2"
         time_scrub_background="#292929e6"
+        time_marker_line="#00000060"
+        time_marker_line_selected="#ffffff60"
         value_sliders="#000000"
         view_sliders="#c0c0c0"
         dopesheet_channel="#0f2c4d24"
@@ -696,7 +703,7 @@
             list="#282828"
             list_title="#ffffff"
             list_text="#b8b8b8"
-            list_text_hi="#ffffff"
+            list_text_hi="#ffaf29"
             >
           </ThemeSpaceListGeneric>
         </space_list>
@@ -792,6 +799,8 @@
         text_strip="#a29700"
         frame_current="#5680c2"
         time_scrub_background="#292929e6"
+        time_marker_line="#00000060"
+        time_marker_line_selected="#ffffff60"
         keyframe="#ff8500"
         draw_action="#50c8ff"
         preview_back="#000000"
@@ -929,6 +938,7 @@
         matte_node="#975b5b"
         distor_node="#749797"
         noodle_curving="3"
+        grid_levels="2"
         input_node="#e64555"
         output_node="#b33641"
         filter_node="#584d80"
@@ -1024,24 +1034,28 @@
     </outliner>
     <info>
       <ThemeInfo
-        info_selected="#6080ff"
+        info_selected="#3b5689"
         info_selected_text="#ffffff"
-        info_error="#990000"
+        info_error="#ff613dff"
         info_error_text="#ffffff"
-        info_warning="#b36a00"
+        info_warning="#b36a00ff"
         info_warning_text="#ffffff"
-        info_info="#1d4383"
+        info_info="#1d4383ff"
         info_info_text="#ffffff"
-        info_debug="#d3d3d3"
+        info_debug="#d3d3d3ff"
         info_debug_text="#000000"
+        info_property="#3ace87ff"
+        info_property_text="#ffffff"
+        info_operator="#3ace87ff"
+        info_operator_text="#ffffff"
         >
         <space>
           <ThemeSpaceGeneric
-            back="#424242"
-            title="#eeeeee"
-            text="#e6e6e6"
+            back="#282828"
+            title="#ffffff"
+            text="#c3c3c3"
             text_hi="#ffffff"
-            header="#424242ff"
+            header="#454545ff"
             header_text="#eeeeee"
             header_text_hi="#ffffff"
             button="#424242ff"
@@ -1156,6 +1170,8 @@
         path_keyframe_after="#c4c4ff"
         frame_current="#5680c2"
         time_scrub_background="#292929e6"
+        time_marker_line="#00000060"
+        time_marker_line_selected="#ffffff60"
         strips="#0c0a0a"
         strips_selected="#ff8c00"
         metadatabg="#000000"
