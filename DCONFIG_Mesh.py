@@ -168,23 +168,38 @@ class DCONFIG_OT_quick_panel(bpy.types.Operator):
     bl_description = "Panel macro"
     bl_options = {'REGISTER', 'UNDO'}
 
-    offset: bpy.props.FloatProperty(name="Offset", default=0.0100, step=1, min=0.0001, max=1, precision=4)
-    offset2: bpy.props.FloatProperty(name="Offset (secondary)", default=0.0033, step=1, min=0.0001, max=1, precision=4)
-    inset: bpy.props.FloatProperty(name="Inset", default=0.0067, step=1, min=0.0001, max=1, precision=4)
-    depth: bpy.props.FloatProperty(name="Depth", default=0.0100, step=1, min=0.0001, max=1, precision=4)
+    scale: bpy.props.FloatProperty(name="Scale", default=1, step=1, min=0, max=2)
+    offset: bpy.props.FloatProperty(name="Offset", default=1, step=1, min=0, max=2)
+    inset: bpy.props.FloatProperty(name="Inset", default=0.5, step=1, min=0, max=1)
+    depth: bpy.props.FloatProperty(name="Depth", default=0.5, step=1, min=0, max=1)
 
     @classmethod
     def poll(cls, context):
         return context.mode == 'EDIT_MESH' and dc.active_object_available(context, {'MESH'})
 
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+
+        layout.prop(self, "scale", slider=True)
+        layout.separator()
+        layout.prop(self, "offset", slider=True)
+        layout.prop(self, "inset", slider=True)
+        layout.prop(self, "depth", slider=True)
+
     def execute(self, context):
         dc.trace_enter(self)
 
-        bpy.ops.mesh.bevel(offset_type='OFFSET', offset=self.offset, offset_pct=0, segments=2, vertex_only=False)
-        bpy.ops.mesh.inset(thickness=self.inset, depth=-self.depth)
+        bevel_offset1 = 0.01 * self.offset * self.scale
+        inset_thickness = bevel_offset1 * self.inset
+        inset_depth = 0.02 * self.depth * self.scale
+        bevel_offset2 = inset_depth / 3
+
+        bpy.ops.mesh.bevel(offset_type='OFFSET', offset=bevel_offset1, offset_pct=0, segments=2, vertex_only=False)
+        bpy.ops.mesh.inset(thickness=inset_thickness, depth=-inset_depth)
         bpy.ops.mesh.select_more()
         bpy.ops.mesh.region_to_loop()
-        bpy.ops.mesh.bevel(offset_type='OFFSET', offset=self.offset2, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
+        bpy.ops.mesh.bevel(offset_type='OFFSET', offset=bevel_offset2, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
 
         return dc.trace_exit(self)
 
