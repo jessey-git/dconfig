@@ -171,7 +171,7 @@ class DCONFIG_OT_quick_panel(bpy.types.Operator):
     scale: bpy.props.FloatProperty(name="Scale", default=1, step=1, min=0, max=2)
     offset: bpy.props.FloatProperty(name="Offset", default=1, step=1, min=0, max=2)
     inset: bpy.props.FloatProperty(name="Inset", default=0.5, step=1, min=0, max=1)
-    depth: bpy.props.FloatProperty(name="Depth", default=0.5, step=1, min=0, max=1)
+    depth: bpy.props.FloatProperty(name="Depth", default=0.5, step=1, min=-1, max=1)
 
     @classmethod
     def poll(cls, context):
@@ -193,7 +193,7 @@ class DCONFIG_OT_quick_panel(bpy.types.Operator):
         bevel_offset1 = 0.01 * self.offset * self.scale
         inset_thickness = bevel_offset1 * self.inset
         inset_depth = 0.02 * self.depth * self.scale
-        bevel_offset2 = inset_depth / 3
+        bevel_offset2 = math.fabs(inset_depth) / 3
 
         bpy.ops.mesh.bevel(offset_type='OFFSET', offset=bevel_offset1, offset_pct=0, segments=2, vertex_only=False)
         bpy.ops.mesh.inset(thickness=inset_thickness, depth=-inset_depth)
