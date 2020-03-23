@@ -113,8 +113,7 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
                 helpers_collection.objects.link(mirror_object)
                 mirror_object_collection.objects.unlink(mirror_object)
 
-                context.view_layer.objects.active = original_object
-                context.view_layer.objects.active.select_set(True)
+                dc.make_active_object(context, original_object)
                 bpy.ops.object.mode_set(mode=original_mode, toggle=False)
 
         return mirror_object
@@ -302,8 +301,7 @@ class DCONFIG_OT_radial_array(bpy.types.Operator):
 
         # Ensure the proper object is active/selected for further bpy.ops
         bpy.ops.object.select_all(action='DESELECT')
-        context.view_layer.objects.active = self.radial_object
-        context.view_layer.objects.active.select_set(True)
+        dc.make_active_object(context, self.radial_object)
 
     def adjust_radial_mod(self, delta, init=False):
         dc.trace(1, "Delta: {}", delta)
@@ -403,8 +401,7 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def make_lattice_active(self, context):
-        context.view_layer.objects.active = self.lattice
-        self.lattice.select_set(True)
+        dc.make_active_object(context, self.lattice)
         self.target.select_set(False)
 
     def create_lattice_obj(self, context):
@@ -490,8 +487,7 @@ class DCONFIG_OT_bend360(bpy.types.Operator):
         bend_object.select_set(state=False)
         bend_object.hide_viewport = True
 
-        context.view_layer.objects.active = target
-        target.select_set(state=True)
+        dc.make_active_object(context, target)
 
         return dc.trace_exit(self)
 

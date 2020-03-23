@@ -24,7 +24,7 @@ from . import DCONFIG_Utils as dc
 Rule = namedtuple('Rule', ['category', 'label'])
 ObjectRuleData = namedtuple('ObjectRuleData', ['obj', 'bm'])
 CollectionRuleData = namedtuple('CollectionRuleData', ['collection'])
-RuleResult = namedtuple('RuleResult', ['rule', 'is_error', 'detail'])
+RuleResult = namedtuple('RuleResult', ['rule', 'is_error', 'obj', 'detail'])
 
 
 class BaseObjectRule:
@@ -58,7 +58,7 @@ class ObjectNameRule(BaseObjectRule):
 
     def execute(self, data):
         is_error = self.is_bad_name(data.obj.name)
-        return RuleResult(self.rule, is_error, "Object '{}' is named poorly".format(data.obj.name))
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' is named poorly".format(data.obj.name))
 
 
 class ObjectDataNameRule(BaseObjectRule):
@@ -72,7 +72,7 @@ class ObjectDataNameRule(BaseObjectRule):
             is_error = self.is_bad_name(data.obj.data.name)
             message = "Object '{}' uses data name '{}' which is named poorly".format(data.obj.name, data.obj.data.name)
 
-        return RuleResult(self.rule, is_error, message)
+        return RuleResult(self.rule, is_error, data.obj, message)
 
 
 class GeometryIsolatedVertRule(BaseObjectRule):
@@ -84,7 +84,7 @@ class GeometryIsolatedVertRule(BaseObjectRule):
 
         isolated_count = sum(1 for v in data.bm.verts if v.select)
         is_error = isolated_count > 0
-        return RuleResult(self.rule, is_error, "Object '{}' contains {} isolated vertices".format(data.obj.name, isolated_count))
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' contains {} isolated vertices".format(data.obj.name, isolated_count))
 
 
 class GeometryCoincidentVertRule(BaseObjectRule):
@@ -95,7 +95,7 @@ class GeometryCoincidentVertRule(BaseObjectRule):
 
         doubles_count = len(doubles['targetmap'])
         is_error = doubles_count > 0
-        return RuleResult(self.rule, is_error, "Object '{}' contains {} doubled vertices".format(data.obj.name, doubles_count))
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' contains {} doubled vertices".format(data.obj.name, doubles_count))
 
 
 class GeometryInteriorFaceRule(BaseObjectRule):
@@ -107,7 +107,7 @@ class GeometryInteriorFaceRule(BaseObjectRule):
 
         interior_count = sum(1 for f in data.bm.faces if f.select)
         is_error = interior_count > 0
-        return RuleResult(self.rule, is_error, "Object '{}' contains {} interior faces".format(data.obj.name, interior_count))
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' contains {} interior faces".format(data.obj.name, interior_count))
 
 
 class GeometryNonManifoldRule(BaseObjectRule):
@@ -119,7 +119,7 @@ class GeometryNonManifoldRule(BaseObjectRule):
 
         non_manifold_count = sum(1 for v in data.bm.verts if v.select)
         is_error = non_manifold_count > 0
-        return RuleResult(self.rule, is_error, "Object '{}' contains {} non-manifold vertices".format(data.obj.name, non_manifold_count))
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' contains {} non-manifold vertices".format(data.obj.name, non_manifold_count))
 
 
 class GeometryDistortionRule(BaseObjectRule):
@@ -142,7 +142,7 @@ class GeometryDistortionRule(BaseObjectRule):
     def execute(self, data):
         distored_faces = sum(1 for f in data.bm.faces if self.is_face_distorted(f))
         is_error = distored_faces > 0
-        return RuleResult(self.rule, is_error, "Object '{}' contains {} distorted faces".format(data.obj.name, distored_faces))
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' contains {} distorted faces".format(data.obj.name, distored_faces))
 
 
 class TopologyTrianglesRule(BaseObjectRule):
@@ -153,10 +153,14 @@ class TopologyTrianglesRule(BaseObjectRule):
         bpy.ops.mesh.select_face_by_sides(number=3, type='EQUAL', extend=False)
 
         face_count = len(data.bm.faces)
-        triangle_count = sum(1 for f in data.bm.faces if f.select)
-        percentage = float(triangle_count) / face_count
+        if face_count > 0:
+            triangle_count = sum(1 for f in data.bm.faces if f.select)
+            percentage = float(triangle_count) / face_count
+        else:
+            percentage = 0
+
         is_error = percentage > 0.10
-        return RuleResult(self.rule, is_error, "Object '{}' is composed of {:.1f}% triangles".format(data.obj.name, percentage * 100))
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' is composed of {:.1f}% triangles".format(data.obj.name, percentage * 100))
 
 
 class TopologyNGonRule(BaseObjectRule):
@@ -167,10 +171,14 @@ class TopologyNGonRule(BaseObjectRule):
         bpy.ops.mesh.select_face_by_sides(number=4, type='GREATER', extend=False)
 
         face_count = len(data.bm.faces)
-        ngon_count = sum(1 for f in data.bm.faces if f.select)
-        percentage = float(ngon_count) / face_count
+        if face_count > 0:
+            ngon_count = sum(1 for f in data.bm.faces if f.select)
+            percentage = float(ngon_count) / face_count
+        else:
+            percentage = 0
+
         is_error = percentage > 0.10
-        return RuleResult(self.rule, is_error, "Object '{}' is composed of {:.1f}% ngons".format(data.obj.name, percentage * 100))
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' is composed of {:.1f}% ngons".format(data.obj.name, percentage * 100))
 
 
 class TopologyPoleRule(BaseObjectRule):
@@ -179,7 +187,7 @@ class TopologyPoleRule(BaseObjectRule):
     def execute(self, data):
         large_pole_count = sum(1 for v in data.bm.verts if len(v.link_edges) > 5)
         is_error = large_pole_count > 0
-        return RuleResult(self.rule, is_error, "Object '{}' contains {} poles with 6+ edges".format(data.obj.name, large_pole_count))
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' contains {} poles with 6+ edges".format(data.obj.name, large_pole_count))
 
 
 class TopologySubDivCreaseRule(BaseObjectRule):
@@ -190,19 +198,18 @@ class TopologySubDivCreaseRule(BaseObjectRule):
 
         edge_count = sum(1 for e in data.bm.edges if e[crease] > 0.0)
         is_error = edge_count > 0
-        return RuleResult(self.rule, is_error, "Object '{}' contains {} edges with creases set".format(data.obj.name, edge_count))
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' contains {} edges with creases set".format(data.obj.name, edge_count))
 
 
 class OrientationTransformRule(BaseObjectRule):
     rule = Rule('Orientation', 'Unapplied transforms')
 
     def execute(self, data):
-        loc_applied = all(c == 0.0 for c in data.obj.location)
         scale_applied = all(c == 1.0 for c in data.obj.scale)
         rotation_applied = all(c == 0.0 for c in data.obj.rotation_euler)
 
-        is_error = not (loc_applied and scale_applied and rotation_applied)
-        return RuleResult(self.rule, is_error, "Object '{}' has unapplied location, rotation, or scale".format(data.obj.name))
+        is_error = not (scale_applied and rotation_applied)
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' has unapplied rotation or scale".format(data.obj.name))
 
 
 class MaterialRule(BaseObjectRule):
@@ -210,7 +217,7 @@ class MaterialRule(BaseObjectRule):
 
     def execute(self, data):
         is_error = data.obj.active_material is None
-        return RuleResult(self.rule, is_error, "Object '{}' does not have an assigned material".format(data.obj.name))
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' does not have an assigned material".format(data.obj.name))
 
 
 class MaterialNameRule(BaseObjectRule):
@@ -224,7 +231,7 @@ class MaterialNameRule(BaseObjectRule):
             is_error = self.is_bad_name(data.obj.active_material.name)
             message = "Material '{}' is named poorly for object '{}'".format(data.obj.active_material.name, data.obj.name)
 
-        return RuleResult(self.rule, is_error, message)
+        return RuleResult(self.rule, is_error, data.obj, message)
 
 
 class MaterialUVRule(BaseObjectRule):
@@ -232,7 +239,7 @@ class MaterialUVRule(BaseObjectRule):
 
     def execute(self, data):
         is_error = len(data.obj.data.uv_layers) == 0
-        return RuleResult(self.rule, is_error, "Object '{}' is missing UVs".format(data.obj.name))
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' is missing UVs".format(data.obj.name))
 
 
 class AllMeshRule(BaseCollectionRule):
@@ -241,14 +248,14 @@ class AllMeshRule(BaseCollectionRule):
     def execute(self, data):
         number_non_mesh = sum(1 for obj in data.collection.all_objects if obj.type != 'MESH')
         is_error = number_non_mesh > 0
-        return RuleResult(self.rule, is_error, "Collection '{}' contains {} non-mesh objects".format(data.collection.name, number_non_mesh))
+        return RuleResult(self.rule, is_error, None, "Collection '{}' contains {} non-mesh objects".format(data.collection.name, number_non_mesh))
 
 
 class MaterialUVOverlapRule(BaseCollectionRule):
     rule = Rule('Material', 'UVs overlap')
 
     def execute(self, data):
-        return RuleResult(self.rule, False, "")
+        return RuleResult(self.rule, False, None, "")
         # if len(data.obj.data.uv_layers) > 0:
         #     self.ready_selection('FACE')
         #     bpy.ops.uv.select_overlapping(extend=False)
@@ -258,7 +265,7 @@ class MaterialUVOverlapRule(BaseCollectionRule):
         # else:
         #     is_error = False
         #     message = 'No UVs found'
-        # return RuleResult(self.rule, is_error, message)
+        # return RuleResult(self.rule, is_error, None, message)
 
 #
 # Analyzer Processing
@@ -326,15 +333,18 @@ class Validator:
         self.results.clear()
         bpy.ops.object.select_all(action='DESELECT')
 
+        objs_to_check = dc.get_objects(self.collection.all_objects, {'MESH'})
+        validation_data = context.scene.dc_validation_data
+        validation_data.reset(self.collection.name, len(objs_to_check))
+
         print('Checking collection : ', self.collection.name)
-        context.scene.dc_validation_collection = self.collection.name
         self.examine_collection()
 
-        for obj in dc.get_objects(self.collection.all_objects, {'MESH'}):
+        for obj in objs_to_check:
             print('Checking object : ', obj.name)
             self.examine_object(context, obj)
 
-        self.post_results(context.scene)
+        self.post_results(validation_data)
         print("--------------------------------")
 
     def examine_collection(self):
@@ -346,11 +356,9 @@ class Validator:
         prev_hide_viewport = obj.hide_viewport
         obj.hide_viewport = False
 
-        context.view_layer.objects.active = obj
+        dc.make_active_object(context, obj)
 
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-        obj.select_set(True)
-
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         bpy.ops.mesh.select_all(action='DESELECT')
 
@@ -367,29 +375,26 @@ class Validator:
             if result.rule not in self.results:
                 self.results[result.rule] = []
             if result.is_error:
-                self.results[result.rule].append(result.detail)
+                self.results[result.rule].append(result)
 
-    def post_results(self, scene):
-        scene.dc_validation_results_index = 0
-        scene.dc_validation_results.clear()
-
+    def post_results(self, validation_data):
         for key in self.results:
             errors = self.results[key]
             print('{} errors: {}'.format(len(errors), key))
             for err in errors:
                 print('  {}'.format(err))
 
-                item = scene.dc_validation_results.add()
+                item = validation_data.results.add()
                 item.name = key.label
                 item.rule_category = key.category
                 item.rule_label = key.label
-                item.result_detail = err
-                scene.dc_validation_results_index += 1
-
+                item.obj_name = err.obj.name if err.obj else ''
+                item.detail = err.detail
 
 #
 # Operators and UI
 #
+
 
 class DCONFIG_OT_validate(bpy.types.Operator):
     bl_idname = "dconfig.validate"
@@ -415,7 +420,7 @@ class DCONFIG_UL_validation_items(bpy.types.UIList):
         split = split.split(factor=0.30, align=True)
         split.alignment = 'LEFT'
         split.label(text=item.rule_label)
-        split.label(text=item.result_detail)
+        split.label(text=item.detail)
 
     def invoke(self, context, event):
         pass
@@ -429,17 +434,54 @@ class DCONFIG_PT_validate_results(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.use_property_split = True
-        scene = context.scene
+        validation_data = context.scene.dc_validation_data
 
-        layout.label(text="Collection: " + scene.dc_validation_collection)
-        layout.template_list("DCONFIG_UL_validation_items", "", scene, "dc_validation_results", scene, "dc_validation_results_index", rows=5)
+        row = layout.row()
+        row.label(text="Collection: " + validation_data.collection_name)
+        row.label(text="Object count: {}".format(validation_data.check_count))
+        layout.separator()
+        layout.label(text="Result count: {}".format(len(validation_data.results)))
+        layout.template_list("DCONFIG_UL_validation_items", "", validation_data, "results", validation_data, "result_index", rows=5)
 
 
 class DCONFIG_ValidationResultCollection(bpy.types.PropertyGroup):
     rule_category: bpy.props.StringProperty()
     rule_label: bpy.props.StringProperty()
-    result_detail: bpy.props.StringProperty()
+    obj_name: bpy.props.StringProperty()
+    detail: bpy.props.StringProperty()
+
+
+def inspect_func(self, context):
+    if self.update_enabled:
+        result = self.results[self.result_index]
+        if result.obj_name == '':
+            return
+
+        if context.space_data.local_view is not None:
+            bpy.ops.view3d.localview(frame_selected=True)
+
+        bpy.ops.object.select_all(action='DESELECT')
+
+        obj = bpy.data.objects[result.obj_name]
+        obj.hide_viewport = False
+        dc.make_active_object(context, obj)
+        bpy.ops.view3d.localview(frame_selected=True)
+
+
+class DCONFIG_ValidationData(bpy.types.PropertyGroup):
+    collection_name: bpy.props.StringProperty()
+    check_count: bpy.props.IntProperty()
+    result_index: bpy.props.IntProperty(update=inspect_func)
+    results: bpy.props.CollectionProperty(type=DCONFIG_ValidationResultCollection)
+    update_enabled: bpy.props.BoolProperty()
+
+    def reset(self, collection_name, obj_count):
+        self.update_enabled = False
+        self.collection_name = collection_name
+        self.check_count = obj_count
+        self.result_index = 0
+        self.results.clear()
+        self.update_enabled = True
 
 
 def menu_func(self, context):
@@ -448,13 +490,9 @@ def menu_func(self, context):
 
 def register():
     bpy.types.OUTLINER_MT_collection.append(menu_func)
-    bpy.types.Scene.dc_validation_collection = bpy.props.StringProperty()
-    bpy.types.Scene.dc_validation_results = bpy.props.CollectionProperty(type=DCONFIG_ValidationResultCollection)
-    bpy.types.Scene.dc_validation_results_index = bpy.props.IntProperty()
+    bpy.types.Scene.dc_validation_data = bpy.props.PointerProperty(type=DCONFIG_ValidationData)
 
 
 def unregister():
     bpy.types.OUTLINER_MT_collection.remove(menu_func)
-    del bpy.types.Scene.dc_validation_results
-    del bpy.types.Scene.dc_validation_results_index
-    del bpy.types.Scene.dc_validation_collection
+    del bpy.types.Scene.dc_validation_data

@@ -258,8 +258,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
                 obj.matrix_world.translation = context.scene.cursor.location
 
             context.collection.objects.link(obj)
-            context.view_layer.objects.active = obj
-            obj.select_set(True)
+            dc.make_active_object(context, obj)
         else:
             bpy.ops.mesh.select_all(action='DESELECT')
 
@@ -303,8 +302,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_sphere.name)
 
         if was_edit:
-            context.view_layer.objects.active = prev_active
-            prev_active.select_set(True)
+            dc.make_active_object(context, prev_active)
             bpy.ops.object.join()
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
 
@@ -334,8 +332,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
             new_object = context.active_object
             if new_object.type == 'MESH':
-                context.view_layer.objects.active = prev_active
-                context.view_layer.objects.active.select_set(True)
+                dc.make_active_object(context, prev_active)
                 bpy.ops.object.join()
                 bpy.ops.object.mode_set(mode='EDIT', toggle=False)
 
@@ -425,9 +422,9 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
             bpy.ops.mesh.separate(type='SELECTED')
 
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-        context.view_layer.objects.active = context.selected_objects[-1]
+        obj = context.selected_objects[-1]
         bpy.ops.object.select_all(action='DESELECT')
-        context.view_layer.objects.active.select_set(True)
+        dc.make_active_object(context, obj)
 
     def create_curve(self, context, event):
         bpy.ops.object.convert(target='CURVE')

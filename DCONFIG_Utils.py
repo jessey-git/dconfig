@@ -49,6 +49,11 @@ def get_sorted_meshes(obj_list, active_object):
     return sorted(get_objects(obj_list, {'MESH'}), key=lambda x: 0 if x == active_object else 1)
 
 
+def make_active_object(context, obj):
+    context.view_layer.objects.active = obj
+    context.view_layer.objects.active.select_set(True)
+
+
 def setup_op(layout, operator, icon=None, text='', **kwargs):
     if icon is not None:
         op = layout.operator(operator, icon=icon, text=text)

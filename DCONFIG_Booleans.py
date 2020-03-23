@@ -88,8 +88,7 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
                 mod.thickness = 0.007
 
             if self.insetted:
-                context.view_layer.objects.active = source.object
-                source.object.select_set(state=True)
+                dc.make_active_object(context, source.object)
 
                 bpy.ops.object.duplicate()
                 inset = context.active_object
@@ -254,8 +253,7 @@ class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
             dc.trace(1, "Processing:")
 
             for target in bool_targets:
-                context.view_layer.objects.active = target.object
-                target.object.select_set(True)
+                dc.make_active_object(context, target.object)
 
                 self.apply_bool_mod(target, bool_source)
 
@@ -273,8 +271,7 @@ class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         bpy.ops.object.select_all(action='DESELECT')
 
-        context.view_layer.objects.active = source
-        source.select_set(True)
+        dc.make_active_object(context, source)
 
         bpy.ops.object.convert(target='MESH')
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
