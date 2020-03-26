@@ -127,6 +127,8 @@ class DCONFIG_OT_subd_toggle(bpy.types.Operator):
         dc.trace_enter(self)
 
         objects = dc.get_objects(context.selected_objects, {'MESH', 'CURVE', 'FONT'})
+        if not objects:
+            objects = [context.active_object]
         subd_visible = False
         subd_invisible = False
 
@@ -142,7 +144,7 @@ class DCONFIG_OT_subd_toggle(bpy.types.Operator):
                     subd_invisible = True
 
         # If there's a mix, then push them towards visible, otherwise just toggle...
-        show_viewport_toggle = None
+        show_viewport_toggle = False
         if subd_invisible and subd_visible:
             show_viewport_toggle = True
 
@@ -157,7 +159,7 @@ class DCONFIG_OT_subd_toggle(bpy.types.Operator):
                     mod_subd.levels = self.levels
                     mod_subd.show_viewport = True
                 else:
-                    mod_subd.show_viewport = show_viewport_toggle if show_viewport_toggle is not None else not mod_subd.show_viewport
+                    mod_subd.show_viewport = show_viewport_toggle if show_viewport_toggle else not mod_subd.show_viewport
 
         return dc.trace_exit(self)
 
