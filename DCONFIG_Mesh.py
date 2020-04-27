@@ -39,7 +39,7 @@ class DCONFIG_MT_quick(bpy.types.Menu):
             dc.setup_op(layout, "dconfig.make_quads", text="Make Quads")
             dc.setup_op(layout, "dconfig.subdivide_cylinder", text="Subdivide Cylinder")
             dc.setup_op(layout, "dconfig.quick_panel", text="Quick Panel")
-            dc.setup_op(layout, "dconfig.subd_bevel", text="Sub-D Bevel")
+            dc.setup_op(layout, "dconfig.subd_bevel", text="SubD Bevel")
 
 
 class DCONFIG_OT_make_quads(bpy.types.Operator):
@@ -84,7 +84,7 @@ class DCONFIG_OT_subdivide_cylinder(bpy.types.Operator):
 
 class DCONFIG_OT_subd_bevel(bpy.types.Operator):
     bl_idname = "dconfig.subd_bevel"
-    bl_label = "DC Sub-D friendly Bevel"
+    bl_label = "DC SubD friendly Bevel"
     bl_description = "Create a subdivision friendly bevel"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -113,9 +113,9 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
 
 class DCONFIG_OT_subd_toggle(bpy.types.Operator):
     bl_idname = "dconfig.subd_toggle"
-    bl_label = "DC Sub-D Toggle"
+    bl_label = "DC SubD Toggle"
     bl_description = "Toggle subdivision surface modifier"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER'}
 
     levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
 

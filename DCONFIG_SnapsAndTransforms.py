@@ -26,16 +26,20 @@ class DCONFIG_MT_transforms_pie(bpy.types.Menu):
         col.scale_y = 1.25
         col.prop(context.scene.tool_settings, "transform_pivot_point", expand=True)
 
-        col.separator()
-        col.prop(context.tool_settings, "use_transform_data_origin", text="Origins")
-        col.prop(context.tool_settings, "use_transform_pivot_point_align", text="Locations")
-        col.prop(context.tool_settings, "use_transform_skip_children", text="Parents")
-
         # Right
         split = pie.split()
         col = split.column(align=True)
         col.scale_y = 1.25
         col.prop(context.scene.transform_orientation_slots[0], "type", expand=True)
+
+        # Bottom
+        split = pie.split()
+        col = split.column(align=True)
+        col.scale_y = 1.25
+
+        col.prop(context.tool_settings, "use_transform_data_origin", text="Origins")
+        col.prop(context.tool_settings, "use_transform_pivot_point_align", text="Locations")
+        col.prop(context.tool_settings, "use_transform_skip_children", text="Parents")
 
 
 class DCONFIG_MT_image_pivot(bpy.types.Menu):
