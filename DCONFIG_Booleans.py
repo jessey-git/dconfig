@@ -85,25 +85,19 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
 
             if self.cutline:
                 mod = source.object.modifiers.new('Cutline', "SOLIDIFY")
-                mod.thickness = 0.007
+                mod.thickness = 0.001
 
             if self.insetted:
                 dc.make_active_object(context, source.object)
 
+                # Duplicate boolean source which then becomes the inset object
                 bpy.ops.object.duplicate()
                 inset = context.active_object
                 dc.rename(inset, "dc_bool_inset")
 
-                bpy.ops.object.mode_set(mode='EDIT', toggle=False)
-                bpy.ops.mesh.select_all(action='SELECT')
-                context.scene.tool_settings.transform_pivot_point = 'INDIVIDUAL_ORIGINS'
-                bpy.ops.transform.resize(value=(0.95, 0.95, 0.95), constraint_axis=(False, False, False), mirror=False, use_proportional_edit=False)
-                context.scene.tool_settings.transform_pivot_point = 'MEDIAN_POINT'
-                bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-
-                context.view_layer.objects.active = source.object
-                bpy.ops.object.constraint_add(type='COPY_TRANSFORMS')
-                context.active_object.constraints["Copy Transforms"].target = inset
+                # Parent boolean source to the inset object
+                source.object.parent = inset
+                source.object.matrix_parent_inverse = inset.matrix_world.inverted()
                 inset_move_list.append(inset)
 
         source.object.display_type = 'WIRE'

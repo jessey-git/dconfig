@@ -43,9 +43,9 @@ def setup_hotkeys():
         ("Object Mode",         "EMPTY",    "WINDOW",   "dconfig.subd_toggle",      "ONE",          "PRESS",    False,  False,  True,   (("levels", 1),)),
         ("Object Mode",         "EMPTY",    "WINDOW",   "dconfig.subd_toggle",      "TWO",          "PRESS",    False,  False,  True,   (("levels", 2),)),
         ("Object Mode",         "EMPTY",    "WINDOW",   "dconfig.subd_toggle",      "THREE",        "PRESS",    False,  False,  True,   (("levels", 3),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   "dconfig.subd_toggle",      "ONE",          "PRESS",    False,  False,  True,   (("levels", 1),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   "dconfig.subd_toggle",      "TWO",          "PRESS",    False,  False,  True,   (("levels", 2),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   "dconfig.subd_toggle",      "THREE",        "PRESS",    False,  False,  True,   (("levels", 3),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   "dconfig.subd_toggle",      "ONE",          "PRESS",    False,  False,  True,   (("levels", 1),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   "dconfig.subd_toggle",      "TWO",          "PRESS",    False,  False,  True,   (("levels", 2),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   "dconfig.subd_toggle",      "THREE",        "PRESS",    False,  False,  True,   (("levels", 3),)),
 
         ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.view_center_cursor",    "HOME",     "PRESS",    False,  False,  True,   ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.toggle_shading",        "Z",        "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
@@ -92,6 +92,7 @@ def setup_userpreferences():
     user_prefs = bpy.context.preferences
 
     user_prefs.edit.undo_steps = 100
+    user_prefs.edit.collection_instance_empty_size = 0.25
 
     user_prefs.view.show_tooltips_python = True
     user_prefs.view.show_developer_ui = True
