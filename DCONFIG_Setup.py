@@ -59,8 +59,6 @@ def setup_hotkeys():
 
         ("Mesh",                "EMPTY",    "WINDOW",   "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  (("delimit", set()),)),
         ("Mesh",                "EMPTY",    "WINDOW",   "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("delimit", set()),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   "mesh.delete_edgeloop",     "X",            "PRESS",        False,  True,   False,  (("use_face_split", False),)),
-        ("Mesh",                "EMPTY",    "WINDOW",   "mesh.dissolve_mode",       "BACK_SPACE",   "PRESS",        False,  False,  False,  (("use_verts", False), ("use_face_split", False),)),
 
         ("UV Editor",           "EMPTY",    "WINDOW",   "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  ()),
         ("UV Editor",           "EMPTY",    "WINDOW",   "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("extend", True),)),

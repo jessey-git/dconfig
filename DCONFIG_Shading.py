@@ -45,7 +45,7 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
         context.space_data.shading.xray_alpha_wireframe = 0
 
         context.space_data.overlay.show_stats = True
-        context.space_data.overlay.show_curve_handles = True
+        context.space_data.overlay.display_handle = 'SELECTED'
         context.space_data.overlay.show_curve_normals = False
 
         context.space_data.overlay.wireframe_threshold = 1.0

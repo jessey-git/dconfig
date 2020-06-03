@@ -331,11 +331,12 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             dc.trace(1, "Adding {} aligned to selected faces", self.prim_type)
             prev_active = context.active_object
 
-            # Extract transformation matrix...
-            bpy.ops.transform.create_orientation(name="AddAxis", use=True, overwrite=True)
-            context.scene.cursor.matrix = context.scene.transform_orientation_slots[0].custom_orientation.matrix.to_4x4()
+            # Extract transformation matrix only if 1 face is selected
+            if context.active_object.data.total_face_sel == 1:
+                bpy.ops.transform.create_orientation(name="AddAxis", use=True, overwrite=True)
+                context.scene.cursor.matrix = context.scene.transform_orientation_slots[0].custom_orientation.matrix.to_4x4()
+
             bpy.ops.view3d.snap_cursor_to_selected()
-            bpy.ops.transform.delete_orientation()
 
             bpy.ops.mesh.select_all(action='DESELECT')
             bpy.ops.object.mode_set(mode='OBJECT', toggle=False)

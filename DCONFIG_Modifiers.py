@@ -5,7 +5,7 @@
 # ------------------------------------------------------------
 
 #
-# Better symmetry
+# Better modifiers
 #
 
 import math
@@ -32,7 +32,7 @@ class DCONFIG_MT_modifiers(bpy.types.Menu):
 
         layout.separator()
         dc.setup_op(layout, "dconfig.radial_array", 'MOD_ARRAY', "Radial Array")
-        dc.setup_op(layout, "dconfig.bend360", 'MOD_SIMPLEDEFORM', "Bend 360")
+        dc.setup_op(layout, "dconfig.bend", 'MOD_SIMPLEDEFORM', "Bend")
 
         layout.separator()
         dc.setup_op(layout, "dconfig.add_lattice", 'MESH_GRID', "FFD", resolution=2, only_base=True)
@@ -467,9 +467,9 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         self.lattice.data.points_w = safe_res[2]
 
 
-class DCONFIG_OT_bend360(bpy.types.Operator):
-    bl_idname = "dconfig.bend360"
-    bl_label = "DC Bend 360"
+class DCONFIG_OT_bend(bpy.types.Operator):
+    bl_idname = "dconfig.bend"
+    bl_label = "DC Bend"
     bl_description = "Bend mesh"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -522,10 +522,10 @@ class DCONFIG_OT_bend360(bpy.types.Operator):
         array_mod.count = 4
         array_mod.use_merge_vertices = True
         array_mod.use_merge_vertices_cap = True
-        array_mod.merge_threshold = 0.001
+        array_mod.merge_threshold = 0.003
 
         bend_mod = target.modifiers.new("dc_bend", 'SIMPLE_DEFORM')
         bend_mod.deform_method = 'BEND'
         bend_mod.deform_axis = 'Z'
-        bend_mod.angle = math.radians(360)
+        bend_mod.angle = math.radians(120)
         bend_mod.origin = bend_object
