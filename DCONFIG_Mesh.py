@@ -198,7 +198,7 @@ class DCONFIG_OT_quick_panel(bpy.types.Operator):
         bevel_offset2 = math.fabs(inset_depth) / 3
 
         bpy.ops.mesh.bevel(offset_type='OFFSET', offset=bevel_offset1, offset_pct=0, segments=2, vertex_only=False)
-        bpy.ops.mesh.inset(thickness=inset_thickness, depth=-inset_depth)
+        bpy.ops.mesh.inset(thickness=inset_thickness, depth=-inset_depth, use_boundary=False)
         bpy.ops.mesh.select_more()
         bpy.ops.mesh.region_to_loop()
         bpy.ops.mesh.bevel(offset_type='OFFSET', offset=bevel_offset2, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')

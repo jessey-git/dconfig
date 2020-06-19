@@ -63,7 +63,7 @@ def draw_stats(font_id, line_height, ui_scale):
             if index > 0:
                 x += longest_digits
             blf.position(font_id, x - data[1], y_pos, 0)
-            blf.draw(font_id, data[0])
+            blf.draw(font_id, data[0].replace(",", "\u2009"))
 
         y_pos -= line_height
 
@@ -99,10 +99,10 @@ draw_settings = {
 
 
 def register():
-    # draw_settings["handler"] = bpy.types.SpaceView3D.draw_handler_add(draw_func, (None, ), 'WINDOW', 'POST_PIXEL')
-    pass
+    if bpy.app.version < (2, 90, 0):
+        draw_settings["handler"] = bpy.types.SpaceView3D.draw_handler_add(draw_func, (None, ), 'WINDOW', 'POST_PIXEL')
 
 
 def unregister():
-    # bpy.types.SpaceView3D.draw_handler_remove(draw_settings["handler"], 'WINDOW')
-    pass
+    if bpy.app.version < (2, 90, 0):
+        bpy.types.SpaceView3D.draw_handler_remove(draw_settings["handler"], 'WINDOW')

@@ -64,6 +64,8 @@ def setup_hotkeys():
         ("UV Editor",           "EMPTY",    "WINDOW",   "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("extend", True),)),
         ("UV Editor",           "EMPTY",    "WINDOW",   "wm.call_menu",             "S",            "PRESS",        True,   False,  False,  (("name", "IMAGE_MT_uvs_snap"),)),
 
+        ("Node Editor",         "NODE_EDITOR",  "WINDOW",   "node.view_selected",   "BUTTON4MOUSE", "PRESS",        False,  True,   False,  ()),
+
         ("Image",               "IMAGE_EDITOR", "WINDOW",   "wm.call_menu",         "BUTTON4MOUSE", "PRESS",        True,   False,  False,  (("name", "DCONFIG_MT_image_pivot"),)),
     )
 
@@ -90,7 +92,8 @@ def setup_userpreferences():
     user_prefs = bpy.context.preferences
 
     user_prefs.edit.undo_steps = 100
-    user_prefs.edit.collection_instance_empty_size = 0.25
+    if bpy.app.version >= (2, 90, 0):
+        user_prefs.edit.collection_instance_empty_size = 0.25
 
     user_prefs.view.show_tooltips_python = True
     user_prefs.view.show_developer_ui = True
