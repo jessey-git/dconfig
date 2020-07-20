@@ -106,7 +106,7 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
             bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='EDGE')
             bpy.ops.mesh.edges_select_sharp()
 
-        bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', offset=0.01, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
+        bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='ABSOLUTE', offset=0.01, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
 
         return dc.trace_exit(self)
 

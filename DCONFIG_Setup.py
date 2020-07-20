@@ -105,6 +105,7 @@ def setup_userpreferences():
     user_prefs.view.mini_axis_brightness = 10
 
     user_prefs.view.smooth_view = 0
+    user_prefs.view.pie_animation_timeout = 0
 
     user_prefs.filepaths.save_version = 0
 
