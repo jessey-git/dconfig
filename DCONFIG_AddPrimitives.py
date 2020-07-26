@@ -397,7 +397,11 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
         dc.trace(1, "Starting step {}", self.step)
         if self.step == 0:
             bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='VERT')
-            bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', vertex_only=True, clamp_overlap=True)
+
+            if bpy.app.version >= (2, 90, 0):
+                bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', affect='VERTICES', clamp_overlap=True)
+            else:
+                bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', vertex_only=True, clamp_overlap=True)
 
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}

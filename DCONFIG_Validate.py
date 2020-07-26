@@ -145,30 +145,12 @@ class GeometryDistortionRule(BaseObjectRule):
         return RuleResult(self.rule, is_error, data.obj, "Object '{}' contains {} distorted faces".format(data.obj.name, distored_faces))
 
 
-class TopologyTrianglesRule(BaseObjectRule):
-    rule = Rule('Topology', 'Triangles')
-
-    def execute(self, data):
-        self.ready_selection('FACE')
-        bpy.ops.mesh.select_face_by_sides(number=3, type='EQUAL', extend=False)
-
-        face_count = len(data.bm.faces)
-        if face_count > 0:
-            triangle_count = sum(1 for f in data.bm.faces if f.select)
-            percentage = float(triangle_count) / face_count
-        else:
-            percentage = 0
-
-        is_error = percentage > 0.10
-        return RuleResult(self.rule, is_error, data.obj, "Object '{}' is composed of {:.1f}% triangles".format(data.obj.name, percentage * 100))
-
-
 class TopologyNGonRule(BaseObjectRule):
     rule = Rule('Topology', 'Ngons')
 
     def execute(self, data):
         self.ready_selection('FACE')
-        bpy.ops.mesh.select_face_by_sides(number=4, type='GREATER', extend=False)
+        bpy.ops.mesh.select_face_by_sides(number=4, type='NOTEQUAL', extend=False)
 
         face_count = len(data.bm.faces)
         if face_count > 0:
@@ -178,7 +160,20 @@ class TopologyNGonRule(BaseObjectRule):
             percentage = 0
 
         is_error = percentage > 0.10
-        return RuleResult(self.rule, is_error, data.obj, "Object '{}' is composed of {:.1f}% ngons".format(data.obj.name, percentage * 100))
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' is composed of {:.1f}% tris/ngons".format(data.obj.name, percentage * 100))
+
+
+class TopologyLargeNGonRule(BaseObjectRule):
+    rule = Rule('Topology', 'Large Ngons')
+
+    def execute(self, data):
+        self.ready_selection('FACE')
+        bpy.ops.mesh.select_face_by_sides(number=6, type='GREATER', extend=False)
+
+        ngon_count = sum(1 for f in data.bm.faces if f.select)
+        is_error = ngon_count > 0
+
+        return RuleResult(self.rule, is_error, data.obj, "Object '{}' is composed of {} large ngons".format(data.obj.name, ngon_count))
 
 
 class TopologyPoleRule(BaseObjectRule):
@@ -281,8 +276,8 @@ class ObjectAnalyzer:
         GeometryInteriorFaceRule(),
         GeometryNonManifoldRule(),
         GeometryDistortionRule(),
-        TopologyTrianglesRule(),
         TopologyNGonRule(),
+        TopologyLargeNGonRule(),
         TopologyPoleRule(),
         TopologySubDivCreaseRule(),
         OrientationTransformRule(),
@@ -331,6 +326,7 @@ class Validator:
         print("--------------------------------")
 
         self.results.clear()
+        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         bpy.ops.object.select_all(action='DESELECT')
 
         objs_to_check = dc.get_objects(self.collection.all_objects, {'MESH'})

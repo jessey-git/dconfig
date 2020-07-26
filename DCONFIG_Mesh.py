@@ -77,7 +77,11 @@ class DCONFIG_OT_subdivide_cylinder(bpy.types.Operator):
 
         bpy.ops.mesh.edgering_select('INVOKE_DEFAULT')
         bpy.ops.mesh.loop_multi_select()
-        bpy.ops.mesh.bevel(offset_type='PERCENT', offset_pct=25, vertex_only=False)
+
+        if bpy.app.version >= (2, 90, 0):
+            bpy.ops.mesh.bevel(offset_type='PERCENT', offset_pct=25, affect='EDGES')
+        else:
+            bpy.ops.mesh.bevel(offset_type='PERCENT', offset_pct=25, vertex_only=False)
 
         return dc.trace_exit(self)
 
@@ -197,7 +201,7 @@ class DCONFIG_OT_quick_panel(bpy.types.Operator):
         inset_depth = 0.02 * self.depth * self.scale
         bevel_offset2 = math.fabs(inset_depth) / 3
 
-        bpy.ops.mesh.bevel(offset_type='OFFSET', offset=bevel_offset1, offset_pct=0, segments=2, vertex_only=False)
+        bpy.ops.mesh.bevel(offset_type='OFFSET', offset=bevel_offset1, offset_pct=0, segments=2)
         bpy.ops.mesh.inset(thickness=inset_thickness, depth=-inset_depth, use_boundary=False)
         bpy.ops.mesh.select_more()
         bpy.ops.mesh.region_to_loop()
