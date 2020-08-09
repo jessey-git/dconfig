@@ -310,8 +310,12 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         mod_sphere = quad_sphere.modifiers.new("dc_temp_cast", 'CAST')
         mod_sphere.factor = 1
         mod_sphere.radius = radius
-        bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_subd.name)
-        bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_sphere.name)
+        if bpy.app.version >= (2, 90, 0):
+            bpy.ops.object.modifier_apply(modifier=mod_subd.name)
+            bpy.ops.object.modifier_apply(modifier=mod_sphere.name)
+        else:
+            bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_subd.name)
+            bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_sphere.name)
 
         if was_edit:
             dc.make_active_object(context, prev_active)
