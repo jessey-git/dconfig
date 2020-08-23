@@ -32,8 +32,8 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "6", prim_type='Cylinder', radius=0.25, depth=0.25, vertices=6, align=align)
-        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "8", prim_type='Cylinder', radius=0.25, depth=0.25, vertices=8, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "6", prim_type='Cylinder', radius=0.50, depth=0.25, vertices=6, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "8", prim_type='Cylinder', radius=0.50, depth=0.25, vertices=8, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "16", prim_type='Cylinder', radius=0.50, depth=0.50, vertices=16, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "32", prim_type='Cylinder', radius=0.50, depth=0.50, vertices=32, align=align)
 
@@ -44,8 +44,8 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "6", prim_type='Circle', radius=0.25, vertices=6, align=align)
-        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "8", prim_type='Circle', radius=0.25, vertices=8, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "6", prim_type='Circle', radius=0.50, vertices=6, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "8", prim_type='Circle', radius=0.50, vertices=8, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "16", prim_type='Circle', radius=0.50, vertices=16, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "32", prim_type='Circle', radius=0.50, vertices=32, align=align)
 
@@ -58,16 +58,16 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "12", prim_type='Sphere', radius=0.25, segments=12, ring_count=6, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "12", prim_type='Sphere', radius=0.50, segments=12, ring_count=6, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "24", prim_type='Sphere', radius=0.50, segments=24, ring_count=12, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "32", prim_type='Sphere', radius=0.50, segments=32, ring_count=16, align=align)
 
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 1", prim_type='Quad_Sphere', radius=0.50, levels=1, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 2", prim_type='Quad_Sphere', radius=0.50, levels=2, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 3", prim_type='Quad_Sphere', radius=0.50, levels=3, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Quad 4", prim_type='Quad_Sphere', radius=0.50, levels=4, align=align)
 
         # Bottom
         split = pie.split(align=True)

@@ -99,10 +99,8 @@ draw_settings = {
 
 
 def register():
-    if bpy.app.version < (2, 90, 0):
-        draw_settings["handler"] = bpy.types.SpaceView3D.draw_handler_add(draw_func, (None, ), 'WINDOW', 'POST_PIXEL')
+    draw_settings["handler"] = bpy.types.SpaceView3D.draw_handler_add(draw_func, (None, ), 'WINDOW', 'POST_PIXEL')
 
 
 def unregister():
-    if bpy.app.version < (2, 90, 0):
-        bpy.types.SpaceView3D.draw_handler_remove(draw_settings["handler"], 'WINDOW')
+    bpy.types.SpaceView3D.draw_handler_remove(draw_settings["handler"], 'WINDOW')

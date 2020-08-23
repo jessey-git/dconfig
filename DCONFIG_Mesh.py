@@ -177,7 +177,8 @@ class DCONFIG_OT_quick_panel(bpy.types.Operator):
     scale: bpy.props.FloatProperty(name="Scale", default=1, step=1, min=0, max=2)
     offset: bpy.props.FloatProperty(name="Offset", default=1, step=1, min=0, max=2)
     inset: bpy.props.FloatProperty(name="Inset", default=0.5, step=1, min=0, max=1)
-    depth: bpy.props.FloatProperty(name="Depth", default=0.5, step=1, min=-1, max=1)
+    depth: bpy.props.FloatProperty(name="Depth", default=0.5, step=1, min=0, max=1)
+    invert: bpy.props.BoolProperty(name="Invert", default=False)
 
     @classmethod
     def poll(cls, context):
@@ -192,20 +193,32 @@ class DCONFIG_OT_quick_panel(bpy.types.Operator):
         layout.prop(self, "offset", slider=True)
         layout.prop(self, "inset", slider=True)
         layout.prop(self, "depth", slider=True)
+        layout.prop(self, "invert")
 
     def execute(self, context):
         dc.trace_enter(self)
 
-        bevel_offset1 = 0.01 * self.offset * self.scale
+        bevel_offset1 = (0.01 / 4) * self.offset * self.scale
         inset_thickness = bevel_offset1 * self.inset
-        inset_depth = 0.02 * self.depth * self.scale
+        inset_depth = 0.02 * self.depth * self.scale * (-1 if self.invert else 1)
         bevel_offset2 = math.fabs(inset_depth) / 3
+
+        bpy.ops.object.vertex_group_assign_new()
+        vgroup = context.active_object.vertex_groups.active
 
         bpy.ops.mesh.bevel(offset_type='OFFSET', offset=bevel_offset1, offset_pct=0, segments=2)
         bpy.ops.mesh.inset(thickness=inset_thickness, depth=-inset_depth, use_boundary=False)
         bpy.ops.mesh.select_more()
         bpy.ops.mesh.region_to_loop()
         bpy.ops.mesh.bevel(offset_type='OFFSET', offset=bevel_offset2, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
+
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.vertex_group_set_active(group=vgroup.name)
+        bpy.ops.object.vertex_group_select()
+        bpy.ops.object.vertex_group_remove(all=False, all_unlocked=False)
+
+        for _ in range(4):
+            bpy.ops.mesh.select_less()
 
         return dc.trace_exit(self)
 
