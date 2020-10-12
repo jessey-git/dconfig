@@ -48,6 +48,7 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
         context.space_data.overlay.show_curve_normals = False
         if bpy.app.version >= (2, 90, 0):
             context.space_data.overlay.show_stats = False
+            context.space_data.overlay.show_fade_inactive = False
 
         context.space_data.overlay.wireframe_threshold = 1.0
 
@@ -58,6 +59,8 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
         context.scene.tool_settings.statvis.type = 'DISTORT'
         context.scene.tool_settings.statvis.distort_min = 0
         context.scene.tool_settings.statvis.distort_max = math.radians(40)
+
+        context.scene.tool_settings.use_mesh_automerge = True
 
         return dc.trace_exit(self)
 

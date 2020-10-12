@@ -11,8 +11,8 @@
 import os
 import shutil
 
-import bpy
 import addon_utils
+import bpy
 
 addon_keymaps = []
 
@@ -59,6 +59,8 @@ def setup_hotkeys():
 
         ("Mesh",                "EMPTY",    "WINDOW",   "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  (("delimit", set()),)),
         ("Mesh",                "EMPTY",    "WINDOW",   "mesh.select_linked",       "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("delimit", set()),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   "dconfig.edge_crease",      "E",            "PRESS",        True,   False,  False,  (("value", 1),)),
+        ("Mesh",                "EMPTY",    "WINDOW",   "dconfig.edge_crease",      "E",            "PRESS",        True,   False,  True,   (("value", -1),)),
 
         ("UV Editor",           "EMPTY",    "WINDOW",   "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", False,  False,  False,  ()),
         ("UV Editor",           "EMPTY",    "WINDOW",   "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("extend", True),)),
@@ -79,6 +81,11 @@ def setup_hotkeys():
         addon_keymaps.append((km, kmi))
 
     print('Added {} keymaps'.format(len(addon_keymaps)))
+
+    print("Starting keymap fixup thread")
+    import threading
+    thread = threading.Thread(target=modal_fix)
+    thread.start()
 
 
 def remove_hotkeys():
@@ -143,6 +150,22 @@ class DCONFIG_OT_install_theme(bpy.types.Operator):
     def makedir(self, target):
         if not os.path.exists(target):
             os.makedirs(target)
+
+
+def modal_fix():
+    import time
+    kc = bpy.context.window_manager.keyconfigs
+    kcd = kc.default
+
+    for _ in range(0, 5):
+        km = kcd.keymaps.find("View3D Gesture Circle")
+        if km is not None and km.keymap_items:
+            km.keymap_items[0].type = 'C'
+            km.keymap_items[0].value = 'RELEASE'
+            print("Keymap fixed")
+            break
+        else:
+            time.sleep(0.5)
 
 
 def register():

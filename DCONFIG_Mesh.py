@@ -28,17 +28,19 @@ class DCONFIG_MT_quick(bpy.types.Menu):
             layout.separator()
 
             dc.setup_op(layout, "mesh.remove_doubles", text="Weld vertices")
+            dc.setup_op(layout, "dconfig.make_quads", text="Make Quads")
 
             layout.separator()
+            dc.setup_op(layout, "mesh.edges_select_sharp", text="Select Sharp", sharpness=math.radians(45.1))
             dc.setup_op(layout, "mesh.select_face_by_sides", text="Select N-Gons", type='NOTEQUAL', number=4, extend=False)
             dc.setup_op(layout, "mesh.region_to_loop", text="Select Boundary Loop")
 
             layout.separator()
             layout.operator_context = 'INVOKE_REGION_WIN'
             dc.setup_op(layout, "mesh.fill_grid", text="Fill Grid")
-            dc.setup_op(layout, "dconfig.make_quads", text="Make Quads")
             dc.setup_op(layout, "dconfig.subdivide_cylinder", text="Subdivide Cylinder")
             dc.setup_op(layout, "dconfig.quick_panel", text="Quick Panel")
+            dc.setup_op(layout, "dconfig.subd_upres", text="SubD Up-Res")
             dc.setup_op(layout, "dconfig.subd_bevel", text="SubD Bevel")
 
 
@@ -86,6 +88,57 @@ class DCONFIG_OT_subdivide_cylinder(bpy.types.Operator):
         return dc.trace_exit(self)
 
 
+class DCONFIG_OT_edge_crease(bpy.types.Operator):
+    bl_idname = "dconfig.edge_crease"
+    bl_label = "Crease Edge"
+    bl_description = "Change the crease of edges"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    value: bpy.props.FloatProperty(name="Value", default=0, min=-1, max=1)
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'EDIT_MESH' and dc.active_object_available(context, {'MESH'})
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        bpy.ops.transform.edge_crease(value=self.value)
+
+        return dc.trace_exit(self)
+
+
+class DCONFIG_OT_subd_upres(bpy.types.Operator):
+    bl_idname = "dconfig.subd_upres"
+    bl_label = "DC SubD Up-Res"
+    bl_description = "Apply a level of subdivision to the mesh"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return dc.active_mesh_selected(context)
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        was_edit = False
+        if context.mode == 'EDIT_MESH':
+            was_edit = True
+            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+
+        target = context.active_object
+        mod_subd = target.modifiers.new("Subdivision", 'SUBSURF')
+        mod_subd.levels = 1
+
+        bpy.ops.object.modifier_move_to_index(modifier=mod_subd.name, index=0)
+        bpy.ops.object.modifier_apply(modifier=mod_subd.name)
+
+        if was_edit:
+            bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+
+        return dc.trace_exit(self)
+
+
 class DCONFIG_OT_subd_bevel(bpy.types.Operator):
     bl_idname = "dconfig.subd_bevel"
     bl_label = "DC SubD friendly Bevel"
@@ -110,7 +163,7 @@ class DCONFIG_OT_subd_bevel(bpy.types.Operator):
             bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='EDGE')
             bpy.ops.mesh.edges_select_sharp()
 
-        bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='ABSOLUTE', offset=0.01, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
+        bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', offset=0.01, segments=2, profile=1, clamp_overlap=True, miter_outer='ARC')
 
         return dc.trace_exit(self)
 
@@ -158,6 +211,7 @@ class DCONFIG_OT_subd_toggle(bpy.types.Operator):
                 mod_subd = obj.modifiers.new("Subdivision", 'SUBSURF')
                 mod_subd.levels = self.levels
                 mod_subd.show_only_control_edges = True
+                mod_subd.show_on_cage = True
             else:
                 if self.levels != mod_subd.levels:
                     mod_subd.levels = self.levels
