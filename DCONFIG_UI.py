@@ -20,15 +20,15 @@ def draw_stats(font_id, line_height, ui_scale):
     stats = bpy.context.scene.statistics(view_layer).split("|")
     if bpy.context.mode == 'OBJECT':
         if len(stats) == 8:
-            stats = stats[2:4]
+            stats = [stats[5], stats[2], stats[3]]
         else:
             stats = stats[1:3]
     elif bpy.context.mode == 'EDIT_MESH':
-        stats = stats[1:4]
+        stats = [stats[5], stats[1], stats[2], stats[3]]
     elif bpy.context.mode == 'EDIT_CURVE':
-        stats = stats[1:2]
+        stats = [stats[2], stats[1]]
     elif bpy.context.mode == 'EDIT_LATTICE':
-        stats = stats[1:2]
+        stats = [stats[2], stats[1]]
     elif bpy.context.mode == 'SCULPT':
         stats = stats[1:3]
     else:
@@ -38,10 +38,10 @@ def draw_stats(font_id, line_height, ui_scale):
     toolbar_width = next((region.width for region in bpy.context.area.regions if region.type == 'TOOLS'), 100)
     top_offset = line_height * 10
     x_pos = (10 * ui_scale) + toolbar_width
-    y_pos = bpy.context.area.height - top_offset
+    y_pos = bpy.context.area.height - ((26 * ui_scale) if bpy.context.space_data.show_region_tool_header else 0) - top_offset
 
     digit_width = blf.dimensions(font_id, "0")[0]
-    longest_title = blf.dimensions(font_id, "Edges")[0]  # Known longest title
+    longest_title = blf.dimensions(font_id, "Objects")[0]  # Known longest title
     longest_digits = digit_width * 10
 
     # Calculate dimensions for each piece of data...

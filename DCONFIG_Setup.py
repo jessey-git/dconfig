@@ -43,9 +43,11 @@ def setup_hotkeys():
         ("Object Mode",         "EMPTY",    "WINDOW",   "dconfig.subd_toggle",      "ONE",          "PRESS",    False,  False,  True,   (("levels", 1),)),
         ("Object Mode",         "EMPTY",    "WINDOW",   "dconfig.subd_toggle",      "TWO",          "PRESS",    False,  False,  True,   (("levels", 2),)),
         ("Object Mode",         "EMPTY",    "WINDOW",   "dconfig.subd_toggle",      "THREE",        "PRESS",    False,  False,  True,   (("levels", 3),)),
+        ("Object Mode",         "EMPTY",    "WINDOW",   "dconfig.subd_toggle",      "FOUR",         "PRESS",    False,  False,  True,   (("levels", 4),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   "dconfig.subd_toggle",      "ONE",          "PRESS",    False,  False,  True,   (("levels", 1),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   "dconfig.subd_toggle",      "TWO",          "PRESS",    False,  False,  True,   (("levels", 2),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   "dconfig.subd_toggle",      "THREE",        "PRESS",    False,  False,  True,   (("levels", 3),)),
+        ("3D View",             "VIEW_3D",  "WINDOW",   "dconfig.subd_toggle",      "FOUR",         "PRESS",    False,  False,  True,   (("levels", 4),)),
 
         ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.view_center_cursor",    "HOME",     "PRESS",    False,  False,  True,   ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.toggle_shading",        "Z",        "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
@@ -102,6 +104,7 @@ def setup_userpreferences():
     if bpy.app.version >= (2, 90, 0):
         user_prefs.edit.collection_instance_empty_size = 0.25
         user_prefs.view.show_statusbar_version = False
+        user_prefs.view.show_statusbar_stats = False
 
     user_prefs.view.show_tooltips_python = True
     user_prefs.view.show_developer_ui = True

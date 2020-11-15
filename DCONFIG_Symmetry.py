@@ -103,17 +103,14 @@ class DCONFIG_GT_symmetry_gizmo(bpy.types.Gizmo):
 
     def update(self, mat_target):
         self.matrix_basis = mat_target
-        self.matrix_offset = Matrix.Translation(self.draw_offset * 3)
+        self.matrix_offset = Matrix.Translation(self.draw_offset * 4)
 
     def invoke(self, context, event):
-        return {'RUNNING_MODAL'}
+        self.op.direction = self.direction
+        self.op.execute(context)
+        return {'FINISHED'}
 
     def modal(self, context, event, tweak):
-        if event.value == 'PRESS':
-            self.op.direction = self.direction
-            self.op.execute(context)
-            return {'FINISHED'}
-
         return {'RUNNING_MODAL'}
 
 
