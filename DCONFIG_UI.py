@@ -22,7 +22,7 @@ def draw_stats(font_id, line_height, ui_scale):
         if len(stats) == 8:
             stats = [stats[5], stats[2], stats[3]]
         else:
-            stats = stats[1:3]
+            stats = [stats[4], stats[1], stats[2]]
     elif bpy.context.mode == 'EDIT_MESH':
         stats = [stats[5], stats[1], stats[2], stats[3]]
     elif bpy.context.mode == 'EDIT_CURVE':
@@ -30,7 +30,7 @@ def draw_stats(font_id, line_height, ui_scale):
     elif bpy.context.mode == 'EDIT_LATTICE':
         stats = [stats[2], stats[1]]
     elif bpy.context.mode == 'SCULPT':
-        stats = stats[1:3]
+        stats = [stats[4], stats[1], stats[2]]
     else:
         return
 
@@ -41,30 +41,36 @@ def draw_stats(font_id, line_height, ui_scale):
     y_pos = bpy.context.area.height - ((26 * ui_scale) if bpy.context.space_data.show_region_tool_header else 0) - top_offset
 
     digit_width = blf.dimensions(font_id, "0")[0]
-    longest_title = blf.dimensions(font_id, "Objects")[0]  # Known longest title
     longest_digits = digit_width * 10
+    longest_title = 0
 
     # Calculate dimensions for each piece of data...
+    class Item:
+        def __init__(self, text):
+            self.text = text
+            self.dim_x = 0
+
     lines = []
     for value in stats:
-        line_data = [[val, 0] for val in filter(None, re.split("[ :/]", value))]
-        if len(line_data) > 3:
-            line_data = line_data[1:]
-        for data in line_data:
-            data[1] = blf.dimensions(font_id, data[0])[0]
+        line_data = [Item(val) for val in filter(None, re.split("[ :/]", value))]
+        for item in line_data:
+            item.dim_x = blf.dimensions(font_id, item.text)[0]
 
+        longest_title = max(longest_title, line_data[0].dim_x)
         lines.append(line_data)
 
     # Aligned layout using dimensions above (special case first piece of data for the title)...
     blf.color(font_id, 1, 1, 1, 1)
-    for line in lines:
+    for line_index, line in enumerate(lines):
         x = x_pos + longest_title
-        for index, data in enumerate(line):
-            if index > 0:
+        for item_index, item in enumerate(line):
+            if item_index > 0:
                 x += longest_digits
-            blf.position(font_id, x - data[1], y_pos, 0)
-            blf.draw(font_id, data[0].replace(",", "\u2009"))
+            blf.position(font_id, x - item.dim_x, y_pos, 0)
+            blf.draw(font_id, item.text.replace(",", "\u2009"))
 
+        if line_index == 0:
+            y_pos -= line_height / 2
         y_pos -= line_height
 
 

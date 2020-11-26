@@ -37,7 +37,8 @@ class BaseObjectRule:
         'NurbsCircle', 'NurbsCurve', 'NurbsPath',
         'Plane',
         'Sphere', 'Surface', 'SurfCircle', 'SurfCurve', 'SurfCylinder', 'SurfPatch', 'SurfSphere', 'SurfTorus', 'Suzanne',
-        'Text', 'Torus'
+        'Text', 'Torus',
+        'Volume'
     ]
 
     def is_bad_name(self, name):

@@ -172,7 +172,7 @@ class DCONFIG_OT_subd_toggle(bpy.types.Operator):
     bl_idname = "dconfig.subd_toggle"
     bl_label = "DC SubD Toggle"
     bl_description = "Toggle subdivision surface modifier"
-    bl_options = {'REGISTER'}
+    bl_options = {'UNDO'}
 
     levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
 

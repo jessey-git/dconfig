@@ -18,7 +18,7 @@ class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
     bl_idname = "dconfig.mesh_symmetry"
     bl_label = "DC Mesh Symmetry"
     bl_description = "Symmetrize mesh along an axis"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'UNDO'}
 
     direction: bpy.props.EnumProperty(
         items=(

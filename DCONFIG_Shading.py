@@ -100,6 +100,9 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
         context.scene.cycles.use_square_samples = True
         context.scene.cycles.tile_order = 'CENTER'
 
+        context.scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
+        context.scene.cycles.preview_denoising_start_sample = 400
+
         # General View
         context.scene.view_settings.look = 'Medium High Contrast'
 

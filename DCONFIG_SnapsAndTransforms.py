@@ -68,7 +68,7 @@ class DCONFIG_OT_set_pivot(bpy.types.Operator):
     bl_idname = "dconfig.set_pivot"
     bl_label = "DC Set Pivot"
     bl_description = "Set object pivot while in edit mode"
-    bl_options = {'REGISTER'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):
