@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Copyright(c) 2020 Jesse Yurkovich
+# Copyright(c) 2018-2020 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
@@ -18,7 +18,7 @@ class DCONFIG_OT_mesh_symmetry(bpy.types.Operator):
     bl_idname = "dconfig.mesh_symmetry"
     bl_label = "DC Mesh Symmetry"
     bl_description = "Symmetrize mesh along an axis"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'UNDO'}
 
     direction: bpy.props.EnumProperty(
         items=(
@@ -103,17 +103,14 @@ class DCONFIG_GT_symmetry_gizmo(bpy.types.Gizmo):
 
     def update(self, mat_target):
         self.matrix_basis = mat_target
-        self.matrix_offset = Matrix.Translation(self.draw_offset * 3)
+        self.matrix_offset = Matrix.Translation(self.draw_offset * 4)
 
     def invoke(self, context, event):
-        return {'RUNNING_MODAL'}
+        self.op.direction = self.direction
+        self.op.execute(context)
+        return {'FINISHED'}
 
     def modal(self, context, event, tweak):
-        if event.value == 'PRESS':
-            self.op.direction = self.direction
-            self.op.execute(context)
-            return {'FINISHED'}
-
         return {'RUNNING_MODAL'}
 
 

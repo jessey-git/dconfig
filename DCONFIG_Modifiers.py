@@ -1,11 +1,11 @@
 # ------------------------------------------------------------
-# Copyright(c) 2020 Jesse Yurkovich
+# Copyright(c) 2018-2020 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
 
 #
-# Better symmetry
+# Better modifiers
 #
 
 import math
@@ -27,19 +27,20 @@ class DCONFIG_MT_modifiers(bpy.types.Menu):
         layout = self.layout
 
         layout.operator_context = 'INVOKE_REGION_WIN'
-        dc.setup_op(layout, "dconfig.mirror", 'MOD_MIRROR', "Local Mirror", local=True)
-        dc.setup_op(layout, "dconfig.mirror", 'MOD_MIRROR', "World Mirror", local=False)
+        dc.setup_op(layout, "dconfig.mod_mirror", 'MOD_MIRROR', "Local Mirror", local=True)
+        dc.setup_op(layout, "dconfig.mod_mirror", 'MOD_MIRROR', "World Mirror", local=False)
 
         layout.separator()
-        dc.setup_op(layout, "dconfig.radial_array", 'MOD_ARRAY', "Radial Array")
-        dc.setup_op(layout, "dconfig.bend360", 'MOD_SIMPLEDEFORM', "Bend 360")
+        dc.setup_op(layout, "dconfig.mod_radial_array", 'MOD_ARRAY', "Radial Array")
+        dc.setup_op(layout, "dconfig.mod_bend", 'MOD_SIMPLEDEFORM', "Bend")
+        dc.setup_op(layout, "dconfig.mod_pillow", 'MOD_CLOTH', "Pillow")
 
         layout.separator()
-        dc.setup_op(layout, "dconfig.add_lattice", 'MESH_GRID', "FFD", resolution=2, only_base=True)
+        dc.setup_op(layout, "dconfig.mod_lattice", 'MESH_GRID', "FFD", resolution=2, only_base=True)
 
 
-class DCONFIG_OT_mirror(bpy.types.Operator):
-    bl_idname = "dconfig.mirror"
+class DCONFIG_OT_mod_mirror(bpy.types.Operator):
+    bl_idname = "dconfig.mod_mirror"
     bl_label = "DC Mirror"
     bl_description = "Mirror mesh across an axis"
     bl_options = {'REGISTER', 'UNDO'}
@@ -113,8 +114,7 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
                 helpers_collection.objects.link(mirror_object)
                 mirror_object_collection.objects.unlink(mirror_object)
 
-                context.view_layer.objects.active = original_object
-                context.view_layer.objects.active.select_set(True)
+                dc.make_active_object(context, original_object)
                 bpy.ops.object.mode_set(mode=original_mode, toggle=False)
 
         return mirror_object
@@ -149,8 +149,8 @@ class DCONFIG_OT_mirror(bpy.types.Operator):
                 mod_index -= 1
 
 
-class DCONFIG_OT_radial_array(bpy.types.Operator):
-    bl_idname = "dconfig.radial_array"
+class DCONFIG_OT_mod_radial_array(bpy.types.Operator):
+    bl_idname = "dconfig.mod_radial_array"
     bl_label = "DC Radial Array"
     bl_description = "Array mesh in a radial fashion"
     bl_options = {'REGISTER', 'UNDO'}
@@ -302,8 +302,7 @@ class DCONFIG_OT_radial_array(bpy.types.Operator):
 
         # Ensure the proper object is active/selected for further bpy.ops
         bpy.ops.object.select_all(action='DESELECT')
-        context.view_layer.objects.active = self.radial_object
-        context.view_layer.objects.active.select_set(True)
+        dc.make_active_object(context, self.radial_object)
 
     def adjust_radial_mod(self, delta, init=False):
         dc.trace(1, "Delta: {}", delta)
@@ -340,11 +339,11 @@ class DCONFIG_OT_radial_array(bpy.types.Operator):
         return self.radial_mod is not None
 
 
-class DCONFIG_OT_add_lattice(bpy.types.Operator):
-    bl_idname = "dconfig.add_lattice"
+class DCONFIG_OT_mod_lattice(bpy.types.Operator):
+    bl_idname = "dconfig.mod_lattice"
     bl_label = "DC Add Lattice"
     bl_description = "Add pre-configured lattice surrounding the selected geometry"
-    bl_options = {'REGISTER'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     resolution: bpy.props.IntProperty(name="Resolution", default=2, min=2, max=6)
     only_base: bpy.props.BoolProperty(name="Only Base Object", default=True)
@@ -403,8 +402,7 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def make_lattice_active(self, context):
-        context.view_layer.objects.active = self.lattice
-        self.lattice.select_set(True)
+        dc.make_active_object(context, self.lattice)
         self.target.select_set(False)
 
     def create_lattice_obj(self, context):
@@ -470,9 +468,9 @@ class DCONFIG_OT_add_lattice(bpy.types.Operator):
         self.lattice.data.points_w = safe_res[2]
 
 
-class DCONFIG_OT_bend360(bpy.types.Operator):
-    bl_idname = "dconfig.bend360"
-    bl_label = "DC Bend 360"
+class DCONFIG_OT_mod_bend(bpy.types.Operator):
+    bl_idname = "dconfig.mod_bend"
+    bl_label = "DC Bend"
     bl_description = "Bend mesh"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -490,8 +488,7 @@ class DCONFIG_OT_bend360(bpy.types.Operator):
         bend_object.select_set(state=False)
         bend_object.hide_viewport = True
 
-        context.view_layer.objects.active = target
-        target.select_set(state=True)
+        dc.make_active_object(context, target)
 
         return dc.trace_exit(self)
 
@@ -526,10 +523,69 @@ class DCONFIG_OT_bend360(bpy.types.Operator):
         array_mod.count = 4
         array_mod.use_merge_vertices = True
         array_mod.use_merge_vertices_cap = True
-        array_mod.merge_threshold = 0.001
+        array_mod.merge_threshold = 0.003
 
         bend_mod = target.modifiers.new("dc_bend", 'SIMPLE_DEFORM')
         bend_mod.deform_method = 'BEND'
         bend_mod.deform_axis = 'Z'
-        bend_mod.angle = math.radians(360)
+        bend_mod.angle = math.radians(120)
         bend_mod.origin = bend_object
+
+
+class DCONFIG_OT_mod_pillow(bpy.types.Operator):
+    bl_idname = "dconfig.mod_pillow"
+    bl_label = "DC Add Cloth Pillow"
+    bl_description = "Add pre-configured cloth pillow to selected object"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return dc.active_mesh_selected(context)
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        target = context.active_object
+        vgroup = self.create_vgroup(context, target)
+        self.create_mod_cloth(target, vgroup)
+
+        return dc.trace_exit(self)
+
+    def create_vgroup(self, context, target):
+        if context.mode == 'OBJECT':
+            bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='EDGE')
+            bpy.ops.mesh.select_all(action='SELECT')
+
+            bpy.ops.mesh.region_to_loop()
+            bpy.ops.object.vertex_group_assign_new()
+
+            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        else:
+            bpy.ops.object.vertex_group_assign_new()
+
+        vgroup = target.vertex_groups.active
+        vgroup.name = "dc_cloth_pin"
+        return vgroup
+
+    def create_mod_cloth(self, target, vgroup):
+        mod = target.modifiers.new("dc_cloth", "CLOTH")
+        mod.settings.vertex_group_mass = vgroup.name
+
+        mod.settings.quality = 5
+        mod.settings.mass = 0.150
+        mod.settings.tension_stiffness = 5
+        mod.settings.compression_stiffness = 5
+        mod.settings.shear_stiffness = 5
+        mod.settings.bending_stiffness = 0.05
+        mod.settings.tension_damping = 0
+        mod.settings.compression_damping = 0
+        mod.settings.shear_damping = 0
+        mod.settings.air_damping = 1
+
+        mod.settings.use_pressure = True
+        mod.settings.uniform_pressure_force = 3
+        mod.settings.shrink_min = -0.15
+        mod.settings.effector_weights.gravity = 0

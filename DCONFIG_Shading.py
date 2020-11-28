@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Copyright(c) 2020 Jesse Yurkovich
+# Copyright(c) 2018-2020 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
@@ -44,8 +44,11 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
         context.space_data.shading.curvature_valley_factor = 0.8
         context.space_data.shading.xray_alpha_wireframe = 0
 
-        context.space_data.overlay.show_curve_handles = True
+        context.space_data.overlay.display_handle = 'SELECTED'
         context.space_data.overlay.show_curve_normals = False
+        if bpy.app.version >= (2, 90, 0):
+            context.space_data.overlay.show_stats = False
+            context.space_data.overlay.show_fade_inactive = False
 
         context.space_data.overlay.wireframe_threshold = 1.0
 
@@ -56,6 +59,8 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
         context.scene.tool_settings.statvis.type = 'DISTORT'
         context.scene.tool_settings.statvis.distort_min = 0
         context.scene.tool_settings.statvis.distort_max = math.radians(40)
+
+        context.scene.tool_settings.use_mesh_automerge = True
 
         return dc.trace_exit(self)
 
@@ -87,11 +92,19 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
         context.scene.eevee.use_shadow_high_bitdepth = True
         context.scene.eevee.use_soft_shadows = True
 
+        context.scene.render.use_high_quality_normals = True
+
         # Cycles
         context.scene.cycles.samples = 20
         context.scene.cycles.preview_samples = 6
         context.scene.cycles.use_square_samples = True
         context.scene.cycles.tile_order = 'CENTER'
+
+        context.scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
+        context.scene.cycles.preview_denoising_start_sample = 400
+
+        # General View
+        context.scene.view_settings.look = 'Medium High Contrast'
 
         return dc.trace_exit(self)
 

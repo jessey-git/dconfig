@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Copyright(c) 2020 Jesse Yurkovich
+# Copyright(c) 2018-2020 Jesse Yurkovich
 # Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
@@ -47,6 +47,11 @@ def get_objects(obj_list, obj_types):
 
 def get_sorted_meshes(obj_list, active_object):
     return sorted(get_objects(obj_list, {'MESH'}), key=lambda x: 0 if x == active_object else 1)
+
+
+def make_active_object(context, obj):
+    context.view_layer.objects.active = obj
+    context.view_layer.objects.active.select_set(True)
 
 
 def setup_op(layout, operator, icon=None, text='', **kwargs):
@@ -116,29 +121,42 @@ def find_collection(context, obj):
     return context.scene.collection
 
 
-def make_collection(parent_collection, collection_name, force_create=True, hide_render=False):
-    if collection_name in bpy.data.collections:
-        return bpy.data.collections[collection_name]
-    elif force_create:
-        new_collection = bpy.data.collections.new(collection_name)
-        new_collection.hide_render = hide_render
-        parent_collection.children.link(new_collection)
-        return new_collection
-    else:
-        return None
+def make_collection(parent_collection, collection_name, hide_render=False):
+    new_collection = bpy.data.collections.new(collection_name)
+    new_collection.hide_render = hide_render
+    parent_collection.children.link(new_collection)
+    return new_collection
 
 
 def get_helpers_collection(context):
-    return make_collection(context.scene.collection, "DC_helpers", True, True)
+    if context.scene.get("dc_helpers") is None:
+        bpy.types.Scene.dc_helpers = bpy.props.PointerProperty(type=bpy.types.Collection)
+
+        collection = make_collection(context.scene.collection, "dc_helpers", True)
+        context.scene.dc_helpers = collection
+    else:
+        collection = context.scene.dc_helpers
+
+    return collection
 
 
 def get_boolean_collection(context, force_create):
-    return make_collection(context.scene.collection, "DC_booleans", force_create, True)
+    collection = None
+    if context.scene.get("dc_booleans") is None:
+        bpy.types.Scene.dc_booleans = bpy.props.PointerProperty(type=bpy.types.Collection)
 
+        if force_create:
+            collection = make_collection(context.scene.collection, "dc_booleans", True)
+            context.scene.dc_booleans = collection
+    else:
+        collection = context.scene.dc_booleans
+
+    return collection
 
 #
 # Trace utilities
 #
+
 
 def trace(level, message, *args):
     if DebugTraceEnabled:
