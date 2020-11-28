@@ -363,7 +363,7 @@
         text_keyframe="#ddd700"
         camera="#000000"
         empty="#000000"
-        light="#00000028"
+        light="#00000050"
         speaker="#000000"
         vertex="#000000"
         vertex_select="#00ccff"
@@ -818,6 +818,7 @@
         metadatabg="#000000"
         metadatatext="#ffffff"
         preview_range="#a14d0066"
+        row_alternate="#ffffff0d"
         >
         <space>
           <ThemeSpaceGeneric
