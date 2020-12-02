@@ -20,10 +20,16 @@ class DCONFIG_MT_quick(bpy.types.Menu):
     def draw(self, context):
         layout = self.layout
 
+        layout.prop(context.space_data, "lock_camera", text="Camera to View")
+
         if context.mode != 'EDIT_MESH':
+            dc.setup_op(layout, "dconfig.wire_toggle", text="Toggle wire display")
+            layout.separator()
+
             layout.menu_contents("DCONFIG_MT_modifiers")
 
         else:
+            layout.separator()
             layout.menu("DCONFIG_MT_modifiers", icon='MODIFIER')
             layout.separator()
 
@@ -218,6 +224,43 @@ class DCONFIG_OT_subd_toggle(bpy.types.Operator):
                     mod_subd.show_viewport = True
                 else:
                     mod_subd.show_viewport = show_viewport_toggle if show_viewport_toggle else not mod_subd.show_viewport
+
+        return dc.trace_exit(self)
+
+
+class DCONFIG_OT_wire_toggle(bpy.types.Operator):
+    bl_idname = "dconfig.wire_toggle"
+    bl_label = "DC Wire Toggle"
+    bl_description = "Toggle object wireframe display"
+    bl_options = {'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return dc.active_object_available(context, {'MESH', 'CURVE', 'FONT'})
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        objects = dc.get_objects(context.selected_objects, {'MESH', 'CURVE', 'FONT'})
+        if not objects:
+            objects = [context.active_object]
+        wire_on = False
+        wire_off = False
+
+        # Track visibility states for all required objects...
+        for obj in objects:
+            if obj.display_type == 'WIRE':
+                wire_on = True
+            else:
+                wire_off = True
+
+        # If there's a mix, then push them towards wireframe display, otherwise just toggle...
+        force_wire = False
+        if wire_on and wire_off:
+            force_wire = True
+
+        for obj in objects:
+            obj.display_type = 'WIRE' if force_wire else 'TEXTURED' if obj.display_type == 'WIRE' else 'WIRE'
 
         return dc.trace_exit(self)
 

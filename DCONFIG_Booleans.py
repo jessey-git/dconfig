@@ -109,9 +109,9 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
         mod.operation = self.bool_operation
         mod.show_expanded = False
 
-        # Booleans go at top of stack...
+        # Booleans go as close to the top of the stack as possible...
         mod_index = len(target.object.modifiers) - 1
-        while mod_index > 0 and target.object.modifiers[mod_index - 1].type != 'BOOLEAN':
+        while mod_index > 0 and target.object.modifiers[mod_index - 1].type not in ('BOOLEAN', 'SOLIDIFY'):
             bpy.ops.object.modifier_move_up(modifier=mod.name)
             mod_index -= 1
 
