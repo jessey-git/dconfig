@@ -40,6 +40,7 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col.separator()
         dc.setup_op(col, "dconfig.add_primitive", 'CURVE_BEZCURVE', "Bezier", prim_type='B_Curve', radius=0.50, align=align)
         dc.setup_op(col, "dconfig.add_edge_curve", 'CURVE_NCIRCLE', "Edge Curve")
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Dish", prim_type='Dish', radius=1, segments=8, ring_count=8, align=align)
 
         col = split.column(align=True)
         col.scale_y = 1.25
@@ -146,6 +147,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
     prim_type: bpy.props.StringProperty(name="Type")
     light_type: bpy.props.StringProperty(name="Light Type")
     radius: bpy.props.FloatProperty(name="Radius", default=1.0, step=1, min=0.01, precision=3, unit='LENGTH')
+    focal_point: bpy.props.FloatProperty(name="Focal Point", default=0.5, step=1, min=0.01, precision=3, unit='LENGTH')
     depth: bpy.props.FloatProperty(name="Depth", default=1.0, step=1, min=0.01, precision=3, unit='LENGTH')
     length: bpy.props.FloatProperty(name="Length", default=1.0, step=1, min=0.01, precision=3, unit='LENGTH')
     size: bpy.props.FloatProperty(name="Size", default=1.0, step=1, min=0.01, precision=3, unit='LENGTH')
@@ -162,7 +164,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
         layout.prop(self, "prim_type")
         layout.separator()
-        if self.prim_type == 'Cube' or self.prim_type == 'Plane':
+        if self.prim_type in ('Cube', 'Plane'):
             layout.prop(self, "size")
         elif self.prim_type == 'Circle':
             layout.prop(self, "radius")
@@ -177,6 +179,11 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             layout.prop(self, "vertices")
         elif self.prim_type == 'Sphere':
             layout.prop(self, "radius")
+            layout.prop(self, "segments")
+            layout.prop(self, "ring_count")
+        elif self.prim_type == 'Dish':
+            layout.prop(self, "radius")
+            layout.prop(self, "focal_point")
             layout.prop(self, "segments")
             layout.prop(self, "ring_count")
         elif self.prim_type == 'Quad_Sphere':
@@ -198,6 +205,9 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
         elif self.prim_type == 'Sphere':
             bpy.ops.mesh.primitive_uv_sphere_add(radius=self.radius, segments=self.segments, ring_count=self.ring_count, align=self.align)
+
+        elif self.prim_type == 'Dish':
+            self.add_dish(context, self.radius, self.focal_point, self.segments, self.ring_count, self.align)
 
         elif self.prim_type == 'Oval':
             self.add_oval(context, self.radius, self.length, self.vertices_2, self.align)
@@ -224,38 +234,15 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         if self.align != 'WORLD' and context.mode == 'OBJECT' and context.active_object.type == 'MESH':
             bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
 
-    def add_oval(self, context, radius, length, vertices, align):
-        bm = bmesh.new()
-
-        bmesh.ops.create_circle(bm, cap_ends=False, radius=radius, segments=vertices - 2)
-        bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.x < -0.0001], context='VERTS')
-        bmesh.ops.translate(bm, verts=bm.verts, vec=(length / 2, 0.0, 0.0))
-        bmesh.ops.mirror(bm, geom=bm.verts, axis='X', merge_dist=0.0001)
-
-        def prepare_geo(bm_mod, verts):
-            new_geo = bmesh.ops.contextual_create(bm_mod, geom=verts, mat_nr=0, use_smooth=False)
-
-            grid_fill_edges = []
-            for e in new_geo['faces'][0].edges:
-                v1_y = e.verts[0].co.y
-                v2_y = e.verts[1].co.y
-                if v1_y * v2_y > 0.0001:
-                    grid_fill_edges.append(e)
-
-            grid_faces = bmesh.ops.grid_fill(bm_mod, edges=grid_fill_edges)
-            bmesh.ops.delete(bm_mod, geom=new_geo['faces'], context='FACES_ONLY')
-            return grid_faces['faces']
-
+    def add_new_bmesh(self, context, name, bm, align):
         if context.mode == 'OBJECT':
             bpy.ops.object.select_all(action='DESELECT')
 
-            prepare_geo(bm, bm.verts)
-
-            me = bpy.data.meshes.new("Oval")
+            me = bpy.data.meshes.new(name)
             bm.to_mesh(me)
             bm.free()
 
-            obj = bpy.data.objects.new("Oval", me)
+            obj = bpy.data.objects.new(name, me)
             if align == 'CURSOR':
                 obj.matrix_world = context.scene.cursor.matrix.copy()
             elif align == 'VIEW':
@@ -270,26 +257,68 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         else:
             bpy.ops.mesh.select_all(action='DESELECT')
 
-            bm_orig = bmesh.from_edit_mesh(context.active_object.data)
-            new_verts = [bm_orig.verts.new(v.co) for v in bm.verts]
-            new_faces = prepare_geo(bm_orig, new_verts)
-
-            new_face_verts = set()
-            for f in new_faces:
-                for v in f.verts:
-                    new_face_verts.add(v)
-
             if align == 'CURSOR':
-                bmesh.ops.transform(bm_orig, verts=list(new_face_verts), matrix=context.scene.cursor.matrix)
+                bmesh.ops.transform(bm, verts=bm.verts, matrix=context.scene.cursor.matrix)
             elif align == 'VIEW':
                 mat = context.space_data.region_3d.view_matrix.transposed().to_4x4()
                 mat.translation = context.scene.cursor.location
-                bmesh.ops.transform(bm_orig, verts=list(new_face_verts), matrix=mat)
+                bmesh.ops.transform(bm, verts=bm.verts, matrix=mat)
             else:
                 new_location = context.active_object.matrix_world.inverted() @ context.scene.cursor.location
-                bmesh.ops.translate(bm_orig, verts=list(new_face_verts), vec=new_location)
+                bmesh.ops.translate(bm, verts=bm.verts, vec=new_location)
+
+            bm_orig = bmesh.from_edit_mesh(context.active_object.data)
+            for f in bm.faces:
+                new_verts = [bm_orig.verts.new(v.co) for v in f.verts]
+                bm_orig.faces.new(new_verts)
 
             bmesh.update_edit_mesh(context.active_object.data)
+
+    def add_oval(self, context, radius, length, vertices, align):
+        bm = bmesh.new()
+
+        bmesh.ops.create_circle(bm, cap_ends=False, radius=radius, segments=vertices - 2)
+        bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.x < -0.0001], context='VERTS')
+        bmesh.ops.translate(bm, verts=bm.verts, vec=(length / 2, 0.0, 0.0))
+        bmesh.ops.mirror(bm, geom=bm.verts, axis='X', merge_dist=0.0001)
+
+        new_geo = bmesh.ops.contextual_create(bm, geom=bm.verts, mat_nr=0, use_smooth=False)
+
+        grid_fill_edges = []
+        for e in new_geo['faces'][0].edges:
+            v1_y = e.verts[0].co.y
+            v2_y = e.verts[1].co.y
+            if v1_y * v2_y > 0.0001:
+                grid_fill_edges.append(e)
+
+        bmesh.ops.grid_fill(bm, edges=grid_fill_edges)
+        bmesh.ops.delete(bm, geom=new_geo['faces'], context='FACES_ONLY')
+
+        self.add_new_bmesh(context, "Oval", bm, align)
+
+    def add_dish(self, context, radius, focal_point, segments, ring_count, align):
+        bm = bmesh.new()
+
+        prev_z = 0
+        orig_face = None
+        step = radius / ring_count
+        for r in reversed(range(ring_count)):
+            x = (r + 1) * step
+            z = (x**2) / (4 * self.focal_point)
+
+            if orig_face is None:
+                new_geo = bmesh.ops.create_circle(bm, cap_ends=True, radius=x, segments=segments)
+                bmesh.ops.translate(bm, verts=new_geo['verts'], vec=(0.0, 0.0, z))
+                orig_face = bm.faces[:]
+            else:
+                bmesh.ops.inset_individual(bm, faces=orig_face, use_even_offset=False, thickness=step, depth=z - prev_z)
+
+            prev_z = z
+
+        new_geo = bmesh.ops.poke(bm, faces=orig_face)
+        new_geo['verts'][0].co.z = 0
+
+        self.add_new_bmesh(context, "Dish", bm, align)
 
     def add_quad_sphere(self, context, radius, levels, align):
         was_edit = False
