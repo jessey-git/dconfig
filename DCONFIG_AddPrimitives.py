@@ -40,7 +40,7 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col.separator()
         dc.setup_op(col, "dconfig.add_primitive", 'CURVE_BEZCURVE', "Bezier", prim_type='B_Curve', radius=0.50, align=align)
         dc.setup_op(col, "dconfig.add_edge_curve", 'CURVE_NCIRCLE', "Edge Curve")
-        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Dish", prim_type='Dish', radius=1, segments=8, ring_count=8, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Dish-1", prim_type='Dish-1', radius=1, segments=24, ring_count=8, focal_point=0.75, align=align)
 
         col = split.column(align=True)
         col.scale_y = 1.25
@@ -53,6 +53,7 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col.separator()
         dc.setup_op(col, "dconfig.add_primitive", 'CURVE_BEZCIRCLE', "Circle", prim_type='B_Circle', radius=0.50, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_CAPSULE', "Capsule", prim_type='Oval', radius=0.125, length=0.5, vertices_2=8, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Dish-2", prim_type='Dish-2', radius=1, vertices_2=24, focal_point=0.75, align=align)
 
         # Right
         split = pie.split(align=True)
@@ -154,7 +155,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
     segments: bpy.props.IntProperty(name="Segments", default=12, min=3, max=40)
     ring_count: bpy.props.IntProperty(name="Rings", default=6, min=3, max=20)
     vertices: bpy.props.IntProperty(name="Vertices", default=8, min=3, max=150)
-    vertices_2: bpy.props.IntProperty(name="Vertices", default=4, step=2, min=6, max=32)
+    vertices_2: bpy.props.IntProperty(name="Vertices", default=4, step=2, min=6, max=48)
     levels: bpy.props.IntProperty(name="Levels", default=1, min=1, max=5)
     align: bpy.props.StringProperty(name="Align", default='WORLD')
 
@@ -181,11 +182,15 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             layout.prop(self, "radius")
             layout.prop(self, "segments")
             layout.prop(self, "ring_count")
-        elif self.prim_type == 'Dish':
+        elif self.prim_type == 'Dish-1':
             layout.prop(self, "radius")
             layout.prop(self, "focal_point")
             layout.prop(self, "segments")
             layout.prop(self, "ring_count")
+        elif self.prim_type == 'Dish-2':
+            layout.prop(self, "radius")
+            layout.prop(self, "focal_point")
+            layout.prop(self, "vertices_2")
         elif self.prim_type == 'Quad_Sphere':
             layout.prop(self, "radius")
             layout.prop(self, "levels")
@@ -206,8 +211,10 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         elif self.prim_type == 'Sphere':
             bpy.ops.mesh.primitive_uv_sphere_add(radius=self.radius, segments=self.segments, ring_count=self.ring_count, align=self.align)
 
-        elif self.prim_type == 'Dish':
+        elif self.prim_type == 'Dish-1':
             self.add_dish(context, self.radius, self.focal_point, self.segments, self.ring_count, self.align)
+        elif self.prim_type == 'Dish-2':
+            self.add_quad_dish(context, self.radius, self.focal_point, self.vertices_2, self.align)
 
         elif self.prim_type == 'Oval':
             self.add_oval(context, self.radius, self.length, self.vertices_2, self.align)
@@ -319,6 +326,28 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         new_geo['verts'][0].co.z = 0
 
         self.add_new_bmesh(context, "Dish", bm, align)
+
+    def add_quad_dish(self, context, radius, focal_point, vertices, align):
+        bm = bmesh.new()
+
+        bmesh.ops.create_circle(bm, cap_ends=False, radius=radius, segments=vertices)
+
+        grid_fill_edges = []
+        span = vertices / 4
+        mid = vertices / 2
+        for e in bm.edges:
+            index = e.index
+            if (index < mid and index >= span) or (index >= mid and index >= (mid + span)):
+                grid_fill_edges.append(e)
+
+        bmesh.ops.grid_fill(bm, edges=grid_fill_edges)
+
+        for v in bm.verts:
+            z = (v.co.x**2 + v.co.y**2) / (4 * focal_point)
+            v.co = (v.co.x, v.co.y, z)
+
+        bm.normal_update()
+        self.add_new_bmesh(context, "QuadDish", bm, align)
 
     def add_quad_sphere(self, context, radius, levels, align):
         was_edit = False

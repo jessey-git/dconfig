@@ -30,7 +30,7 @@ def draw_stats(font_id, line_height, ui_scale):
     elif bpy.context.mode == 'EDIT_LATTICE':
         stats = [stats[2], stats[1]]
     elif bpy.context.mode == 'SCULPT':
-        stats = [stats[4], stats[1], stats[2]]
+        stats = [stats[3], stats[1], stats[2]]
     else:
         return
 

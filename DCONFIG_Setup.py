@@ -27,6 +27,8 @@ def setup_hotkeys():
         kc.active.preferences.gizmo_action = 'DRAG'
         kc.active.preferences.v3d_tilde_action = 'GIZMO'
         kc.active.preferences.use_select_all_toggle = True
+        kc.active.preferences.use_pie_click_drag = True
+        kc.active.preferences.use_v3d_shade_ex_pie = True
 
     new_keymap = (
         # Keymap Name           Space       Region      ID                          Key             Action      SHIFT   CTRL    ALT     Properties
@@ -50,7 +52,6 @@ def setup_hotkeys():
         ("3D View",             "VIEW_3D",  "WINDOW",   "dconfig.subd_toggle",      "FOUR",         "PRESS",    False,  False,  True,   (("levels", 4),)),
 
         ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.view_center_cursor",    "HOME",     "PRESS",    False,  False,  True,   ()),
-        ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.toggle_shading",        "Z",        "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   "dconfig.toggle_wireframe",     "Z",        "PRESS",    True,   False,  False,  ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   "dconfig.mesh_symmetry",        "T",        "PRESS",    True,   False,  False,  ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu",                 "Q",        "PRESS",    False,  False,  False,  (("name", "DCONFIG_MT_quick"),)),
@@ -68,9 +69,13 @@ def setup_hotkeys():
         ("UV Editor",           "EMPTY",    "WINDOW",   "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("extend", True),)),
         ("UV Editor",           "EMPTY",    "WINDOW",   "wm.call_menu",             "S",            "PRESS",        True,   False,  False,  (("name", "IMAGE_MT_uvs_snap"),)),
 
-        ("Node Editor",         "NODE_EDITOR",  "WINDOW",   "node.view_selected",   "BUTTON4MOUSE", "PRESS",        False,  True,   False,  ()),
+        ("Outliner",            "OUTLINER",         "WINDOW",   "outliner.show_active", "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
+        ("Node Editor",         "NODE_EDITOR",      "WINDOW",   "node.view_selected",   "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
+        ("Dopesheet",           "DOPESHEET_EDITOR", "WINDOW",   "action.view_selected", "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
+        ("Graph Editor",        "GRAPH_EDITOR",     "WINDOW",   "graph.view_selected",  "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
+        ("Image",               "IMAGE_EDITOR",     "WINDOW",   "image.view_selected",  "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
 
-        ("Image",               "IMAGE_EDITOR", "WINDOW",   "wm.call_menu",         "BUTTON4MOUSE", "PRESS",        True,   False,  False,  (("name", "DCONFIG_MT_image_pivot"),)),
+        ("Image",               "IMAGE_EDITOR",     "WINDOW",   "wm.call_menu",         "BUTTON4MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_image_pivot"),)),
     )
 
     addon_keymaps.clear()
@@ -117,6 +122,8 @@ def setup_userpreferences():
 
     user_prefs.view.smooth_view = 0
     user_prefs.view.pie_animation_timeout = 0
+
+    user_prefs.inputs.drag_threshold = 150
 
     user_prefs.filepaths.save_version = 0
 
