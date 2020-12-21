@@ -275,9 +275,13 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
                 bmesh.ops.translate(bm, verts=bm.verts, vec=new_location)
 
             bm_orig = bmesh.from_edit_mesh(context.active_object.data)
+
+            new_verts = [bm_orig.verts.new(v.co) for v in bm.verts]
             for f in bm.faces:
-                new_verts = [bm_orig.verts.new(v.co) for v in f.verts]
-                bm_orig.faces.new(new_verts)
+                bm_orig.faces.new(new_verts[v.index] for v in f.verts)
+
+            bm_orig.normal_update()
+            bm.free()
 
             bmesh.update_edit_mesh(context.active_object.data)
 

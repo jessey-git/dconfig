@@ -959,10 +959,12 @@
         filter_node="#584d80"
         vector_node="#9b80ff"
         texture_node="#e68745"
-        shader_node="#39c884"
+        shader_node="#ea7581"
         script_node="#084d4d"
         pattern_node="#6c696f"
         layout_node="#6c696f"
+        geometry_node="#00d7a4"
+        attribute_node="#3f5980"
         >
         <space>
           <ThemeSpaceGeneric
