@@ -132,7 +132,7 @@ def menu_func(self, context):
 @persistent
 def load_handler(ignore):
     # Only apply settings when the file being loaded is from startup.blend (aka. '')
-    if bpy.data.filepath == '':
+    if bpy.data.filepath == '' and not bpy.app.background:
         bpy.ops.dconfig.engine_defaults()
 
         for screen in bpy.data.screens:

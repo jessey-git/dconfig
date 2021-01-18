@@ -179,9 +179,10 @@ def modal_fix():
 
 
 def register():
-    setup_hotkeys()
-    setup_userpreferences()
-    setup_addons()
+    if not bpy.app.background:
+        setup_hotkeys()
+        setup_userpreferences()
+        setup_addons()
 
 
 def unregister():
