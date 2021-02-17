@@ -39,7 +39,7 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
         context.space_data.shading.show_cavity = True
         context.space_data.shading.cavity_type = 'WORLD'
         context.space_data.shading.cavity_ridge_factor = 0
-        context.space_data.shading.cavity_valley_factor = 1
+        context.space_data.shading.cavity_valley_factor = 1.25
         context.space_data.shading.curvature_ridge_factor = 0
         context.space_data.shading.curvature_valley_factor = 0.8
         context.space_data.shading.xray_alpha_wireframe = 0
@@ -51,8 +51,9 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
             context.space_data.overlay.show_fade_inactive = False
 
         context.space_data.overlay.wireframe_threshold = 1.0
+        context.space_data.overlay.show_edges = True
 
-        context.scene.display.matcap_ssao_distance = 1
+        context.scene.display.matcap_ssao_distance = 0.15
 
         context.scene.tool_settings.snap_elements = {'VERTEX'}
         context.scene.tool_settings.snap_target = 'ACTIVE'

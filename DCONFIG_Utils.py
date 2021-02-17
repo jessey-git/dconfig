@@ -133,9 +133,9 @@ def get_helpers_collection(context):
         bpy.types.Scene.dc_helpers = bpy.props.PointerProperty(type=bpy.types.Collection)
 
         collection = make_collection(context.scene.collection, "dc_helpers", True)
-        context.scene.dc_helpers = collection
+        context.scene["dc_helpers"] = collection
     else:
-        collection = context.scene.dc_helpers
+        collection = context.scene["dc_helpers"]
 
     return collection
 
@@ -147,9 +147,9 @@ def get_boolean_collection(context, force_create):
 
         if force_create:
             collection = make_collection(context.scene.collection, "dc_booleans", True)
-            context.scene.dc_booleans = collection
+            context.scene["dc_booleans"] = collection
     else:
-        collection = context.scene.dc_booleans
+        collection = context.scene["dc_booleans"]
 
     return collection
 

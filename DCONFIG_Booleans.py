@@ -64,7 +64,7 @@ class DCONFIG_OT_boolean_live(bpy.types.Operator):
     bl_idname = "dconfig.boolean_live"
     bl_label = "DC Live Booleans"
     bl_description = "Add selected geometry as a boolean to the active objects"
-    bl_options = {'REGISTER'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     cutline: bpy.props.BoolProperty(name='Cutline', default=False)
     insetted: bpy.props.BoolProperty(name='Insetted', default=False)

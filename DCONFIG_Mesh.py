@@ -21,6 +21,7 @@ class DCONFIG_MT_quick(bpy.types.Menu):
         layout = self.layout
 
         layout.prop(context.space_data, "lock_camera", text="Camera to View")
+        layout.prop(context.space_data.overlay, "show_face_orientation")
 
         if context.mode != 'EDIT_MESH':
             dc.setup_op(layout, "dconfig.wire_toggle", text="Toggle wire display")
@@ -29,22 +30,23 @@ class DCONFIG_MT_quick(bpy.types.Menu):
             layout.menu_contents("DCONFIG_MT_modifiers")
 
         else:
+            layout.prop(context.space_data.overlay, "show_statvis")
+
             layout.separator()
             layout.menu("DCONFIG_MT_modifiers", icon='MODIFIER')
-            layout.separator()
-
-            dc.setup_op(layout, "mesh.remove_doubles", text="Weld vertices")
-            dc.setup_op(layout, "dconfig.make_quads", text="Make Quads")
 
             layout.separator()
-            dc.setup_op(layout, "mesh.edges_select_sharp", text="Select Sharp", sharpness=math.radians(45.1))
+            dc.setup_op(layout, "mesh.edges_select_sharp", icon='RESTRICT_SELECT_OFF', text="Select Sharp", sharpness=math.radians(45.1))
             dc.setup_op(layout, "mesh.select_face_by_sides", text="Select N-Gons", type='NOTEQUAL', number=4, extend=False)
             dc.setup_op(layout, "mesh.region_to_loop", text="Select Boundary Loop")
 
             layout.separator()
+            dc.setup_op(layout, "mesh.remove_doubles", text="Weld vertices")
+            dc.setup_op(layout, "dconfig.make_quads", text="Make Quads")
+
+            layout.separator()
             layout.operator_context = 'INVOKE_REGION_WIN'
             dc.setup_op(layout, "mesh.fill_grid", text="Fill Grid")
-            dc.setup_op(layout, "dconfig.subdivide_cylinder", text="Subdivide Cylinder")
             dc.setup_op(layout, "dconfig.quick_panel", text="Quick Panel")
             dc.setup_op(layout, "dconfig.subd_upres", text="SubD Up-Res")
             dc.setup_op(layout, "dconfig.subd_bevel", text="SubD Bevel")
@@ -66,30 +68,6 @@ class DCONFIG_OT_make_quads(bpy.types.Operator):
         angle = math.radians(60)
         bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
         bpy.ops.mesh.tris_convert_to_quads(face_threshold=angle, shape_threshold=angle)
-
-        return dc.trace_exit(self)
-
-
-class DCONFIG_OT_subdivide_cylinder(bpy.types.Operator):
-    bl_idname = "dconfig.subdivide_cylinder"
-    bl_label = "DC Subdivide Cylinder"
-    bl_description = "Subdivide cyclinder to increase curvature"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        return context.mode == 'EDIT_MESH' and dc.active_object_available(context, {'MESH'})
-
-    def execute(self, context):
-        dc.trace_enter(self)
-
-        bpy.ops.mesh.edgering_select('INVOKE_DEFAULT')
-        bpy.ops.mesh.loop_multi_select()
-
-        if bpy.app.version >= (2, 90, 0):
-            bpy.ops.mesh.bevel(offset_type='PERCENT', offset_pct=25, affect='EDGES')
-        else:
-            bpy.ops.mesh.bevel(offset_type='PERCENT', offset_pct=25, vertex_only=False)
 
         return dc.trace_exit(self)
 

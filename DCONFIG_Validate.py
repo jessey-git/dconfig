@@ -481,15 +481,15 @@ class DCONFIG_ValidationData(bpy.types.PropertyGroup):
         self.update_enabled = True
 
 
-def menu_func(self, context):
+def DCONFIG_FN_ui_validate(self, context):
     self.layout.operator("dconfig.validate")
 
 
 def register():
-    bpy.types.OUTLINER_MT_collection.append(menu_func)
+    bpy.types.OUTLINER_MT_collection.append(DCONFIG_FN_ui_validate)
     bpy.types.Scene.dc_validation_data = bpy.props.PointerProperty(type=DCONFIG_ValidationData)
 
 
 def unregister():
-    bpy.types.OUTLINER_MT_collection.remove(menu_func)
+    bpy.types.OUTLINER_MT_collection.remove(DCONFIG_FN_ui_validate)
     del bpy.types.Scene.dc_validation_data

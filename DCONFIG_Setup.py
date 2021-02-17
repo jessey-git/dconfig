@@ -36,7 +36,6 @@ def setup_hotkeys():
 
         ("Object Non-modal",    "EMPTY",    "WINDOW",   "wm.call_menu",             "S",            "PRESS",    True,   False,  False,  (("name", "VIEW3D_MT_snap"),)),
         ("Object Non-modal",    "EMPTY",    "WINDOW",   "wm.call_menu_pie",         "BUTTON4MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_transforms_pie"),)),
-        ("Object Non-modal",    "EMPTY",    "WINDOW",   "wm.call_menu",             "BUTTON5MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_origin_set"),)),
 
         ("Object Mode",         "EMPTY",    "WINDOW",   "wm.call_menu_pie",         "A",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
         ("Mesh",                "EMPTY",    "WINDOW",   "wm.call_menu_pie",         "A",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
@@ -165,10 +164,10 @@ class DCONFIG_OT_install_theme(bpy.types.Operator):
 def modal_fix():
     import time
     kc = bpy.context.window_manager.keyconfigs
-    kcd = kc.default
+    kca = kc.active
 
     for _ in range(0, 5):
-        km = kcd.keymaps.find("View3D Gesture Circle")
+        km = kca.keymaps.find("View3D Gesture Circle")
         if km is not None and km.keymap_items:
             km.keymap_items[0].type = 'C'
             km.keymap_items[0].value = 'RELEASE'
