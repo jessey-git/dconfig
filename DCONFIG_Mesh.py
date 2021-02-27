@@ -36,13 +36,13 @@ class DCONFIG_MT_quick(bpy.types.Menu):
             layout.menu("DCONFIG_MT_modifiers", icon='MODIFIER')
 
             layout.separator()
+            dc.setup_op(layout, "mesh.remove_doubles", text="Weld vertices")
+            dc.setup_op(layout, "dconfig.make_quads", text="Make Quads")
+
+            layout.separator()
             dc.setup_op(layout, "mesh.edges_select_sharp", icon='RESTRICT_SELECT_OFF', text="Select Sharp", sharpness=math.radians(45.1))
             dc.setup_op(layout, "mesh.select_face_by_sides", text="Select N-Gons", type='NOTEQUAL', number=4, extend=False)
             dc.setup_op(layout, "mesh.region_to_loop", text="Select Boundary Loop")
-
-            layout.separator()
-            dc.setup_op(layout, "mesh.remove_doubles", text="Weld vertices")
-            dc.setup_op(layout, "dconfig.make_quads", text="Make Quads")
 
             layout.separator()
             layout.operator_context = 'INVOKE_REGION_WIN'
@@ -301,6 +301,8 @@ class DCONFIG_OT_quick_panel(bpy.types.Operator):
 focus_settings = {
     "EDIT_CURVE": True,
     "EDIT_MESH": True,
+    "EDIT_ARMATURE": True,
+    "POSE": True,
 }
 
 

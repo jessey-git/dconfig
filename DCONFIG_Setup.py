@@ -105,6 +105,8 @@ def setup_userpreferences():
     user_prefs = bpy.context.preferences
 
     user_prefs.edit.undo_steps = 100
+    user_prefs.edit.grease_pencil_eraser_radius = 40
+
     if bpy.app.version >= (2, 90, 0):
         user_prefs.edit.collection_instance_empty_size = 0.25
         user_prefs.view.show_statusbar_version = False

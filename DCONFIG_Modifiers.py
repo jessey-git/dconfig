@@ -85,7 +85,7 @@ class DCONFIG_OT_mod_mirror(bpy.types.Operator):
         dc.trace_enter(self)
 
         if context.space_data.type == 'VIEW_3D':
-            symmetry.DCONFIG_GGT_symmetry_gizmo.create(context)
+            symmetry.DCONFIG_GGT_symmetry_gizmo.create(context, self.local)
 
         return dc.trace_exit(self)
 

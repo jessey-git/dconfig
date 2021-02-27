@@ -104,7 +104,7 @@ class DCONFIG_OT_set_snap_settings(bpy.types.Operator):
     bl_idname = "dconfig.set_snap_settings"
     bl_label = "DC Set Snap Settings"
     bl_description = "Set snapping settings"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'UNDO'}
 
     element: bpy.props.StringProperty(name="Snap Element")
     target: bpy.props.StringProperty(name="Snap Target")

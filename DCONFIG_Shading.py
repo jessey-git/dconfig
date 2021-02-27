@@ -103,6 +103,7 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
 
         context.scene.cycles.max_bounces = 48
         context.scene.cycles.glossy_bounces = 48
+        context.scene.cycles.transmission_bounces = 48
 
         context.scene.cycles.denoiser = 'OPENIMAGEDENOISE'
         context.scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'

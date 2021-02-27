@@ -121,6 +121,7 @@ class DCONFIG_GGT_symmetry_gizmo(bpy.types.GizmoGroup):
     bl_options = {'3D'}
 
     gizmo_state = {}
+    use_local = True
 
     @staticmethod
     def my_target_operator(context):
@@ -137,11 +138,12 @@ class DCONFIG_GGT_symmetry_gizmo(bpy.types.GizmoGroup):
         return True
 
     @classmethod
-    def create(cls, context):
+    def create(cls, context, use_local=True):
         cls.gizmo_state['show_gizmo_object_translate'] = context.space_data.show_gizmo_object_translate
         cls.gizmo_state['show_gizmo_object_rotate'] = context.space_data.show_gizmo_object_rotate
         cls.gizmo_state['show_gizmo_object_scale'] = context.space_data.show_gizmo_object_scale
         cls.gizmo_state['show_gizmo'] = context.space_data.show_gizmo
+        cls.use_local = use_local
 
         context.space_data.show_gizmo_object_translate = False
         context.space_data.show_gizmo_object_rotate = False
@@ -191,8 +193,11 @@ class DCONFIG_GGT_symmetry_gizmo(bpy.types.GizmoGroup):
         setup_widget("NEGATIVE_Z", Vector((0, 0, 1)), ui_theme_prefs.axis_z)
 
     def refresh(self, context):
-        target = context.active_object
+        if not self.use_local:
+            mat_target = Matrix.Identity(4)
+        else:
+            target = context.active_object
+            mat_target = target.matrix_world.normalized()
 
-        mat_target = target.matrix_world.normalized()
         for mpr in self.gizmos:
             mpr.update(mat_target)
