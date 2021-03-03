@@ -10,6 +10,8 @@
 
 import os
 import shutil
+import threading
+import time
 
 import addon_utils
 import bpy
@@ -18,7 +20,6 @@ addon_keymaps = []
 
 
 def setup_hotkeys():
-    # pylint: disable=C0326
     kc = bpy.context.window_manager.keyconfigs
 
     if kc.active.preferences is not None:
@@ -89,7 +90,6 @@ def setup_hotkeys():
     print('Added {} keymaps'.format(len(addon_keymaps)))
 
     print("Starting keymap fixup thread")
-    import threading
     thread = threading.Thread(target=modal_fix)
     thread.start()
 
@@ -164,7 +164,6 @@ class DCONFIG_OT_install_theme(bpy.types.Operator):
 
 
 def modal_fix():
-    import time
     kc = bpy.context.window_manager.keyconfigs
     kca = kc.active
 

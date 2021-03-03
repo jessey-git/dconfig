@@ -4,14 +4,13 @@
 # See the LICENSE file in the repo root for full license information.
 # ------------------------------------------------------------
 
-import os
-import bpy
-import sys
 import typing
 import inspect
 import pkgutil
 import importlib
 from pathlib import Path
+
+import bpy
 
 __all__ = (
     "init",
@@ -78,13 +77,13 @@ def iter_submodule_names(path, root=""):
 # Find classes to register
 #################################################
 
-def get_ordered_classes_to_register(modules):
-    return toposort(get_register_deps_dict(modules))
+def get_ordered_classes_to_register(addon_modules):
+    return toposort(get_register_deps_dict(addon_modules))
 
 
-def get_register_deps_dict(modules):
+def get_register_deps_dict(addon_modules):
     deps_dict = {}
-    classes_to_register = set(iter_classes_to_register(modules))
+    classes_to_register = set(iter_classes_to_register(addon_modules))
     for cls in classes_to_register:
         deps_dict[cls] = set(iter_own_register_deps(cls, classes_to_register))
     return deps_dict
@@ -102,23 +101,27 @@ def iter_register_deps(cls):
 
 
 def get_dependency_from_annotation(value):
-    if isinstance(value, tuple) and len(value) == 2:
-        if value[0] in (bpy.props.PointerProperty, bpy.props.CollectionProperty):
-            return value[1]["type"]
+    if bpy.app.version >= (2, 93, 0):
+        if type(value).__name__ == "_PropertyDeferred":
+            return value.keywords.get("type")
+    else:
+        if isinstance(value, tuple) and len(value) == 2:
+            if value[0] in (bpy.props.PointerProperty, bpy.props.CollectionProperty):
+                return value[1]["type"]
     return None
 
 
-def iter_classes_to_register(modules):
+def iter_classes_to_register(addon_modules):
     base_types = get_register_base_types()
-    for cls in get_classes_in_modules(modules):
+    for cls in get_classes_in_modules(addon_modules):
         if any(base in base_types for base in cls.__bases__):
             if not getattr(cls, "is_registered", False):
                 yield cls
 
 
-def get_classes_in_modules(modules):
+def get_classes_in_modules(addon_modules):
     classes = set()
-    for module in modules:
+    for module in addon_modules:
         for cls in iter_classes_in_module(module):
             classes.add(cls)
     return classes

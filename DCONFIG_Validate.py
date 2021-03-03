@@ -20,7 +20,6 @@ from . import DCONFIG_Utils as dc
 # Rules
 #
 
-
 Rule = namedtuple('Rule', ['category', 'label'])
 ObjectRuleData = namedtuple('ObjectRuleData', ['obj', 'bm'])
 CollectionRuleData = namedtuple('CollectionRuleData', ['collection'])
