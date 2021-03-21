@@ -9,6 +9,7 @@
 #
 
 import math
+import random
 from itertools import zip_longest
 
 import bpy
@@ -32,7 +33,9 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "6", prim_type='Cylinder', radius=0.50, depth=0.25, vertices=6, align=align)
+        if context.mode == 'OBJECT':
+            dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "Dynamic", prim_type='Geo-Cylinder', radius=0.50, depth=0.25, vertices=8, align=align)
+            col.separator(factor=0.25)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "8", prim_type='Cylinder', radius=0.50, depth=0.25, vertices=8, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "16", prim_type='Cylinder', radius=0.50, depth=0.50, vertices=16, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_CYLINDER', "32", prim_type='Cylinder', radius=0.50, depth=0.50, vertices=32, align=align)
@@ -41,11 +44,16 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
         dc.setup_op(col, "dconfig.add_primitive", 'CURVE_BEZCURVE', "Bezier", prim_type='B_Curve', radius=0.50, align=align)
         dc.setup_op(col, "dconfig.add_edge_curve", 'CURVE_NCIRCLE', "Edge Curve")
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Dish-1", prim_type='Dish-1', radius=1, segments=24, ring_count=8, focal_point=0.75, align=align)
+        if context.mode == 'OBJECT':
+            col.separator(factor=0.25)
+            dc.setup_op(col, "dconfig.add_techring", 'DISC', "Tech Ring", align=align)
 
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.1
-        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "6", prim_type='Circle', radius=0.50, vertices=6, align=align)
+        if context.mode == 'OBJECT':
+            dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "Dynamic", prim_type='Geo-Circle', radius=0.50, vertices=8, align=align)
+            col.separator(factor=0.25)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "8", prim_type='Circle', radius=0.50, vertices=8, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "16", prim_type='Circle', radius=0.50, vertices=16, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_CIRCLE', "32", prim_type='Circle', radius=0.50, vertices=32, align=align)
@@ -167,14 +175,14 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         layout.separator()
         if self.prim_type in ('Cube', 'Plane'):
             layout.prop(self, "size")
-        elif self.prim_type == 'Circle':
+        elif self.prim_type in ('Circle', 'Geo-Circle'):
             layout.prop(self, "radius")
             layout.prop(self, "vertices")
         elif self.prim_type == 'Oval':
             layout.prop(self, "radius")
             layout.prop(self, "length")
             layout.prop(self, "vertices_2")
-        elif self.prim_type == 'Cylinder':
+        elif self.prim_type in ('Cylinder', 'Geo-Cylinder'):
             layout.prop(self, "radius")
             layout.prop(self, "depth")
             layout.prop(self, "vertices")
@@ -205,8 +213,14 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         elif self.prim_type == 'Circle':
             bpy.ops.mesh.primitive_circle_add(fill_type='NGON', radius=self.radius, vertices=self.vertices, align=self.align)
 
+        elif self.prim_type == 'Geo-Circle':
+            self.add_geo_circle(context, self.radius, self.vertices, self.align)
+
         elif self.prim_type == 'Cylinder':
             bpy.ops.mesh.primitive_cylinder_add(radius=self.radius, depth=self.depth, vertices=self.vertices, align=self.align)
+
+        elif self.prim_type == 'Geo-Cylinder':
+            self.add_geo_cylinder(context, self.radius, self.depth, self.vertices, self.align)
 
         elif self.prim_type == 'Sphere':
             bpy.ops.mesh.primitive_uv_sphere_add(radius=self.radius, segments=self.segments, ring_count=self.ring_count, align=self.align)
@@ -241,50 +255,6 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         if self.align != 'WORLD' and context.mode == 'OBJECT' and context.active_object.type == 'MESH':
             bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
 
-    def add_new_bmesh(self, context, name, bm, align):
-        if context.mode == 'OBJECT':
-            bpy.ops.object.select_all(action='DESELECT')
-
-            me = bpy.data.meshes.new(name)
-            bm.to_mesh(me)
-            bm.free()
-
-            obj = bpy.data.objects.new(name, me)
-            if align == 'CURSOR':
-                obj.matrix_world = context.scene.cursor.matrix.copy()
-            elif align == 'VIEW':
-                mat = context.space_data.region_3d.view_matrix.transposed().to_4x4()
-                mat.translation = context.scene.cursor.location
-                obj.matrix_world = mat
-            else:
-                obj.matrix_world.translation = context.scene.cursor.location
-
-            context.collection.objects.link(obj)
-            dc.make_active_object(context, obj)
-        else:
-            bpy.ops.mesh.select_all(action='DESELECT')
-
-            if align == 'CURSOR':
-                bmesh.ops.transform(bm, verts=bm.verts, matrix=context.scene.cursor.matrix)
-            elif align == 'VIEW':
-                mat = context.space_data.region_3d.view_matrix.transposed().to_4x4()
-                mat.translation = context.scene.cursor.location
-                bmesh.ops.transform(bm, verts=bm.verts, matrix=mat)
-            else:
-                new_location = context.active_object.matrix_world.inverted() @ context.scene.cursor.location
-                bmesh.ops.translate(bm, verts=bm.verts, vec=new_location)
-
-            bm_orig = bmesh.from_edit_mesh(context.active_object.data)
-
-            new_verts = [bm_orig.verts.new(v.co) for v in bm.verts]
-            for f in bm.faces:
-                bm_orig.faces.new(new_verts[v.index] for v in f.verts)
-
-            bm_orig.normal_update()
-            bm.free()
-
-            bmesh.update_edit_mesh(context.active_object.data)
-
     def add_oval(self, context, radius, length, vertices, align):
         bm = bmesh.new()
 
@@ -305,7 +275,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         bmesh.ops.grid_fill(bm, edges=grid_fill_edges)
         bmesh.ops.delete(bm, geom=new_geo['faces'], context='FACES_ONLY')
 
-        self.add_new_bmesh(context, "Oval", bm, align)
+        dc.add_new_bmesh(context, "Oval", bm, align)
 
     def add_dish(self, context, radius, focal_point, segments, ring_count, align):
         bm = bmesh.new()
@@ -329,7 +299,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         new_geo = bmesh.ops.poke(bm, faces=orig_face)
         new_geo['verts'][0].co.z = 0
 
-        self.add_new_bmesh(context, "Dish", bm, align)
+        dc.add_new_bmesh(context, "Dish", bm, align)
 
     def add_quad_dish(self, context, radius, focal_point, vertices, align):
         bm = bmesh.new()
@@ -351,7 +321,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             v.co = (v.co.x, v.co.y, z)
 
         bm.normal_update()
-        self.add_new_bmesh(context, "QuadDish", bm, align)
+        dc.add_new_bmesh(context, "QuadDish", bm, align)
 
     def add_quad_sphere(self, context, radius, levels, align):
         was_edit = False
@@ -383,6 +353,61 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             dc.make_active_object(context, prev_active)
             bpy.ops.object.join()
             bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+
+    def add_geo_circle(self, context, radius, vertices, align):
+        bm = bmesh.new()
+        dc.add_new_bmesh(context, "geo-circle", bm, align)
+
+        mod = context.active_object.modifiers.new(name="dc_cylinder", type="NODES")
+        node_group = mod.node_group
+        nodes = node_group.nodes
+
+        node_input = nodes.get("Group Input")
+        node_output = nodes.get("Group Output")
+        node_circle = nodes.new("GeometryNodeMeshCircle")
+
+        self.new_input_link(node_group, 'NodeSocketInt', "Vertices", "vertices")
+        self.new_input_link(node_group, 'NodeSocketFloatDistance', "Radius", "radius")
+
+        node_group.links.new(node_input.outputs["Vertices"], node_circle.inputs.get("Vertices"))
+        node_group.links.new(node_input.outputs["Radius"], node_circle.inputs.get("Radius"))
+        node_group.links.new(node_circle.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+
+        mod[node_input.outputs["Vertices"].identifier] = vertices
+        # mod[node_input.outputs["Radius"].identifier] = radius
+
+    def add_geo_cylinder(self, context, radius, depth, vertices, align):
+        bm = bmesh.new()
+        dc.add_new_bmesh(context, "geo-cylinder", bm, align)
+
+        mod = context.active_object.modifiers.new(name="dc_cylinder", type="NODES")
+        node_group = mod.node_group
+        nodes = node_group.nodes
+
+        node_input = nodes.get("Group Input")
+        node_output = nodes.get("Group Output")
+        node_cylinder = nodes.new("GeometryNodeMeshCylinder")
+
+        self.new_input_link(node_group, 'NodeSocketInt', "Vertices", "vertices")
+        self.new_input_link(node_group, 'NodeSocketFloatDistance', "Radius", "radius")
+        self.new_input_link(node_group, 'NodeSocketFloatDistance', "Depth", "depth")
+
+        node_group.links.new(node_input.outputs["Vertices"], node_cylinder.inputs.get("Vertices"))
+        node_group.links.new(node_input.outputs["Radius"], node_cylinder.inputs.get("Radius"))
+        node_group.links.new(node_input.outputs["Depth"], node_cylinder.inputs.get("Depth"))
+        node_group.links.new(node_cylinder.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+
+        mod[node_input.outputs["Vertices"].identifier] = vertices
+        # mod[node_input.outputs["Radius"].identifier] = radius
+        # mod[node_input.outputs["Depth"].identifier] = depth
+
+    def new_input_link(self, node_group, socket_type, socket_name, prop_name):
+        prop = self.rna_type.properties[prop_name]
+
+        s_in = node_group.inputs.new(socket_type, socket_name)
+        s_in.default_value = prop.default
+        s_in.min_value = prop.hard_min
+        s_in.max_value = prop.hard_max
 
     def execute(self, context):
         dc.trace_enter(self)
@@ -423,6 +448,138 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         context.scene.cursor.matrix = prev_cursor_matrix
         context.scene.cursor.location = prev_cursor_location
         return dc.trace_exit(self)
+
+
+class DCONFIG_OT_add_techring(bpy.types.Operator):
+    bl_idname = "dconfig.add_techring"
+    bl_label = "DC Add Tech-Ring"
+    bl_description = "Adds a tech-ring mesh"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def sanitize_inputs(self, context):
+        if self.ring_count_max < self.ring_count_min:
+            self.ring_count_max = self.ring_count_min
+
+        if self.track_width_max < self.track_width_min:
+            self.track_width_max = self.track_width_min
+
+        if self.arc_max < self.arc_min:
+            self.arc_max = self.arc_min
+
+    seed: bpy.props.IntProperty(name="Seed", default=0, min=0)
+    align: bpy.props.StringProperty(name="Align", default='WORLD')
+
+    arc_count: bpy.props.IntProperty(name="Arc count", default=36, min=8, max=128, step=4)
+    track_count: bpy.props.IntProperty(name="Track count", default=20, min=8, max=32)
+
+    ring_count_min: bpy.props.IntProperty(name="Ring count min", default=2,  min=1, max=32, update=sanitize_inputs)
+    ring_count_max: bpy.props.IntProperty(name="Ring count max", default=10,  min=1, max=32, update=sanitize_inputs)
+    ring_count_bonus: bpy.props.IntProperty(name="Ring count bonus", default=0,  min=0, max=2)
+
+    track_width_min: bpy.props.IntProperty(name="Track width min", default=1, min=1, max=32, update=sanitize_inputs)
+    track_width_max: bpy.props.IntProperty(name="Track width max", default=4, min=1, max=32, update=sanitize_inputs)
+
+    arc_min: bpy.props.FloatProperty(name="Arc min", default=math.radians(90), min=math.radians(30), max=128, step=1000, subtype='ANGLE', update=sanitize_inputs)
+    arc_max: bpy.props.FloatProperty(name="Arc max", default=math.radians(340), min=math.radians(30), max=128, step=1000, subtype='ANGLE', update=sanitize_inputs)
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'OBJECT'
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+
+        layout.prop(self, "seed")
+
+        layout.separator()
+        layout.prop(self, "arc_count")
+        layout.prop(self, "track_count")
+
+        layout.separator()
+        layout.prop(self, "ring_count_min")
+        layout.prop(self, "ring_count_max")
+        layout.prop(self, "ring_count_bonus")
+
+        layout.separator()
+        layout.prop(self, "track_width_min")
+        layout.prop(self, "track_width_max")
+
+        layout.separator()
+        layout.prop(self, "arc_min")
+        layout.prop(self, "arc_max")
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        def random_arc_to_span(min_angle_rad, max_angle_rad):
+            rand_deg = random.randrange(int(math.degrees(min_angle_rad)), int(math.degrees(max_angle_rad)) + 1, 10)
+            return int(self.arc_count * (rand_deg / 360.0))
+
+        def mark_faces(bm, track_start, track_end, span_start, span_end, material_index):
+            track_end = min(track_end, self.track_count)
+            for track in range(track_start, track_end):
+                track_offset = track * self.arc_count
+                for span in range(span_start, span_end):
+                    face_offset = track_offset + (span % self.arc_count)
+                    bm.faces[face_offset].material_index = material_index
+
+        aspect_x = math.pi / 2
+        aspect_y = (math.pi * 0.14) / 2
+        mat = Matrix.Scale(aspect_x, 4, (1.0, 0.0, 0.0)) @ Matrix.Scale(aspect_y, 4, (0.0, 1.0, 0.0))
+        mat = Matrix.Translation((0.0, aspect_y, 0.0)) @ mat
+
+        bm = bmesh.new()
+        bmesh.ops.create_grid(bm, x_segments=self.arc_count, y_segments=self.track_count, size=1, matrix=mat, calc_uvs=True)
+        bm.faces.ensure_lookup_table()
+
+        random.seed(self.seed)
+
+        ringCount = random.randrange(self.ring_count_min, self.ring_count_max + 1)
+        for _ in range(ringCount):
+            track_start = random.randrange(0, self.track_count + 1)
+            track_end = track_start + random.randrange(self.track_width_min, self.track_width_max + 1)
+            span_start = random_arc_to_span(0, math.pi * 2)
+            span_end = span_start + random_arc_to_span(self.arc_min, self.arc_max)
+
+            mark_faces(bm, track_start, track_end, span_start, span_end, 1)
+
+        for _ in range(self.ring_count_bonus):
+            track_start = random.randrange(0, self.track_count + 1)
+            track_end = track_start + 1
+            span_start = 0
+            span_end = self.arc_count
+
+            mark_faces(bm, track_start, track_end, span_start, span_end, random.randrange(0, 2))
+
+        bm.normal_update()
+        dc.add_new_bmesh(context, "TechRing", bm, self.align)
+
+        self.create_mods(context.active_object)
+        self.ensure_materials(context.active_object)
+
+        return dc.trace_exit(self)
+
+    def create_mods(self, target):
+        bend_mod = target.modifiers.new("dc_bend", 'SIMPLE_DEFORM')
+        bend_mod.deform_method = 'BEND'
+        bend_mod.deform_axis = 'Z'
+        bend_mod.angle = math.radians(360)
+
+        target.modifiers.new("dc_weld", 'WELD')
+
+    def ensure_materials(self, target):
+        bpy.ops.object.material_slot_add()
+        bpy.ops.object.material_slot_add()
+
+        material = bpy.data.materials.get("dc_viewport_black")
+        if material is None:
+            material = bpy.data.materials.new("dc_viewport_black")
+            material.use_nodes = True
+            material.node_tree.nodes["Principled BSDF"].inputs[0].default_value = (0.0, 0.0, 0.0, 1)
+            material.diffuse_color = (0.0, 0.0, 0.0, 1)
+
+        target.data.materials[1] = material
 
 
 class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
