@@ -176,16 +176,16 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         if self.prim_type in ('Cube', 'Plane'):
             layout.prop(self, "size")
         elif self.prim_type in ('Circle', 'Geo-Circle'):
-            layout.prop(self, "radius")
             layout.prop(self, "vertices")
+            layout.prop(self, "radius")
         elif self.prim_type == 'Oval':
+            layout.prop(self, "vertices_2")
             layout.prop(self, "radius")
             layout.prop(self, "length")
-            layout.prop(self, "vertices_2")
         elif self.prim_type in ('Cylinder', 'Geo-Cylinder'):
+            layout.prop(self, "vertices")
             layout.prop(self, "radius")
             layout.prop(self, "depth")
-            layout.prop(self, "vertices")
         elif self.prim_type == 'Sphere':
             layout.prop(self, "radius")
             layout.prop(self, "segments")
@@ -196,9 +196,9 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             layout.prop(self, "segments")
             layout.prop(self, "ring_count")
         elif self.prim_type == 'Dish-2':
+            layout.prop(self, "vertices_2")
             layout.prop(self, "radius")
             layout.prop(self, "focal_point")
-            layout.prop(self, "vertices_2")
         elif self.prim_type == 'Quad_Sphere':
             layout.prop(self, "radius")
             layout.prop(self, "levels")
@@ -374,7 +374,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         node_group.links.new(node_circle.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
 
         mod[node_input.outputs["Vertices"].identifier] = vertices
-        # mod[node_input.outputs["Radius"].identifier] = radius
+        mod[node_input.outputs["Radius"].identifier] = radius
 
     def add_geo_cylinder(self, context, radius, depth, vertices, align):
         bm = bmesh.new()
@@ -398,8 +398,8 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         node_group.links.new(node_cylinder.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
 
         mod[node_input.outputs["Vertices"].identifier] = vertices
-        # mod[node_input.outputs["Radius"].identifier] = radius
-        # mod[node_input.outputs["Depth"].identifier] = depth
+        mod[node_input.outputs["Radius"].identifier] = radius
+        mod[node_input.outputs["Depth"].identifier] = depth
 
     def new_input_link(self, node_group, socket_type, socket_name, prop_name):
         prop = self.rna_type.properties[prop_name]
