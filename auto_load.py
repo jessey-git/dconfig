@@ -102,7 +102,7 @@ def iter_register_deps(cls):
 
 def get_dependency_from_annotation(value):
     if bpy.app.version >= (2, 93, 0):
-        if type(value).__name__ == "_PropertyDeferred":
+        if isinstance(value, bpy.props._PropertyDeferred):
             return value.keywords.get("type")
     else:
         if isinstance(value, tuple) and len(value) == 2:
