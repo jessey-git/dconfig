@@ -108,7 +108,7 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
         context.scene.cycles.denoiser = 'OPENIMAGEDENOISE'
         context.scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
         context.scene.cycles.preview_denoising_input_passes = 'RGB_ALBEDO_NORMAL'
-        context.scene.cycles.preview_denoising_start_sample = 400
+        context.scene.cycles.preview_denoising_start_sample = 10000
 
         # General View
         context.scene.view_settings.look = 'Medium High Contrast'

@@ -60,7 +60,7 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
 
         col.separator()
         dc.setup_op(col, "dconfig.add_primitive", 'CURVE_BEZCIRCLE', "Circle", prim_type='B_Circle', radius=0.50, align=align)
-        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CAPSULE', "Capsule", prim_type='Oval', radius=0.125, length=0.5, vertices_2=8, align=align)
+        dc.setup_op(col, "dconfig.add_primitive", 'MESH_CAPSULE', "Capsule", prim_type='Oval', radius=0.125, length=0.5, vertices_2=10, align=align)
         dc.setup_op(col, "dconfig.add_primitive", 'MESH_UVSPHERE', "Dish-2", prim_type='Dish-2', radius=1, vertices_2=24, focal_point=0.75, align=align)
 
         # Right
@@ -112,6 +112,10 @@ class DCONFIG_MT_add_primitive_pie(bpy.types.Menu):
 
         # Top Right
         split = pie.split(align=True)
+        col = split.column(align=True)
+        col.scale_y = 1.25
+        col.scale_x = 1.25
+        dc.setup_op(col, "dconfig.add_primitive", 'VIEW_CAMERA', "", prim_type='Camera', align=align)
         col = split.column(align=True)
         col.scale_y = 1.25
         col.scale_x = 1.25
@@ -246,6 +250,11 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             if context.mode != 'OBJECT':
                 bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
             bpy.ops.object.light_add(type=self.light_type, radius=self.radius, align=self.align)
+
+        elif self.prim_type == 'Camera':
+            if context.mode != 'OBJECT':
+                bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+            bpy.ops.object.camera_add(align=self.align)
 
         elif self.prim_type == 'Empty':
             if context.mode != 'OBJECT':
