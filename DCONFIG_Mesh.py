@@ -36,17 +36,17 @@ class DCONFIG_MT_quick(bpy.types.Menu):
             layout.menu("DCONFIG_MT_modifiers", icon='MODIFIER')
 
             layout.separator()
-            dc.setup_op(layout, "mesh.remove_doubles", text="Weld vertices")
-            dc.setup_op(layout, "dconfig.make_quads", text="Make Quads")
-
-            layout.separator()
             dc.setup_op(layout, "mesh.edges_select_sharp", icon='RESTRICT_SELECT_OFF', text="Select Sharp", sharpness=math.radians(45.1))
             dc.setup_op(layout, "mesh.select_face_by_sides", text="Select N-Gons", type='NOTEQUAL', number=4, extend=False)
             dc.setup_op(layout, "mesh.region_to_loop", text="Select Boundary Loop")
 
             layout.separator()
+            dc.setup_op(layout, "mesh.remove_doubles", icon='AUTOMERGE_OFF', text="Weld vertices")
+
+            layout.separator()
             layout.operator_context = 'INVOKE_REGION_WIN'
             dc.setup_op(layout, "mesh.fill_grid", text="Fill Grid")
+            dc.setup_op(layout, "dconfig.make_quads", text="Make Quads")
             dc.setup_op(layout, "dconfig.quick_panel", text="Quick Panel")
             dc.setup_op(layout, "dconfig.subd_upres", text="SubD Up-Res")
             dc.setup_op(layout, "dconfig.subd_bevel", text="SubD Bevel")

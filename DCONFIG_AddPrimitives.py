@@ -374,7 +374,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         node_input = nodes.get("Group Input")
         node_output = nodes.get("Group Output")
         node_circle = nodes.new("GeometryNodeMeshCircle")
-        node_circle.fill_type = 'NGON'
+        node_circle.fill_type = 'TRIANGLE_FAN'
 
         self.new_input_link(node_group, 'NodeSocketInt', "Vertices", "vertices")
         self.new_input_link(node_group, 'NodeSocketFloatDistance', "Radius", "radius")

@@ -16,6 +16,9 @@ import bpy
 def draw_stats(font_id, line_height, ui_scale):
     view_layer = bpy.context.view_layer
 
+    if bpy.context.space_data.overlay.show_stats:
+        bpy.context.space_data.overlay.show_stats = False
+
     # Gather up stats...
     stats = bpy.context.scene.statistics(view_layer).split("|")
     if bpy.context.mode == 'OBJECT':
@@ -46,15 +49,13 @@ def draw_stats(font_id, line_height, ui_scale):
 
     # Calculate dimensions for each piece of data...
     class Item:
-        def __init__(self, text):
+        def __init__(self, text, font_id):
             self.text = text
-            self.dim_x = 0
+            self.dim_x = blf.dimensions(font_id, text)[0]
 
     lines = []
     for value in stats:
-        line_data = [Item(val) for val in filter(None, re.split("[ :/]", value))]
-        for item in line_data:
-            item.dim_x = blf.dimensions(font_id, item.text)[0]
+        line_data = [Item(val, font_id) for val in filter(None, re.split("[ :/]", value))]
 
         longest_title = max(longest_title, line_data[0].dim_x)
         lines.append(line_data)
