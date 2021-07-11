@@ -6,6 +6,7 @@
 
 import math
 import bpy
+import bmesh
 from mathutils import (Vector)
 
 DebugTraceEnabled = True
@@ -62,6 +63,56 @@ def setup_op(layout, operator, icon=None, text='', **kwargs):
 
     for prop, value in kwargs.items():
         setattr(op, prop, value)
+
+#
+# Mesh utilities
+#
+
+
+def add_new_bmesh(context, name, bm, align):
+    if context.mode == 'OBJECT':
+        bpy.ops.object.select_all(action='DESELECT')
+
+        me = bpy.data.meshes.new(name)
+        bm.to_mesh(me)
+        bm.free()
+
+        obj = bpy.data.objects.new(name, me)
+        if align == 'CURSOR':
+            obj.matrix_world = context.scene.cursor.matrix.copy()
+        elif align == 'VIEW':
+            mat = context.space_data.region_3d.view_matrix.transposed().to_4x4()
+            mat.translation = context.scene.cursor.location
+            obj.matrix_world = mat
+        else:
+            obj.matrix_world.translation = context.scene.cursor.location
+
+        context.collection.objects.link(obj)
+        make_active_object(context, obj)
+    else:
+        bpy.ops.mesh.select_all(action='DESELECT')
+
+        if align == 'CURSOR':
+            bmesh.ops.transform(bm, verts=bm.verts, matrix=context.scene.cursor.matrix)
+        elif align == 'VIEW':
+            mat = context.space_data.region_3d.view_matrix.transposed().to_4x4()
+            mat.translation = context.scene.cursor.location
+            bmesh.ops.transform(bm, verts=bm.verts, matrix=mat)
+        else:
+            new_location = context.active_object.matrix_world.inverted() @ context.scene.cursor.location
+            bmesh.ops.translate(bm, verts=bm.verts, vec=new_location)
+
+        bm_orig = bmesh.from_edit_mesh(context.active_object.data)
+
+        new_verts = [bm_orig.verts.new(v.co) for v in bm.verts]
+        for f in bm.faces:
+            new_f = bm_orig.faces.new(new_verts[v.index] for v in f.verts)
+            new_f.material_index = f.material_index
+
+        bm_orig.normal_update()
+        bm.free()
+
+        bmesh.update_edit_mesh(context.active_object.data)
 
 #
 # Math utilities
@@ -133,9 +184,9 @@ def get_helpers_collection(context):
         bpy.types.Scene.dc_helpers = bpy.props.PointerProperty(type=bpy.types.Collection)
 
         collection = make_collection(context.scene.collection, "dc_helpers", True)
-        context.scene.dc_helpers = collection
+        context.scene["dc_helpers"] = collection
     else:
-        collection = context.scene.dc_helpers
+        collection = context.scene["dc_helpers"]
 
     return collection
 
@@ -147,9 +198,9 @@ def get_boolean_collection(context, force_create):
 
         if force_create:
             collection = make_collection(context.scene.collection, "dc_booleans", True)
-            context.scene.dc_booleans = collection
+            context.scene["dc_booleans"] = collection
     else:
-        collection = context.scene.dc_booleans
+        collection = context.scene["dc_booleans"]
 
     return collection
 

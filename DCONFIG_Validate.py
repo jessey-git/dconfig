@@ -20,7 +20,6 @@ from . import DCONFIG_Utils as dc
 # Rules
 #
 
-
 Rule = namedtuple('Rule', ['category', 'label'])
 ObjectRuleData = namedtuple('ObjectRuleData', ['obj', 'bm'])
 CollectionRuleData = namedtuple('CollectionRuleData', ['collection'])
@@ -448,7 +447,7 @@ class DCONFIG_ValidationResultCollection(bpy.types.PropertyGroup):
     detail: bpy.props.StringProperty()
 
 
-def inspect_func(self, context):
+def DCONFIG_FN_index_update(self, context):
     if self.update_enabled:
         result = self.results[self.result_index]
         if result.obj_name == '':
@@ -468,7 +467,7 @@ def inspect_func(self, context):
 class DCONFIG_ValidationData(bpy.types.PropertyGroup):
     collection_name: bpy.props.StringProperty()
     check_count: bpy.props.IntProperty()
-    result_index: bpy.props.IntProperty(update=inspect_func)
+    result_index: bpy.props.IntProperty(update=DCONFIG_FN_index_update)
     results: bpy.props.CollectionProperty(type=DCONFIG_ValidationResultCollection)
     update_enabled: bpy.props.BoolProperty()
 
@@ -481,15 +480,15 @@ class DCONFIG_ValidationData(bpy.types.PropertyGroup):
         self.update_enabled = True
 
 
-def menu_func(self, context):
+def DCONFIG_FN_ui_validate(self, context):
     self.layout.operator("dconfig.validate")
 
 
 def register():
-    bpy.types.OUTLINER_MT_collection.append(menu_func)
+    bpy.types.OUTLINER_MT_collection.append(DCONFIG_FN_ui_validate)
     bpy.types.Scene.dc_validation_data = bpy.props.PointerProperty(type=DCONFIG_ValidationData)
 
 
 def unregister():
-    bpy.types.OUTLINER_MT_collection.remove(menu_func)
+    bpy.types.OUTLINER_MT_collection.remove(DCONFIG_FN_ui_validate)
     del bpy.types.Scene.dc_validation_data

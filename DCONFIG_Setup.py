@@ -10,6 +10,8 @@
 
 import os
 import shutil
+import threading
+import time
 
 import addon_utils
 import bpy
@@ -18,7 +20,6 @@ addon_keymaps = []
 
 
 def setup_hotkeys():
-    # pylint: disable=C0326
     kc = bpy.context.window_manager.keyconfigs
 
     if kc.active.preferences is not None:
@@ -27,6 +28,8 @@ def setup_hotkeys():
         kc.active.preferences.gizmo_action = 'DRAG'
         kc.active.preferences.v3d_tilde_action = 'GIZMO'
         kc.active.preferences.use_select_all_toggle = True
+        kc.active.preferences.use_pie_click_drag = True
+        kc.active.preferences.use_v3d_shade_ex_pie = True
 
     new_keymap = (
         # Keymap Name           Space       Region      ID                          Key             Action      SHIFT   CTRL    ALT     Properties
@@ -34,7 +37,6 @@ def setup_hotkeys():
 
         ("Object Non-modal",    "EMPTY",    "WINDOW",   "wm.call_menu",             "S",            "PRESS",    True,   False,  False,  (("name", "VIEW3D_MT_snap"),)),
         ("Object Non-modal",    "EMPTY",    "WINDOW",   "wm.call_menu_pie",         "BUTTON4MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_transforms_pie"),)),
-        ("Object Non-modal",    "EMPTY",    "WINDOW",   "wm.call_menu",             "BUTTON5MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_origin_set"),)),
 
         ("Object Mode",         "EMPTY",    "WINDOW",   "wm.call_menu_pie",         "A",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
         ("Mesh",                "EMPTY",    "WINDOW",   "wm.call_menu_pie",         "A",            "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_add_primitive_pie"),)),
@@ -50,7 +52,6 @@ def setup_hotkeys():
         ("3D View",             "VIEW_3D",  "WINDOW",   "dconfig.subd_toggle",      "FOUR",         "PRESS",    False,  False,  True,   (("levels", 4),)),
 
         ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.view_center_cursor",    "HOME",     "PRESS",    False,  False,  True,   ()),
-        ("3D View",             "VIEW_3D",  "WINDOW",   "view3d.toggle_shading",        "Z",        "PRESS",    False,  False,  False,  (("type", "WIREFRAME"),)),
         ("3D View",             "VIEW_3D",  "WINDOW",   "dconfig.toggle_wireframe",     "Z",        "PRESS",    True,   False,  False,  ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   "dconfig.mesh_symmetry",        "T",        "PRESS",    True,   False,  False,  ()),
         ("3D View",             "VIEW_3D",  "WINDOW",   "wm.call_menu",                 "Q",        "PRESS",    False,  False,  False,  (("name", "DCONFIG_MT_quick"),)),
@@ -68,9 +69,13 @@ def setup_hotkeys():
         ("UV Editor",           "EMPTY",    "WINDOW",   "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("extend", True),)),
         ("UV Editor",           "EMPTY",    "WINDOW",   "wm.call_menu",             "S",            "PRESS",        True,   False,  False,  (("name", "IMAGE_MT_uvs_snap"),)),
 
-        ("Node Editor",         "NODE_EDITOR",  "WINDOW",   "node.view_selected",   "BUTTON4MOUSE", "PRESS",        False,  True,   False,  ()),
+        ("Outliner",            "OUTLINER",         "WINDOW",   "outliner.show_active", "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
+        ("Node Editor",         "NODE_EDITOR",      "WINDOW",   "node.view_selected",   "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
+        ("Dopesheet",           "DOPESHEET_EDITOR", "WINDOW",   "action.view_selected", "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
+        ("Graph Editor",        "GRAPH_EDITOR",     "WINDOW",   "graph.view_selected",  "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
+        ("Image",               "IMAGE_EDITOR",     "WINDOW",   "image.view_selected",  "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
 
-        ("Image",               "IMAGE_EDITOR", "WINDOW",   "wm.call_menu",         "BUTTON4MOUSE", "PRESS",        True,   False,  False,  (("name", "DCONFIG_MT_image_pivot"),)),
+        ("Image",               "IMAGE_EDITOR",     "WINDOW",   "wm.call_menu",         "BUTTON4MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_image_pivot"),)),
     )
 
     addon_keymaps.clear()
@@ -85,7 +90,6 @@ def setup_hotkeys():
     print('Added {} keymaps'.format(len(addon_keymaps)))
 
     print("Starting keymap fixup thread")
-    import threading
     thread = threading.Thread(target=modal_fix)
     thread.start()
 
@@ -101,10 +105,14 @@ def setup_userpreferences():
     user_prefs = bpy.context.preferences
 
     user_prefs.edit.undo_steps = 100
+    user_prefs.edit.grease_pencil_eraser_radius = 40
+
     if bpy.app.version >= (2, 90, 0):
         user_prefs.edit.collection_instance_empty_size = 0.25
         user_prefs.view.show_statusbar_version = False
         user_prefs.view.show_statusbar_stats = False
+        user_prefs.view.show_statusbar_memory = True
+        user_prefs.view.show_statusbar_vram = True
 
     user_prefs.view.show_tooltips_python = True
     user_prefs.view.show_developer_ui = True
@@ -117,6 +125,8 @@ def setup_userpreferences():
 
     user_prefs.view.smooth_view = 0
     user_prefs.view.pie_animation_timeout = 0
+
+    user_prefs.inputs.drag_threshold = 150
 
     user_prefs.filepaths.save_version = 0
 
@@ -156,12 +166,11 @@ class DCONFIG_OT_install_theme(bpy.types.Operator):
 
 
 def modal_fix():
-    import time
     kc = bpy.context.window_manager.keyconfigs
-    kcd = kc.default
+    kca = kc.active
 
     for _ in range(0, 5):
-        km = kcd.keymaps.find("View3D Gesture Circle")
+        km = kca.keymaps.find("View3D Gesture Circle")
         if km is not None and km.keymap_items:
             km.keymap_items[0].type = 'C'
             km.keymap_items[0].value = 'RELEASE'
@@ -172,9 +181,10 @@ def modal_fix():
 
 
 def register():
-    setup_hotkeys()
-    setup_userpreferences()
-    setup_addons()
+    if not bpy.app.background:
+        setup_hotkeys()
+        setup_userpreferences()
+        setup_addons()
 
 
 def unregister():

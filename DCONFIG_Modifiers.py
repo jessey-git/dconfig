@@ -31,6 +31,7 @@ class DCONFIG_MT_modifiers(bpy.types.Menu):
         dc.setup_op(layout, "dconfig.mod_mirror", 'MOD_MIRROR', "World Mirror", local=False)
 
         layout.separator()
+        dc.setup_op(layout, "dconfig.mod_linear_array", 'MOD_ARRAY', "Linear Array")
         dc.setup_op(layout, "dconfig.mod_radial_array", 'MOD_ARRAY', "Radial Array")
         dc.setup_op(layout, "dconfig.mod_bend", 'MOD_SIMPLEDEFORM', "Bend")
         dc.setup_op(layout, "dconfig.mod_pillow", 'MOD_CLOTH', "Pillow")
@@ -43,7 +44,7 @@ class DCONFIG_OT_mod_mirror(bpy.types.Operator):
     bl_idname = "dconfig.mod_mirror"
     bl_label = "DC Mirror"
     bl_description = "Mirror mesh across an axis"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'UNDO'}
 
     local: bpy.props.BoolProperty()
     direction: bpy.props.EnumProperty(
@@ -84,7 +85,7 @@ class DCONFIG_OT_mod_mirror(bpy.types.Operator):
         dc.trace_enter(self)
 
         if context.space_data.type == 'VIEW_3D':
-            symmetry.DCONFIG_GGT_symmetry_gizmo.create(context)
+            symmetry.DCONFIG_GGT_symmetry_gizmo.create(context, self.local)
 
         return dc.trace_exit(self)
 
@@ -147,6 +148,97 @@ class DCONFIG_OT_mod_mirror(bpy.types.Operator):
             while mod_index > 0 and target.modifiers[mod_index - 1].type != 'BOOLEAN' and not target.modifiers[mod_index - 1].name.startswith("dc_local_mirror"):
                 bpy.ops.object.modifier_move_up(modifier=mod.name)
                 mod_index -= 1
+
+
+class DCONFIG_OT_mod_linear_array(bpy.types.Operator):
+    bl_idname = "dconfig.mod_linear_array"
+    bl_label = "DC Linear Array"
+    bl_description = "Array mesh in a linear fashion"
+    bl_options = {'UNDO'}
+
+    count: bpy.props.IntProperty(name="count", default=3, min=1, max=360)
+
+    def __init__(self):
+        self.mouse_x = None
+        self.array_mod = None
+        self.axis = 0
+
+    @classmethod
+    def poll(cls, context):
+        return dc.active_mesh_selected(context)
+
+    def invoke(self, context, event):
+        dc.trace_enter(self)
+
+        self.execute_core(context, False)
+
+        context.window_manager.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
+    def execute(self, context):
+        dc.trace_enter(self)
+
+        self.execute_core(context, True)
+
+        return dc.trace_exit(self)
+
+    def execute_core(self, context, is_execute):
+        target = context.active_object
+        self.create_array_mod(target)
+
+    def modal(self, context, event):
+        if event.type == 'MOUSEMOVE' and event.ctrl:
+            if self.mouse_x is not None:
+                scale = 100 if event.shift else 20
+                delta = (event.mouse_x - self.mouse_x) / scale
+                self.array_mod.relative_offset_displace[self.axis] += delta
+            self.mouse_x = event.mouse_x
+        elif not event.ctrl:
+            self.mouse_x = None
+
+        if event.type == 'WHEELUPMOUSE':
+            self.array_mod.count += 1
+
+        elif event.type == 'WHEELDOWNMOUSE':
+            if self.array_mod.count > 1:
+                self.array_mod.count -= 1
+
+        elif event.type in {'X', 'Y', 'Z'} and event.value == 'RELEASE':
+            current = self.array_mod.relative_offset_displace[self.axis]
+            self.axis = 0 if event.type == 'X' else 1 if event.type == 'Y' else 2
+            for a in (0, 1, 2):
+                if a == self.axis:
+                    self.array_mod.relative_offset_displace[a] = current
+                else:
+                    self.array_mod.relative_offset_displace[a] = 0
+
+        elif event.type == 'LEFTMOUSE':
+            return dc.trace_exit(self)
+
+        elif event.type in {'RIGHTMOUSE', 'ESC'}:
+            bpy.ops.object.modifier_remove(modifier=self.array_mod.name)
+            return dc.user_canceled(self)
+
+        return {'RUNNING_MODAL'}
+
+    def create_array_mod(self, target):
+        dc.trace(1, "Adding array modifier to {}", dc.full_name(target))
+
+        self.array_mod = target.modifiers.new("dc_array", 'ARRAY')
+        self.array_mod.fit_type = 'FIXED_COUNT'
+        self.array_mod.count = self.count
+        self.array_mod.use_relative_offset = True
+        self.array_mod.use_merge_vertices = True
+        self.array_mod.use_merge_vertices_cap = True
+        self.array_mod.merge_threshold = 0.001
+
+        self.array_mod.show_on_cage = False
+        self.array_mod.show_expanded = False
+
+    def adjust_array_mod(self, delta, init=False):
+        dc.trace(1, "Delta: {}", delta)
+
+        self.array_mod.count += delta
 
 
 class DCONFIG_OT_mod_radial_array(bpy.types.Operator):
@@ -518,13 +610,6 @@ class DCONFIG_OT_mod_bend(bpy.types.Operator):
         return bend_object
 
     def create_bend_mod(self, target, bend_object):
-        array_mod = target.modifiers.new("dc_array", 'ARRAY')
-        array_mod.fit_type = 'FIXED_COUNT'
-        array_mod.count = 4
-        array_mod.use_merge_vertices = True
-        array_mod.use_merge_vertices_cap = True
-        array_mod.merge_threshold = 0.003
-
         bend_mod = target.modifiers.new("dc_bend", 'SIMPLE_DEFORM')
         bend_mod.deform_method = 'BEND'
         bend_mod.deform_axis = 'Z'
