@@ -104,11 +104,15 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
         context.scene.cycles.max_bounces = 48
         context.scene.cycles.glossy_bounces = 48
         context.scene.cycles.transmission_bounces = 48
+        context.scene.cycles.volume_bounces = 2
 
         context.scene.cycles.denoiser = 'OPENIMAGEDENOISE'
         context.scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
         context.scene.cycles.preview_denoising_input_passes = 'RGB_ALBEDO_NORMAL'
         context.scene.cycles.preview_denoising_start_sample = 10000
+
+        context.scene.render.tile_x = 160
+        context.scene.render.tile_y = 90
 
         # General View
         context.scene.view_settings.look = 'Medium High Contrast'
