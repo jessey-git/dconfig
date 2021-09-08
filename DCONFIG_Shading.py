@@ -96,23 +96,37 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
         context.scene.render.use_high_quality_normals = True
 
         # Cycles
-        context.scene.cycles.samples = 20
-        context.scene.cycles.preview_samples = 6
-        context.scene.cycles.use_square_samples = True
-        context.scene.cycles.tile_order = 'CENTER'
+        if bpy.app.build_branch != b'cycles-x':
+            context.scene.cycles.samples = 20
+            context.scene.cycles.preview_samples = 6
+            context.scene.cycles.use_square_samples = True
+            context.scene.cycles.tile_order = 'CENTER'
 
-        context.scene.cycles.max_bounces = 48
-        context.scene.cycles.glossy_bounces = 48
-        context.scene.cycles.transmission_bounces = 48
-        context.scene.cycles.volume_bounces = 2
+            context.scene.cycles.max_bounces = 180
+            context.scene.cycles.glossy_bounces = 180
+            context.scene.cycles.transmission_bounces = 36
+            context.scene.cycles.volume_bounces = 2
+            context.scene.cycles.transparent_max_bounces = 19
 
-        context.scene.cycles.denoiser = 'OPENIMAGEDENOISE'
-        context.scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
-        context.scene.cycles.preview_denoising_input_passes = 'RGB_ALBEDO_NORMAL'
-        context.scene.cycles.preview_denoising_start_sample = 10000
+            context.scene.cycles.denoiser = 'OPENIMAGEDENOISE'
+            context.scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
+            context.scene.cycles.preview_denoising_input_passes = 'RGB_ALBEDO_NORMAL'
+            context.scene.cycles.preview_denoising_start_sample = 10000
 
-        context.scene.render.tile_x = 160
-        context.scene.render.tile_y = 90
+            context.scene.render.tile_x = 160
+            context.scene.render.tile_y = 90
+        else:
+            context.scene.cycles.max_bounces = 180
+            context.scene.cycles.glossy_bounces = 180
+            context.scene.cycles.transmission_bounces = 36
+            context.scene.cycles.volume_bounces = 2
+            context.scene.cycles.transparent_max_bounces = 19
+
+            context.scene.cycles.denoiser = 'OPENIMAGEDENOISE'
+            context.scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
+            context.scene.cycles.preview_denoising_input_passes = 'RGB_ALBEDO_NORMAL'
+            context.scene.cycles.preview_denoising_prefilter = 'ACCURATE'
+            context.scene.cycles.preview_denoising_start_sample = 10000
 
         # General View
         context.scene.view_settings.look = 'Medium High Contrast'
