@@ -750,7 +750,7 @@
     </image_editor>
     <sequence_editor>
       <ThemeSequenceEditor
-        grid="#404040"
+        grid="#212121"
         window_sliders="#a0a0a0"
         movie_strip="#4d6890"
         movieclip_strip="#8f4c4c"
@@ -888,7 +888,7 @@
         grid="#232323"
         node_selected="#ed5700"
         node_active="#ffffff"
-        wire="#808080"
+        wire="#232323"
         wire_inner="#808080"
         wire_select="#ffffff"
         selected_text="#7f7070"
@@ -897,7 +897,7 @@
         color_node="#ccb83d"
         group_node="#426628d9"
         group_socket_node="#1a1a1a"
-        frame_node="#1a1a1acc"
+        frame_node="#1a1a1a7d"
         matte_node="#975b5b"
         distor_node="#749797"
         noodle_curving="3"
@@ -1429,12 +1429,40 @@
         color="#7a5441">
       </ThemeCollectionColor>
     </collection_color>
+    <strip_color>
+      <ThemeStripColor
+        color="#e2605b">
+      </ThemeStripColor>
+      <ThemeStripColor
+        color="#f1a355">
+      </ThemeStripColor>
+      <ThemeStripColor
+        color="#f1dc55">
+      </ThemeStripColor>
+      <ThemeStripColor
+        color="#7bcc7b">
+      </ThemeStripColor>
+      <ThemeStripColor
+        color="#5db6ea">
+      </ThemeStripColor>
+      <ThemeStripColor
+        color="#8d59da">
+      </ThemeStripColor>
+      <ThemeStripColor
+        color="#c673b8">
+      </ThemeStripColor>
+      <ThemeStripColor
+        color="#7a5441">
+      </ThemeStripColor>
+      <ThemeStripColor
+        color="#5f5f5f">
+      </ThemeStripColor>
+    </strip_color>
   </Theme>
   <ThemeStyle>
     <panel_title>
       <ThemeFontStyle
         points="12"
-        font_kerning_style="FITTED"
         shadow="3"
         shadow_offset_x="0"
         shadow_offset_y="-1"
@@ -1445,7 +1473,6 @@
     <widget_label>
       <ThemeFontStyle
         points="11"
-        font_kerning_style="FITTED"
         shadow="3"
         shadow_offset_x="0"
         shadow_offset_y="-1"
@@ -1456,7 +1483,6 @@
     <widget>
       <ThemeFontStyle
         points="11"
-        font_kerning_style="FITTED"
         shadow="1"
         shadow_offset_x="0"
         shadow_offset_y="-1"
