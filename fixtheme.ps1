@@ -9,6 +9,10 @@ $nodes = $theme.SelectNodes("//*[@roundness]")
 foreach ($node in $nodes) {
     $node.roundness = "0.25"
 }
+$nodes = $theme.SelectNodes("//*[@panel_roundness]")
+foreach ($node in $nodes) {
+    $node.panel_roundness = "0.25"
+}
 
 $color_wire             = "#262626"
 $color_object_selected  = "#f13a00"

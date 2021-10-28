@@ -381,7 +381,10 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
         node_group.links.new(node_input.outputs["Vertices"], node_circle.inputs.get("Vertices"))
         node_group.links.new(node_input.outputs["Radius"], node_circle.inputs.get("Radius"))
-        node_group.links.new(node_circle.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+        if bpy.app.version < (3, 0, 0):
+            node_group.links.new(node_circle.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+        else:
+            node_group.links.new(node_circle.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
 
         mod[node_input.outputs["Vertices"].identifier] = vertices
         mod[node_input.outputs["Radius"].identifier] = radius
@@ -405,7 +408,10 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         node_group.links.new(node_input.outputs["Vertices"], node_cylinder.inputs.get("Vertices"))
         node_group.links.new(node_input.outputs["Radius"], node_cylinder.inputs.get("Radius"))
         node_group.links.new(node_input.outputs["Depth"], node_cylinder.inputs.get("Depth"))
-        node_group.links.new(node_cylinder.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+        if bpy.app.version < (3, 0, 0):
+            node_group.links.new(node_cylinder.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+        else:
+            node_group.links.new(node_cylinder.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
 
         mod[node_input.outputs["Vertices"].identifier] = vertices
         mod[node_input.outputs["Radius"].identifier] = radius
