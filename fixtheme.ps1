@@ -34,6 +34,7 @@ $theme.bpy.Theme.view_3d.ThemeView3D.face               = $color_face
 $theme.bpy.Theme.view_3d.ThemeView3D.face_select        = $color_face_select
 $theme.bpy.Theme.view_3d.ThemeView3D.face_dot           = $color_vertex_select
 $theme.bpy.Theme.view_3d.ThemeView3D.editmesh_active    = $color_edit_active
+$theme.bpy.Theme.view_3d.ThemeView3D.space.ThemeSpaceGradient.gradients.ThemeGradientColors.background_type = "SINGLE_COLOR"
 
 
 $theme.bpy.Theme.view_3d.ThemeView3D.extra_edge_len     = "#ffffff"
