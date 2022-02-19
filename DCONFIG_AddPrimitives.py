@@ -381,7 +381,10 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
         node_group.links.new(node_input.outputs["Vertices"], node_circle.inputs.get("Vertices"))
         node_group.links.new(node_input.outputs["Radius"], node_circle.inputs.get("Radius"))
-        node_group.links.new(node_circle.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+        if bpy.app.version < (3, 0, 0):
+            node_group.links.new(node_circle.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+        else:
+            node_group.links.new(node_circle.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
 
         mod[node_input.outputs["Vertices"].identifier] = vertices
         mod[node_input.outputs["Radius"].identifier] = radius
@@ -405,7 +408,10 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         node_group.links.new(node_input.outputs["Vertices"], node_cylinder.inputs.get("Vertices"))
         node_group.links.new(node_input.outputs["Radius"], node_cylinder.inputs.get("Radius"))
         node_group.links.new(node_input.outputs["Depth"], node_cylinder.inputs.get("Depth"))
-        node_group.links.new(node_cylinder.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+        if bpy.app.version < (3, 0, 0):
+            node_group.links.new(node_cylinder.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+        else:
+            node_group.links.new(node_cylinder.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
 
         mod[node_input.outputs["Vertices"].identifier] = vertices
         mod[node_input.outputs["Radius"].identifier] = radius
@@ -432,10 +438,11 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             dc.trace(1, "Adding {} aligned to selected faces", self.prim_type)
             prev_active = context.active_object
 
-            # Extract transformation matrix only if 1 face is selected
-            if context.active_object.data.total_face_sel == 1:
+            try:
                 bpy.ops.transform.create_orientation(name="AddAxis", use=True, overwrite=True)
                 context.scene.cursor.matrix = context.scene.transform_orientation_slots[0].custom_orientation.matrix.to_4x4()
+            except RuntimeError:
+                pass
 
             bpy.ops.view3d.snap_cursor_to_selected()
 

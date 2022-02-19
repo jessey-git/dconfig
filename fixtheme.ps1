@@ -1,5 +1,4 @@
-
-$file = [System.IO.Path]::Join($pwd, "DCONFIG.xml")
+$file = [System.IO.Path]::Join($pwd, $args[0])
 
 $theme = New-Object xml
 $theme.PreserveWhitespace = $true
@@ -8,6 +7,10 @@ $theme.Load($file)
 $nodes = $theme.SelectNodes("//*[@roundness]")
 foreach ($node in $nodes) {
     $node.roundness = "0.25"
+}
+$nodes = $theme.SelectNodes("//*[@panel_roundness]")
+foreach ($node in $nodes) {
+    $node.panel_roundness = "0.25"
 }
 
 $color_wire             = "#262626"
@@ -30,6 +33,7 @@ $theme.bpy.Theme.view_3d.ThemeView3D.face               = $color_face
 $theme.bpy.Theme.view_3d.ThemeView3D.face_select        = $color_face_select
 $theme.bpy.Theme.view_3d.ThemeView3D.face_dot           = $color_vertex_select
 $theme.bpy.Theme.view_3d.ThemeView3D.editmesh_active    = $color_edit_active
+$theme.bpy.Theme.view_3d.ThemeView3D.space.ThemeSpaceGradient.gradients.ThemeGradientColors.background_type = "SINGLE_COLOR"
 
 
 $theme.bpy.Theme.view_3d.ThemeView3D.extra_edge_len     = "#ffffff"
@@ -61,6 +65,7 @@ $settings.NewLineOnAttributes = $true
 $settings.Indent = $true
 $settings.NewLineChars ="`r`n"
 $settings.Encoding = New-Object System.Text.UTF8Encoding( $false )
-$w = [System.Xml.XmlWriter]::Create($file, $settings)
+$out = [System.IO.Path]::Join($pwd, "DCONFIG.xml")
+$w = [System.Xml.XmlWriter]::Create($out, $settings)
 $theme.Save($w)
 $w.Close()
