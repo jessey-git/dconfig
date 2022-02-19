@@ -1,5 +1,4 @@
-
-$file = [System.IO.Path]::Join($pwd, "DCONFIG.xml")
+$file = [System.IO.Path]::Join($pwd, $args[0])
 
 $theme = New-Object xml
 $theme.PreserveWhitespace = $true
@@ -66,6 +65,7 @@ $settings.NewLineOnAttributes = $true
 $settings.Indent = $true
 $settings.NewLineChars ="`r`n"
 $settings.Encoding = New-Object System.Text.UTF8Encoding( $false )
-$w = [System.Xml.XmlWriter]::Create($file, $settings)
+$out = [System.IO.Path]::Join($pwd, "DCONFIG.xml")
+$w = [System.Xml.XmlWriter]::Create($out, $settings)
 $theme.Save($w)
 $w.Close()
