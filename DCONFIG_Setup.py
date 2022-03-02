@@ -69,8 +69,10 @@ def setup_hotkeys():
         ("UV Editor",           "EMPTY",    "WINDOW",   "uv.select_linked_pick",    "LEFTMOUSE",    "DOUBLE_CLICK", True,   False,  False,  (("extend", True),)),
         ("UV Editor",           "EMPTY",    "WINDOW",   "wm.call_menu",             "S",            "PRESS",        True,   False,  False,  (("name", "IMAGE_MT_uvs_snap"),)),
 
-        ("Outliner",            "OUTLINER",         "WINDOW",   "outliner.show_active", "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
         ("Node Editor",         "NODE_EDITOR",      "WINDOW",   "node.view_selected",   "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
+        ("Node Editor",         "NODE_EDITOR",      "WINDOW",   "wm.call_menu",         "Q",            "PRESS",    False,  False,  False,  (("name", "DCONFIG_MT_node_quick"),)),
+
+        ("Outliner",            "OUTLINER",         "WINDOW",   "outliner.show_active", "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
         ("Dopesheet",           "DOPESHEET_EDITOR", "WINDOW",   "action.view_selected", "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
         ("Graph Editor",        "GRAPH_EDITOR",     "WINDOW",   "graph.view_selected",  "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
         ("Image",               "IMAGE_EDITOR",     "WINDOW",   "image.view_selected",  "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
