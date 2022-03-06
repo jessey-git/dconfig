@@ -8,7 +8,6 @@
 # Mesh modeling helper ops
 #
 
-from threading import active_count
 import bpy
 from . import DCONFIG_Utils as dc
 
@@ -31,7 +30,7 @@ class DCONFIG_OT_nodegroup_center(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return True
+        return context.space_data.node_tree
 
     @classmethod
     def center_nodes(cls, nodes):
@@ -46,10 +45,7 @@ class DCONFIG_OT_nodegroup_center(bpy.types.Operator):
     def execute(self, context):
         dc.trace_enter(self)
 
-        if context.material:
-            DCONFIG_OT_nodegroup_center.center_nodes(context.material.node_tree.nodes)
-        elif context.active_object.modifiers.active.type == 'NODES':
-            DCONFIG_OT_nodegroup_center.center_nodes(context.active_object.modifiers.active.node_group.nodes)
+        DCONFIG_OT_nodegroup_center.center_nodes(context.space_data.node_tree.nodes)
 
         return dc.trace_exit(self)
 
@@ -67,8 +63,12 @@ class DCONFIG_OT_nodegroup_center_all(bpy.types.Operator):
     def execute(self, context):
         dc.trace_enter(self)
 
+        for material in bpy.data.materials:
+            if material.node_tree:
+                DCONFIG_OT_nodegroup_center.center_nodes(material.node_tree.nodes)
         for group in bpy.data.node_groups:
             DCONFIG_OT_nodegroup_center.center_nodes(group.nodes)
+        for scene in bpy.data.scenes:
+            DCONFIG_OT_nodegroup_center.center_nodes(scene.node_tree.nodes)
 
         return dc.trace_exit(self)
-
