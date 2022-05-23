@@ -114,7 +114,10 @@ def setup_userpreferences():
         user_prefs.view.show_statusbar_version = False
         user_prefs.view.show_statusbar_stats = False
         user_prefs.view.show_statusbar_memory = True
-        user_prefs.view.show_statusbar_vram = True
+        try:
+            user_prefs.view.show_statusbar_vram = True
+        except AttributeError:
+            pass
 
     user_prefs.view.show_tooltips_python = True
     user_prefs.view.show_developer_ui = True
