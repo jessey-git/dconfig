@@ -367,25 +367,34 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         bm = bmesh.new()
         dc.add_new_bmesh(context, "geo-circle", bm, align)
 
-        mod = context.active_object.modifiers.new(name="dc_cylinder", type="NODES")
-        node_group = mod.node_group
-        nodes = node_group.nodes
+        mod = context.active_object.modifiers.new(name="dc_circle", type="NODES")
 
-        node_input = nodes.get("Group Input")
-        node_output = nodes.get("Group Output")
-        node_circle = nodes.new("GeometryNodeMeshCircle")
-        node_circle.fill_type = 'TRIANGLE_FAN'
+        node_group = next((ng for ng in bpy.data.node_groups if ng.name == "dc_circle"), None)
+        if node_group is None:
+            node_group = bpy.data.node_groups.new("dc_circle", 'GeometryNodeTree')
+            node_group.inputs.new('NodeSocketGeometry', "Geometry")
+            node_group.outputs.new('NodeSocketGeometry', "Geometry")
 
-        self.new_input_link(node_group, 'NodeSocketInt', "Vertices", "vertices")
-        self.new_input_link(node_group, 'NodeSocketFloatDistance', "Radius", "radius")
+            node_input = node_group.nodes.new('NodeGroupInput')
+            node_output = node_group.nodes.new('NodeGroupOutput')
+            node_circle = node_group.nodes.new("GeometryNodeMeshCircle")
+            node_circle.fill_type = 'TRIANGLE_FAN'
 
-        node_group.links.new(node_input.outputs["Vertices"], node_circle.inputs.get("Vertices"))
-        node_group.links.new(node_input.outputs["Radius"], node_circle.inputs.get("Radius"))
-        if bpy.app.version < (3, 0, 0):
-            node_group.links.new(node_circle.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+            self.new_input_link(node_group, 'NodeSocketInt', "Vertices", "vertices")
+            self.new_input_link(node_group, 'NodeSocketFloatDistance', "Radius", "radius")
+
+            node_group.links.new(node_input.outputs["Vertices"], node_circle.inputs.get("Vertices"))
+            node_group.links.new(node_input.outputs["Radius"], node_circle.inputs.get("Radius"))
+            if bpy.app.version < (3, 0, 0):
+                node_group.links.new(node_circle.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+            else:
+                node_group.links.new(node_circle.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
+
+            self.finalize_node_io(node_input, node_output)
         else:
-            node_group.links.new(node_circle.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
+            node_input = node_group.nodes.get("Group Input")
 
+        mod.node_group = node_group
         mod[node_input.outputs["Vertices"].identifier] = vertices
         mod[node_input.outputs["Radius"].identifier] = radius
 
@@ -394,28 +403,45 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         dc.add_new_bmesh(context, "geo-cylinder", bm, align)
 
         mod = context.active_object.modifiers.new(name="dc_cylinder", type="NODES")
-        node_group = mod.node_group
-        nodes = node_group.nodes
 
-        node_input = nodes.get("Group Input")
-        node_output = nodes.get("Group Output")
-        node_cylinder = nodes.new("GeometryNodeMeshCylinder")
+        node_group = next((ng for ng in bpy.data.node_groups if ng.name == "dc_cylinder"), None)
+        if node_group is None:
+            node_group = bpy.data.node_groups.new("dc_cylinder", 'GeometryNodeTree')
+            node_group.inputs.new('NodeSocketGeometry', "Geometry")
+            node_group.outputs.new('NodeSocketGeometry', "Geometry")
 
-        self.new_input_link(node_group, 'NodeSocketInt', "Vertices", "vertices")
-        self.new_input_link(node_group, 'NodeSocketFloatDistance', "Radius", "radius")
-        self.new_input_link(node_group, 'NodeSocketFloatDistance', "Depth", "depth")
+            node_input = node_group.nodes.new('NodeGroupInput')
+            node_output = node_group.nodes.new('NodeGroupOutput')
+            node_cylinder = node_group.nodes.new("GeometryNodeMeshCylinder")
 
-        node_group.links.new(node_input.outputs["Vertices"], node_cylinder.inputs.get("Vertices"))
-        node_group.links.new(node_input.outputs["Radius"], node_cylinder.inputs.get("Radius"))
-        node_group.links.new(node_input.outputs["Depth"], node_cylinder.inputs.get("Depth"))
-        if bpy.app.version < (3, 0, 0):
-            node_group.links.new(node_cylinder.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+            self.new_input_link(node_group, 'NodeSocketInt', "Vertices", "vertices")
+            self.new_input_link(node_group, 'NodeSocketFloatDistance', "Radius", "radius")
+            self.new_input_link(node_group, 'NodeSocketFloatDistance', "Depth", "depth")
+
+            node_group.links.new(node_input.outputs["Vertices"], node_cylinder.inputs.get("Vertices"))
+            node_group.links.new(node_input.outputs["Radius"], node_cylinder.inputs.get("Radius"))
+            node_group.links.new(node_input.outputs["Depth"], node_cylinder.inputs.get("Depth"))
+            if bpy.app.version < (3, 0, 0):
+                node_group.links.new(node_cylinder.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
+            else:
+                node_group.links.new(node_cylinder.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
+
+            self.finalize_node_io(node_input, node_output)
         else:
-            node_group.links.new(node_cylinder.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
+            node_input = node_group.nodes.get("Group Input")
 
+        mod.node_group = node_group
         mod[node_input.outputs["Vertices"].identifier] = vertices
         mod[node_input.outputs["Radius"].identifier] = radius
         mod[node_input.outputs["Depth"].identifier] = depth
+
+    def finalize_node_io(self, node_input, node_output):
+        node_output.is_active_output = True
+        node_input.select = False
+        node_output.select = False
+
+        node_input.location.x = -200 - node_input.width
+        node_output.location.x = 200
 
     def new_input_link(self, node_group, socket_type, socket_name, prop_name):
         prop = self.rna_type.properties[prop_name]
