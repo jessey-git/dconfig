@@ -33,11 +33,11 @@ class DCONFIG_OT_nodegroup_center(bpy.types.Operator):
         return context.space_data.node_tree
 
     @classmethod
-    def center_nodes(cls, nodes):
+    def center_nodes(cls, name, nodes):
         bbox_min, bbox_max = dc.calculate_bbox(map(lambda n: n.location.copy().to_3d(), nodes))
         box_center = ((bbox_min) + (bbox_max)) / 2
 
-        dc.trace(1, "Adjusting by {} {}", -box_center.x, -box_center.y)
+        dc.trace(1, "Adjusting '{}' nodes by {} {}", name, -box_center.x, -box_center.y)
 
         for node in nodes:
             node.location = node.location - box_center.to_2d()
@@ -45,7 +45,7 @@ class DCONFIG_OT_nodegroup_center(bpy.types.Operator):
     def execute(self, context):
         dc.trace_enter(self)
 
-        DCONFIG_OT_nodegroup_center.center_nodes(context.space_data.node_tree.nodes)
+        DCONFIG_OT_nodegroup_center.center_nodes(context.space_data.node_tree.name, context.space_data.node_tree.nodes)
 
         return dc.trace_exit(self)
 
@@ -65,10 +65,11 @@ class DCONFIG_OT_nodegroup_center_all(bpy.types.Operator):
 
         for material in bpy.data.materials:
             if material.node_tree:
-                DCONFIG_OT_nodegroup_center.center_nodes(material.node_tree.nodes)
+                DCONFIG_OT_nodegroup_center.center_nodes(material.name, material.node_tree.nodes)
         for group in bpy.data.node_groups:
-            DCONFIG_OT_nodegroup_center.center_nodes(group.nodes)
+            DCONFIG_OT_nodegroup_center.center_nodes(group.name, group.nodes)
         for scene in bpy.data.scenes:
-            DCONFIG_OT_nodegroup_center.center_nodes(scene.node_tree.nodes)
+            if scene.node_tree:
+                DCONFIG_OT_nodegroup_center.center_nodes(scene.name, scene.node_tree.nodes)
 
         return dc.trace_exit(self)
