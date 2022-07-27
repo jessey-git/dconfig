@@ -103,10 +103,13 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
             context.scene.cycles.tile_order = 'CENTER'
 
             context.scene.cycles.max_bounces = 180
-            context.scene.cycles.glossy_bounces = 180
+            context.scene.cycles.diffuse_bounces = 10
+            context.scene.cycles.glossy_bounces = 100
             context.scene.cycles.transmission_bounces = 36
             context.scene.cycles.volume_bounces = 2
             context.scene.cycles.transparent_max_bounces = 19
+
+            context.scene.cycles.sample_clamp_indirect = 0
 
             context.scene.cycles.denoiser = 'OPENIMAGEDENOISE'
             context.scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
@@ -117,10 +120,13 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
             context.scene.render.tile_y = 90
         else:
             context.scene.cycles.max_bounces = 180
-            context.scene.cycles.glossy_bounces = 180
+            context.scene.cycles.diffuse_bounces = 10
+            context.scene.cycles.glossy_bounces = 100
             context.scene.cycles.transmission_bounces = 36
             context.scene.cycles.volume_bounces = 2
             context.scene.cycles.transparent_max_bounces = 19
+
+            context.scene.cycles.sample_clamp_indirect = 0
 
             context.scene.cycles.denoiser = 'OPENIMAGEDENOISE'
             context.scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
