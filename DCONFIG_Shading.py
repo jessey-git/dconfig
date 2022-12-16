@@ -25,7 +25,7 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
 
         context.space_data.show_region_tool_header = False
 
-        context.space_data.clip_end = 200
+        context.space_data.clip_end = 2000
         context.space_data.clip_start = 0.02
 
         context.space_data.lock_camera = True
@@ -133,6 +133,8 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
             context.scene.cycles.preview_denoising_input_passes = 'RGB_ALBEDO_NORMAL'
             context.scene.cycles.preview_denoising_prefilter = 'ACCURATE'
             context.scene.cycles.preview_denoising_start_sample = 10000
+
+            context.scene.cycles.blur_glossy = 0.1
 
         context.scene.render.engine = 'CYCLES'
         context.scene.cycles.device = 'GPU'
