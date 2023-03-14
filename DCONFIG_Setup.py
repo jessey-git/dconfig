@@ -134,6 +134,7 @@ def setup_userpreferences():
     user_prefs.inputs.drag_threshold = 150
 
     user_prefs.filepaths.save_version = 0
+    user_prefs.filepaths.use_auto_save_temporary_files = False
 
     user_prefs.system.anisotropic_filter = 'FILTER_8'
     user_prefs.system.viewport_aa = '5'

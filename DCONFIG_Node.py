@@ -30,7 +30,7 @@ class DCONFIG_OT_nodegroup_center(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.space_data.node_tree
+        return context.space_data.type == 'NODE_EDITOR' and context.space_data.node_tree
 
     @classmethod
     def center_nodes(cls, name, nodes):

@@ -23,7 +23,7 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
     def execute(self, context):
         dc.trace_enter(self)
 
-        context.space_data.show_region_tool_header = False
+        # context.space_data.show_region_tool_header = False
 
         context.space_data.clip_end = 2000
         context.space_data.clip_start = 0.02
@@ -166,11 +166,13 @@ def menu_func(self, context):
 
 
 @persistent
-def load_handler(ignore):
+def load_handler(filepath):
     # Only apply settings when the file being loaded is from startup.blend (aka. '')
-    if bpy.data.filepath == '' and not bpy.app.background:
+    is_startup_file = (bpy.data.filepath == '') or (filepath == '')
+    if is_startup_file and not bpy.app.background:
         bpy.ops.dconfig.engine_defaults()
 
+        window = bpy.data.window_managers[0].windows[0]
         for screen in bpy.data.screens:
             for area in (a for a in screen.areas if a.type == 'OUTLINER'):
                 area.spaces.active.show_restrict_column_select = True
@@ -181,7 +183,7 @@ def load_handler(ignore):
             for area in (a for a in screen.areas if a.type == 'VIEW_3D'):
                 region = next((region for region in area.regions if region.type == 'WINDOW'), None)
                 if region is not None:
-                    override = {'area': area, 'region': region}
+                    override = {'window': window, 'screen': screen, 'area': area, 'region': region}
                     bpy.ops.dconfig.viewport_defaults(override)
 
 
