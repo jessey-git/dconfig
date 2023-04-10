@@ -14,6 +14,118 @@ from bpy.app.handlers import persistent
 from . import DCONFIG_Utils as dc
 
 
+def set_viewport_defaults(space_data):
+    # space_data.show_region_tool_header = False
+
+    space_data.clip_end = 2000
+    space_data.clip_start = 0.02
+
+    space_data.lock_camera = True
+
+    space_data.shading.type = 'MATERIAL'
+    space_data.shading.studio_light = 'city.exr'
+
+    space_data.shading.type = 'SOLID'
+    space_data.shading.light = 'MATCAP'
+    space_data.shading.show_shadows = False
+    space_data.shading.show_cavity = True
+    space_data.shading.cavity_type = 'WORLD'
+    space_data.shading.cavity_ridge_factor = 0
+    space_data.shading.cavity_valley_factor = 1.25
+    space_data.shading.curvature_ridge_factor = 0
+    space_data.shading.curvature_valley_factor = 0.8
+    space_data.shading.xray_alpha_wireframe = 0
+
+    space_data.overlay.display_handle = 'SELECTED'
+    space_data.overlay.show_curve_normals = False
+    if bpy.app.version >= (2, 90, 0):
+        space_data.overlay.show_stats = False
+        space_data.overlay.show_fade_inactive = False
+
+    space_data.overlay.wireframe_threshold = 1.0
+    space_data.overlay.show_edges = True
+
+
+def set_scene_defaults(scene):
+    scene.display.matcap_ssao_distance = 0.15
+
+    scene.tool_settings.snap_elements = {'VERTEX'}
+    scene.tool_settings.snap_target = 'ACTIVE'
+    scene.tool_settings.statvis.type = 'DISTORT'
+    scene.tool_settings.statvis.distort_min = 0
+    scene.tool_settings.statvis.distort_max = math.radians(40)
+
+    scene.tool_settings.use_mesh_automerge = True
+
+
+def set_engine_defaults(scene):
+    # Workbench
+    scene.display.render_aa = '11'
+    scene.display.viewport_aa = '5'
+
+    # Eevee
+    scene.eevee.use_ssr = True
+    scene.eevee.use_ssr_halfres = False
+    scene.eevee.use_ssr_refraction = True
+
+    scene.eevee.use_gtao = True
+    scene.eevee.gtao_distance = 0.4
+
+    scene.eevee.use_volumetric_shadows = True
+    scene.eevee.volumetric_tile_size = '2'
+
+    scene.eevee.use_shadow_high_bitdepth = True
+    scene.eevee.use_soft_shadows = True
+
+    scene.render.use_high_quality_normals = True
+
+    # Cycles
+    if bpy.app.version < (3, 0, 0):
+        scene.cycles.samples = 20
+        scene.cycles.preview_samples = 6
+        scene.cycles.use_square_samples = True
+        scene.cycles.tile_order = 'CENTER'
+
+        scene.cycles.max_bounces = 180
+        scene.cycles.diffuse_bounces = 10
+        scene.cycles.glossy_bounces = 100
+        scene.cycles.transmission_bounces = 36
+        scene.cycles.volume_bounces = 2
+        scene.cycles.transparent_max_bounces = 19
+
+        scene.cycles.sample_clamp_indirect = 0
+
+        scene.cycles.denoiser = 'OPENIMAGEDENOISE'
+        scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
+        scene.cycles.preview_denoising_input_passes = 'RGB_ALBEDO_NORMAL'
+        scene.cycles.preview_denoising_start_sample = 10000
+
+        scene.render.tile_x = 160
+        scene.render.tile_y = 90
+    else:
+        scene.cycles.max_bounces = 180
+        scene.cycles.diffuse_bounces = 10
+        scene.cycles.glossy_bounces = 100
+        scene.cycles.transmission_bounces = 36
+        scene.cycles.volume_bounces = 2
+        scene.cycles.transparent_max_bounces = 19
+
+        scene.cycles.sample_clamp_indirect = 0
+
+        scene.cycles.denoiser = 'OPENIMAGEDENOISE'
+        scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
+        scene.cycles.preview_denoising_input_passes = 'RGB_ALBEDO_NORMAL'
+        scene.cycles.preview_denoising_prefilter = 'ACCURATE'
+        scene.cycles.preview_denoising_start_sample = 10000
+
+        scene.cycles.blur_glossy = 0.1
+
+    scene.render.engine = 'CYCLES'
+    scene.cycles.device = 'GPU'
+
+    # General View
+    scene.view_settings.look = 'Medium High Contrast'
+
 class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
     bl_idname = "dconfig.viewport_defaults"
     bl_label = "DC Viewport Defaults"
@@ -23,45 +135,8 @@ class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
     def execute(self, context):
         dc.trace_enter(self)
 
-        # context.space_data.show_region_tool_header = False
-
-        context.space_data.clip_end = 2000
-        context.space_data.clip_start = 0.02
-
-        context.space_data.lock_camera = True
-
-        context.space_data.shading.type = 'MATERIAL'
-        context.space_data.shading.studio_light = 'city.exr'
-
-        context.space_data.shading.type = 'SOLID'
-        context.space_data.shading.light = 'MATCAP'
-        context.space_data.shading.show_shadows = False
-        context.space_data.shading.show_cavity = True
-        context.space_data.shading.cavity_type = 'WORLD'
-        context.space_data.shading.cavity_ridge_factor = 0
-        context.space_data.shading.cavity_valley_factor = 1.25
-        context.space_data.shading.curvature_ridge_factor = 0
-        context.space_data.shading.curvature_valley_factor = 0.8
-        context.space_data.shading.xray_alpha_wireframe = 0
-
-        context.space_data.overlay.display_handle = 'SELECTED'
-        context.space_data.overlay.show_curve_normals = False
-        if bpy.app.version >= (2, 90, 0):
-            context.space_data.overlay.show_stats = False
-            context.space_data.overlay.show_fade_inactive = False
-
-        context.space_data.overlay.wireframe_threshold = 1.0
-        context.space_data.overlay.show_edges = True
-
-        context.scene.display.matcap_ssao_distance = 0.15
-
-        context.scene.tool_settings.snap_elements = {'VERTEX'}
-        context.scene.tool_settings.snap_target = 'ACTIVE'
-        context.scene.tool_settings.statvis.type = 'DISTORT'
-        context.scene.tool_settings.statvis.distort_min = 0
-        context.scene.tool_settings.statvis.distort_max = math.radians(40)
-
-        context.scene.tool_settings.use_mesh_automerge = True
+        set_viewport_defaults(context.space_data)
+        set_scene_defaults(context.scene)
 
         return dc.trace_exit(self)
 
@@ -75,72 +150,7 @@ class DCONFIG_OT_engine_defaults(bpy.types.Operator):
     def execute(self, context):
         dc.trace_enter(self)
 
-        # Workbench
-        context.scene.display.render_aa = '11'
-        context.scene.display.viewport_aa = '5'
-
-        # Eevee
-        context.scene.eevee.use_ssr = True
-        context.scene.eevee.use_ssr_halfres = False
-        context.scene.eevee.use_ssr_refraction = True
-
-        context.scene.eevee.use_gtao = True
-        context.scene.eevee.gtao_distance = 0.4
-
-        context.scene.eevee.use_volumetric_shadows = True
-        context.scene.eevee.volumetric_tile_size = '2'
-
-        context.scene.eevee.use_shadow_high_bitdepth = True
-        context.scene.eevee.use_soft_shadows = True
-
-        context.scene.render.use_high_quality_normals = True
-
-        # Cycles
-        if bpy.app.version < (3, 0, 0):
-            context.scene.cycles.samples = 20
-            context.scene.cycles.preview_samples = 6
-            context.scene.cycles.use_square_samples = True
-            context.scene.cycles.tile_order = 'CENTER'
-
-            context.scene.cycles.max_bounces = 180
-            context.scene.cycles.diffuse_bounces = 10
-            context.scene.cycles.glossy_bounces = 100
-            context.scene.cycles.transmission_bounces = 36
-            context.scene.cycles.volume_bounces = 2
-            context.scene.cycles.transparent_max_bounces = 19
-
-            context.scene.cycles.sample_clamp_indirect = 0
-
-            context.scene.cycles.denoiser = 'OPENIMAGEDENOISE'
-            context.scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
-            context.scene.cycles.preview_denoising_input_passes = 'RGB_ALBEDO_NORMAL'
-            context.scene.cycles.preview_denoising_start_sample = 10000
-
-            context.scene.render.tile_x = 160
-            context.scene.render.tile_y = 90
-        else:
-            context.scene.cycles.max_bounces = 180
-            context.scene.cycles.diffuse_bounces = 10
-            context.scene.cycles.glossy_bounces = 100
-            context.scene.cycles.transmission_bounces = 36
-            context.scene.cycles.volume_bounces = 2
-            context.scene.cycles.transparent_max_bounces = 19
-
-            context.scene.cycles.sample_clamp_indirect = 0
-
-            context.scene.cycles.denoiser = 'OPENIMAGEDENOISE'
-            context.scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
-            context.scene.cycles.preview_denoising_input_passes = 'RGB_ALBEDO_NORMAL'
-            context.scene.cycles.preview_denoising_prefilter = 'ACCURATE'
-            context.scene.cycles.preview_denoising_start_sample = 10000
-
-            context.scene.cycles.blur_glossy = 0.1
-
-        context.scene.render.engine = 'CYCLES'
-        context.scene.cycles.device = 'GPU'
-
-        # General View
-        context.scene.view_settings.look = 'Medium High Contrast'
+        set_engine_defaults(context.scene)
 
         return dc.trace_exit(self)
 
@@ -170,7 +180,10 @@ def load_handler(filepath):
     # Only apply settings when the file being loaded is from startup.blend (aka. '')
     is_startup_file = (bpy.data.filepath == '') or (filepath == '')
     if is_startup_file and not bpy.app.background:
-        bpy.ops.dconfig.engine_defaults()
+        scene = bpy.data.scenes[0]
+
+        set_engine_defaults(scene)
+        set_scene_defaults(scene)
 
         window = bpy.data.window_managers[0].windows[0]
         for screen in bpy.data.screens:
@@ -181,10 +194,7 @@ def load_handler(filepath):
                 area.spaces.active.show_restrict_column_render = True
 
             for area in (a for a in screen.areas if a.type == 'VIEW_3D'):
-                region = next((region for region in area.regions if region.type == 'WINDOW'), None)
-                if region is not None:
-                    override = {'window': window, 'screen': screen, 'area': area, 'region': region}
-                    bpy.ops.dconfig.viewport_defaults(override)
+                set_viewport_defaults(area.spaces.active)
 
 
 def register():
