@@ -22,7 +22,8 @@ def draw_stats(font_id, line_height, ui_scale):
     # Gather up stats...
     stats = bpy.context.scene.statistics(view_layer).split("|")
     if bpy.context.mode == 'OBJECT':
-        if len(stats) == 8:
+        all_count = 8 if bpy.app.version < (3, 6, 0) else 9
+        if len(stats) == all_count:
             stats = [stats[5], stats[2], stats[3]]
         else:
             stats = [stats[4], stats[1], stats[2]]
@@ -87,7 +88,10 @@ def draw_func(ignore):
 
     ui_scale = bpy.context.preferences.system.ui_scale
 
-    blf.size(font_id, round(font_size * ui_scale), 72)
+    if bpy.app.version < (3, 4, 0):
+        blf.size(font_id, round(font_size * ui_scale), 72)
+    else:
+        blf.size(font_id, round(font_size * ui_scale))
     blf.enable(font_id, blf.SHADOW)
     blf.shadow(font_id, 5, 0.0, 0.0, 0.0, 0.9)
     blf.shadow_offset(font_id, 1, -1)

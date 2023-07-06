@@ -78,6 +78,8 @@ def setup_hotkeys():
         ("Image",               "IMAGE_EDITOR",     "WINDOW",   "image.view_selected",  "BUTTON4MOUSE", "PRESS",    False,  True,   False,  ()),
 
         ("Image",               "IMAGE_EDITOR",     "WINDOW",   "wm.call_menu",         "BUTTON4MOUSE", "PRESS",    True,   False,  False,  (("name", "DCONFIG_MT_image_pivot"),)),
+        ("Image",               "IMAGE_EDITOR",     "WINDOW",   "image.clipboard_copy", "C",            "PRESS",    False,  True,   False,  ()),
+        ("Image",               "IMAGE_EDITOR",     "WINDOW",   "image.clipboard_paste","V",            "PRESS",    False,  True,   False,  ()),
     )
 
     addon_keymaps.clear()
@@ -134,6 +136,7 @@ def setup_userpreferences():
     user_prefs.inputs.drag_threshold = 150
 
     user_prefs.filepaths.save_version = 0
+    user_prefs.filepaths.use_auto_save_temporary_files = False
 
     user_prefs.system.anisotropic_filter = 'FILTER_8'
     user_prefs.system.viewport_aa = '5'
