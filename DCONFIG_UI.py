@@ -40,7 +40,7 @@ def draw_stats(font_id, line_height, ui_scale):
 
     # Initial positions and offsets to handle tool region and top text...
     toolbar_width = next((region.width for region in bpy.context.area.regions if region.type == 'TOOLS'), 100)
-    top_offset = line_height * 10
+    top_offset = line_height * 8
     x_pos = (10 * ui_scale) + toolbar_width
     y_pos = bpy.context.area.height - ((26 * ui_scale) if bpy.context.space_data.show_region_tool_header else 0) - top_offset
 

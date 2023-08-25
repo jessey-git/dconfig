@@ -124,7 +124,10 @@ def set_engine_defaults(scene):
     scene.cycles.device = 'GPU'
 
     # General View
-    scene.view_settings.look = 'Medium High Contrast'
+    if bpy.app.version < (4, 0, 0):
+        scene.view_settings.look = 'Medium High Contrast'
+    else:
+        scene.view_settings.look = 'None'
 
 class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
     bl_idname = "dconfig.viewport_defaults"
