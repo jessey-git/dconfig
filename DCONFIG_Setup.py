@@ -127,7 +127,7 @@ def setup_userpreferences():
     user_prefs.view.show_splash = False
 
     user_prefs.view.mini_axis_type = 'MINIMAL'
-    user_prefs.view.mini_axis_size = 40
+    user_prefs.view.mini_axis_size = 45
     user_prefs.view.mini_axis_brightness = 10
 
     user_prefs.view.smooth_view = 0

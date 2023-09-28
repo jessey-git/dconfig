@@ -13,36 +13,33 @@ import blf
 import bpy
 
 
-def draw_stats(font_id, line_height, ui_scale):
-    view_layer = bpy.context.view_layer
-
-    if bpy.context.space_data.overlay.show_stats:
-        bpy.context.space_data.overlay.show_stats = False
-
+def draw_stats(context, space_data, font_id, line_height, ui_scale):
     # Gather up stats...
-    stats = bpy.context.scene.statistics(view_layer).split("|")
-    if bpy.context.mode == 'OBJECT':
+    mode = context.mode
+    stats = context.scene.statistics(context.view_layer).split("|")
+    if mode == 'OBJECT':
         all_count = 8 if bpy.app.version < (3, 6, 0) else 9
         if len(stats) == all_count:
             stats = [stats[5], stats[2], stats[3]]
         else:
             stats = [stats[4], stats[1], stats[2]]
-    elif bpy.context.mode == 'EDIT_MESH':
+    elif mode == 'EDIT_MESH':
         stats = [stats[5], stats[1], stats[2], stats[3]]
-    elif bpy.context.mode == 'EDIT_CURVE':
+    elif mode == 'EDIT_CURVE':
         stats = [stats[2], stats[1]]
-    elif bpy.context.mode == 'EDIT_LATTICE':
+    elif mode == 'EDIT_LATTICE':
         stats = [stats[2], stats[1]]
-    elif bpy.context.mode == 'SCULPT':
+    elif mode == 'SCULPT':
         stats = [stats[3], stats[1], stats[2]]
     else:
         return
 
     # Initial positions and offsets to handle tool region and top text...
-    toolbar_width = next((region.width for region in bpy.context.area.regions if region.type == 'TOOLS'), 100)
+    area = context.area
+    toolbar_width = next((region.width for region in area.regions if region.type == 'TOOLS'), 100)
     top_offset = line_height * 8
     x_pos = (10 * ui_scale) + toolbar_width
-    y_pos = bpy.context.area.height - ((26 * ui_scale) if bpy.context.space_data.show_region_tool_header else 0) - top_offset
+    y_pos = area.height - ((26 * ui_scale) if space_data.show_region_tool_header else 0) - top_offset
 
     digit_width = blf.dimensions(font_id, "0")[0]
     longest_digits = digit_width * 10
@@ -77,16 +74,21 @@ def draw_stats(font_id, line_height, ui_scale):
 
 
 def draw_func(ignore):
+    context = bpy.context
+    space_data = context.space_data
+
     # Only draw when allowed...
-    space_data = bpy.context.space_data
     if not (space_data.overlay.show_overlays and space_data.overlay.show_text):
         return
+
+    # Disable the built-in stats...
+    if space_data.overlay.show_stats:
+        space_data.overlay.show_stats = False
 
     # Setup font and scaling parameters...
     font_id = draw_settings["font_id"]
     font_size = draw_settings["font_size"]
-
-    ui_scale = bpy.context.preferences.system.ui_scale
+    ui_scale = context.preferences.system.ui_scale
 
     if bpy.app.version < (3, 4, 0):
         blf.size(font_id, round(font_size * ui_scale), 72)
@@ -99,7 +101,7 @@ def draw_func(ignore):
     line_height = blf.dimensions(font_id, "M")[1] * 1.55
 
     # Draw all the things...
-    draw_stats(font_id, line_height, ui_scale)
+    draw_stats(context, space_data, font_id, line_height, ui_scale)
 
 
 draw_settings = {
