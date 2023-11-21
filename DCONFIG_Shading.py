@@ -43,7 +43,9 @@ def set_viewport_defaults(space_data):
         space_data.overlay.show_fade_inactive = False
 
     space_data.overlay.wireframe_threshold = 1.0
-    space_data.overlay.show_edges = True
+
+    if bpy.app.version_file < (4, 1, 5):
+        space_data.overlay.show_edges = True
 
 
 def set_scene_defaults(scene):
