@@ -16,21 +16,25 @@ import bpy
 def draw_stats(context, space_data, font_id, line_height, ui_scale):
     # Gather up stats...
     mode = context.mode
-    stats = context.scene.statistics(context.view_layer).split("|")
+    stats = {}
+    for stat in context.scene.statistics(context.view_layer).split("|"):
+        data = [val for val in filter(None, re.split("[ :/]", stat))]
+        stats[data[0]] = data
+    if "Objects" not in stats:
+        stats["Objects"] = ["Objects", "0", "0"]
+
     if mode == 'OBJECT':
-        all_count = 8 if bpy.app.version < (3, 6, 0) else 9
-        if len(stats) == all_count:
-            stats = [stats[5], stats[2], stats[3]]
-        else:
-            stats = [stats[4], stats[1], stats[2]]
+        stats = [stats["Objects"], stats["Verts"], stats["Faces"]]
     elif mode == 'EDIT_MESH':
-        stats = [stats[5], stats[1], stats[2], stats[3]]
+        stats = [stats["Objects"], stats["Verts"], stats["Edges"], stats["Faces"]]
     elif mode == 'EDIT_CURVE':
-        stats = [stats[2], stats[1]]
+        stats = [stats["Objects"], stats["Verts"]]
     elif mode == 'EDIT_LATTICE':
-        stats = [stats[2], stats[1]]
+        stats = [stats["Objects"], stats["Verts"]]
+    elif mode == 'EDIT_ARMATURE':
+        stats = [stats["Objects"], stats["Joints"], stats["Bones"]]
     elif mode == 'SCULPT':
-        stats = [stats[3], stats[1], stats[2]]
+        stats = [stats["Objects"], stats["Verts"], stats["Faces"]]
     else:
         return
 
@@ -52,8 +56,8 @@ def draw_stats(context, space_data, font_id, line_height, ui_scale):
             self.dim_x = blf.dimensions(font_id, text)[0]
 
     lines = []
-    for value in stats:
-        line_data = [Item(val, font_id) for val in filter(None, re.split("[ :/]", value))]
+    for stat in stats:
+        line_data = [Item(val, font_id) for val in stat]
 
         longest_title = max(longest_title, line_data[0].dim_x)
         lines.append(line_data)
