@@ -352,6 +352,7 @@
         vertex_bevel="#00a5ff"
         vertex_unreferenced="#000000"
         edge_select="#00bbee"
+        edge_mode_select="#00bbee"
         edge_seam="#db2512"
         edge_sharp="#00ffff"
         edge_crease="#cc0099"
@@ -360,6 +361,7 @@
         freestyle_edge_mark="#7fff7f"
         face="#ffffff1a"
         face_select="#00ccff20"
+        face_mode_select="#00ccff20"
         face_dot="#00ccff"
         facedot_size="3"
         freestyle_face_mark="#7fff7f4d"
@@ -556,6 +558,7 @@
         grid="#2a2a2a"
         view_sliders="#969696"
         dopesheet_channel="#0f2c4d"
+        dopesheet_subchannel="#7d98b3"
         nla_track="#303030"
         active_action="#99541366"
         active_action_unset="#4d3b174d"
@@ -697,6 +700,7 @@
         vertex_unreferenced="#000000"
         face="#ffffff1a"
         face_select="#00ccff20"
+        face_mode_select="#00000000"
         face_dot="#00ccff"
         facedot_size="3"
         freestyle_face_mark="#7fff7f33"
@@ -1495,6 +1499,7 @@
     <panel_title>
       <ThemeFontStyle
         points="11"
+        character_weight="400"
         shadow="3"
         shadow_offset_x="0"
         shadow_offset_y="-1"
@@ -1505,6 +1510,7 @@
     <widget_label>
       <ThemeFontStyle
         points="11"
+        character_weight="400"
         shadow="3"
         shadow_offset_x="0"
         shadow_offset_y="-1"
@@ -1515,6 +1521,7 @@
     <widget>
       <ThemeFontStyle
         points="11"
+        character_weight="400"
         shadow="1"
         shadow_offset_x="0"
         shadow_offset_y="-1"
