@@ -28,6 +28,7 @@ class Preferences(bpy.types.AddonPreferences):
     def draw(self, context):
         layout = self.layout
         layout.operator("dconfig.install_theme", text="Load Theme")
+        layout.operator("dconfig.setup_addons", text="Setup Addons")
 
 
 #

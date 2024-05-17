@@ -19,7 +19,8 @@ def draw_stats(context, space_data, font_id, line_height, ui_scale):
     stats = {}
     for stat in context.scene.statistics(context.view_layer).split("|"):
         data = [val for val in filter(None, re.split("[ :/]", stat))]
-        stats[data[0]] = data
+        if len(data):
+            stats[data[0]] = data
     if "Objects" not in stats:
         stats["Objects"] = ["Objects", "0", "0"]
 

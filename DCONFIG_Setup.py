@@ -145,10 +145,17 @@ def setup_userpreferences():
     user_prefs.use_preferences_save = False
 
 
-def setup_addons():
-    addon_utils.enable("mesh_looptools", default_set=True, persistent=True)
-    addon_utils.enable("node_wrangler", default_set=True, persistent=True)
-    addon_utils.enable("space_view3d_copy_attributes", default_set=True, persistent=True)
+class DCONFIG_OT_setup_addons(bpy.types.Operator):
+    bl_idname = "dconfig.setup_addons"
+    bl_label = "DC Setup Addons"
+    bl_description = "Enables important addons"
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        bpy.ops.bl_pkg.pkg_install(repo_index=0, pkg_id="looptools")
+        bpy.ops.bl_pkg.pkg_install(repo_index=0, pkg_id="node_wrangler")
+        bpy.ops.bl_pkg.pkg_install(repo_index=0, pkg_id="copy_attributes_menu")
+        return {'FINISHED'}
 
 
 class DCONFIG_OT_install_theme(bpy.types.Operator):
@@ -192,7 +199,6 @@ def register():
     if not bpy.app.background:
         setup_hotkeys()
         setup_userpreferences()
-        setup_addons()
 
 
 def unregister():
