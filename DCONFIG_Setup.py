@@ -152,9 +152,9 @@ class DCONFIG_OT_setup_addons(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
-        bpy.ops.bl_pkg.pkg_install(repo_index=0, pkg_id="looptools")
-        bpy.ops.bl_pkg.pkg_install(repo_index=0, pkg_id="node_wrangler")
-        bpy.ops.bl_pkg.pkg_install(repo_index=0, pkg_id="copy_attributes_menu")
+        bpy.ops.extensions.package_install(repo_index=0, pkg_id="looptools")
+        bpy.ops.extensions.package_install(repo_index=0, pkg_id="node_wrangler")
+        bpy.ops.extensions.package_install(repo_index=0, pkg_id="copy_attributes_menu")
         return {'FINISHED'}
 
 

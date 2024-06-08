@@ -23,6 +23,10 @@ def draw_stats(context, space_data, font_id, line_height, ui_scale):
             stats[data[0]] = data
     if "Objects" not in stats:
         stats["Objects"] = ["Objects", "0", "0"]
+    if "Verts" not in stats:
+        stats["Verts"] = ["Verts", "0", "0"]
+    if "Faces" not in stats:
+        stats["Faces"] = ["Faces", "0", "0"]
 
     if mode == 'OBJECT':
         stats = [stats["Objects"], stats["Verts"], stats["Faces"]]
