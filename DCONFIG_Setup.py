@@ -13,7 +13,6 @@ import shutil
 import threading
 import time
 
-import addon_utils
 import bpy
 
 addon_keymaps = []
@@ -152,9 +151,16 @@ class DCONFIG_OT_setup_addons(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
-        bpy.ops.extensions.package_install(repo_index=0, pkg_id="looptools")
-        bpy.ops.extensions.package_install(repo_index=0, pkg_id="node_wrangler")
-        bpy.ops.extensions.package_install(repo_index=0, pkg_id="copy_attributes_menu")
+        if bpy.app.version < (4, 2, 0):
+            import addon_utils
+            addon_utils.enable("mesh_looptools", default_set=True, persistent=True)
+            addon_utils.enable("node_wrangler", default_set=True, persistent=True)
+            addon_utils.enable("space_view3d_copy_attributes", default_set=True, persistent=True)
+        else:
+            bpy.ops.extensions.package_install(repo_index=0, pkg_id="looptools")
+            bpy.ops.extensions.package_install(repo_index=0, pkg_id="copy_attributes_menu")
+
+            bpy.ops.preferences.addon_enable(module="node_wrangler")
         return {'FINISHED'}
 
 

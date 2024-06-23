@@ -66,20 +66,33 @@ def set_engine_defaults(scene):
     scene.display.viewport_aa = '5'
 
     # Eevee
-    scene.eevee.use_ssr = True
-    scene.eevee.use_ssr_halfres = False
-    scene.eevee.use_ssr_refraction = True
+    if bpy.app.version < (4, 2, 0):
+        scene.eevee.use_ssr = True
+        scene.eevee.use_ssr_halfres = False
+        scene.eevee.use_ssr_refraction = True
 
-    scene.eevee.use_gtao = True
-    scene.eevee.gtao_distance = 0.4
+        scene.eevee.use_gtao = True
+        scene.eevee.gtao_distance = 0.4
 
-    scene.eevee.use_volumetric_shadows = True
-    scene.eevee.volumetric_tile_size = '2'
+        scene.eevee.use_volumetric_shadows = True
+        scene.eevee.volumetric_tile_size = '2'
 
-    scene.eevee.use_shadow_high_bitdepth = True
-    scene.eevee.use_soft_shadows = True
+        scene.eevee.use_shadow_high_bitdepth = True
+        scene.eevee.use_soft_shadows = True
 
-    scene.render.use_high_quality_normals = True
+        scene.render.use_high_quality_normals = True
+    else:
+        scene.eevee.use_raytracing = True
+        scene.eevee.ray_tracing_options.resolution_scale = '1'
+        scene.eevee.ray_tracing_options.screen_trace_quality = 1
+        scene.eevee.fast_gi_quality = 1
+
+        scene.eevee.use_volumetric_shadows = True
+        scene.eevee.volumetric_tile_size = '2'
+
+        scene.eevee.shadow_pool_size = '1024'
+        scene.render.use_high_quality_normals = True
+        scene.render.preview_pixel_size = '1'
 
     # Cycles
     if bpy.app.version < (3, 0, 0):
