@@ -110,15 +110,14 @@ def setup_userpreferences():
     user_prefs.edit.undo_steps = 100
     user_prefs.edit.grease_pencil_eraser_radius = 40
 
-    if bpy.app.version >= (2, 90, 0):
-        user_prefs.edit.collection_instance_empty_size = 0.25
-        user_prefs.view.show_statusbar_version = False
-        user_prefs.view.show_statusbar_stats = False
-        user_prefs.view.show_statusbar_memory = True
-        try:
-            user_prefs.view.show_statusbar_vram = True
-        except AttributeError:
-            pass
+    user_prefs.edit.collection_instance_empty_size = 0.25
+    user_prefs.view.show_statusbar_version = False
+    user_prefs.view.show_statusbar_stats = False
+    user_prefs.view.show_statusbar_memory = True
+    try:
+        user_prefs.view.show_statusbar_vram = True
+    except AttributeError:
+        pass
 
     user_prefs.view.show_tooltips_python = True
     user_prefs.view.show_developer_ui = True

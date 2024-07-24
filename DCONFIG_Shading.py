@@ -38,9 +38,8 @@ def set_viewport_defaults(space_data):
 
     space_data.overlay.display_handle = 'SELECTED'
     space_data.overlay.show_curve_normals = False
-    if bpy.app.version >= (2, 90, 0):
-        space_data.overlay.show_stats = False
-        space_data.overlay.show_fade_inactive = False
+    space_data.overlay.show_stats = False
+    space_data.overlay.show_fade_inactive = False
 
     space_data.overlay.wireframe_threshold = 1.0
 
@@ -85,6 +84,7 @@ def set_engine_defaults(scene):
         scene.eevee.use_raytracing = True
         scene.eevee.ray_tracing_options.resolution_scale = '1'
         scene.eevee.ray_tracing_options.screen_trace_quality = 1
+        scene.eevee.fast_gi_resolution = '1'
         scene.eevee.fast_gi_quality = 1
 
         scene.eevee.use_volumetric_shadows = True
@@ -95,45 +95,27 @@ def set_engine_defaults(scene):
         scene.render.preview_pixel_size = '1'
 
     # Cycles
-    if bpy.app.version < (3, 0, 0):
-        scene.cycles.samples = 20
-        scene.cycles.preview_samples = 6
-        scene.cycles.use_square_samples = True
-        scene.cycles.tile_order = 'CENTER'
+    cyclespref = bpy.context.preferences.addons["cycles"]
+    cyclespref.preferences.get_devices()
+    if len(cyclespref.preferences.devices) <= 2:
+        cyclespref.preferences.compute_device_type = "NONE"
 
-        scene.cycles.max_bounces = 180
-        scene.cycles.diffuse_bounces = 10
-        scene.cycles.glossy_bounces = 100
-        scene.cycles.transmission_bounces = 36
-        scene.cycles.volume_bounces = 2
-        scene.cycles.transparent_max_bounces = 19
+    scene.cycles.max_bounces = 180
+    scene.cycles.diffuse_bounces = 10
+    scene.cycles.glossy_bounces = 100
+    scene.cycles.transmission_bounces = 36
+    scene.cycles.volume_bounces = 2
+    scene.cycles.transparent_max_bounces = 19
 
-        scene.cycles.sample_clamp_indirect = 0
+    scene.cycles.sample_clamp_indirect = 0
 
-        scene.cycles.denoiser = 'OPENIMAGEDENOISE'
-        scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
-        scene.cycles.preview_denoising_input_passes = 'RGB_ALBEDO_NORMAL'
-        scene.cycles.preview_denoising_start_sample = 10000
+    scene.cycles.denoiser = 'OPENIMAGEDENOISE'
+    scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
+    scene.cycles.preview_denoising_input_passes = 'RGB_ALBEDO_NORMAL'
+    scene.cycles.preview_denoising_prefilter = 'ACCURATE'
+    scene.cycles.preview_denoising_start_sample = 10000
 
-        scene.render.tile_x = 160
-        scene.render.tile_y = 90
-    else:
-        scene.cycles.max_bounces = 180
-        scene.cycles.diffuse_bounces = 10
-        scene.cycles.glossy_bounces = 100
-        scene.cycles.transmission_bounces = 36
-        scene.cycles.volume_bounces = 2
-        scene.cycles.transparent_max_bounces = 19
-
-        scene.cycles.sample_clamp_indirect = 0
-
-        scene.cycles.denoiser = 'OPENIMAGEDENOISE'
-        scene.cycles.preview_denoiser = 'OPENIMAGEDENOISE'
-        scene.cycles.preview_denoising_input_passes = 'RGB_ALBEDO_NORMAL'
-        scene.cycles.preview_denoising_prefilter = 'ACCURATE'
-        scene.cycles.preview_denoising_start_sample = 10000
-
-        scene.cycles.blur_glossy = 0.1
+    scene.cycles.blur_glossy = 0.1
 
     scene.render.engine = 'CYCLES'
     scene.cycles.device = 'GPU'

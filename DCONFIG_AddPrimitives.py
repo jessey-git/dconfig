@@ -351,12 +351,9 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         mod_sphere = quad_sphere.modifiers.new("dc_temp_cast", 'CAST')
         mod_sphere.factor = 1
         mod_sphere.radius = radius
-        if bpy.app.version >= (2, 90, 0):
-            bpy.ops.object.modifier_apply(modifier=mod_subd.name)
-            bpy.ops.object.modifier_apply(modifier=mod_sphere.name)
-        else:
-            bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_subd.name)
-            bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_sphere.name)
+
+        bpy.ops.object.modifier_apply(modifier=mod_subd.name)
+        bpy.ops.object.modifier_apply(modifier=mod_sphere.name)
 
         if was_edit:
             dc.make_active_object(context, prev_active)
@@ -390,10 +387,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
 
             node_group.links.new(node_input.outputs["Vertices"], node_circle.inputs.get("Vertices"))
             node_group.links.new(node_input.outputs["Radius"], node_circle.inputs.get("Radius"))
-            if bpy.app.version < (3, 0, 0):
-                node_group.links.new(node_circle.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
-            else:
-                node_group.links.new(node_circle.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
+            node_group.links.new(node_circle.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
 
             self.finalize_node_io(node_input, node_output)
         else:
@@ -431,10 +425,7 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
             node_group.links.new(node_input.outputs["Vertices"], node_cylinder.inputs.get("Vertices"))
             node_group.links.new(node_input.outputs["Radius"], node_cylinder.inputs.get("Radius"))
             node_group.links.new(node_input.outputs["Depth"], node_cylinder.inputs.get("Depth"))
-            if bpy.app.version < (3, 0, 0):
-                node_group.links.new(node_cylinder.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
-            else:
-                node_group.links.new(node_cylinder.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
+            node_group.links.new(node_cylinder.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
 
             self.finalize_node_io(node_input, node_output)
         else:
@@ -684,10 +675,7 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
         if self.step == 0:
             bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='VERT')
 
-            if bpy.app.version >= (2, 90, 0):
-                bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', affect='VERTICES', clamp_overlap=True)
-            else:
-                bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', vertex_only=True, clamp_overlap=True)
+            bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', affect='VERTICES', clamp_overlap=True)
 
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
