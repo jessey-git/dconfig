@@ -97,8 +97,13 @@ def set_engine_defaults(scene):
     # Cycles
     cyclespref = bpy.context.preferences.addons["cycles"]
     cyclespref.preferences.get_devices()
-    if len(cyclespref.preferences.devices) <= 2:
+    if len(cyclespref.preferences.get_device_types(None)) <= 2:
         cyclespref.preferences.compute_device_type = "NONE"
+
+    scene.cycles.preview_samples = 32
+    scene.cycles.preview_adaptive_threshold = 0.03
+    scene.cycles.samples = 1024
+    scene.cycles.adaptive_threshold = 0.01
 
     scene.cycles.max_bounces = 180
     scene.cycles.diffuse_bounces = 10
