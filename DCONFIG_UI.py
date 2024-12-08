@@ -13,7 +13,7 @@ import blf
 import bpy
 
 
-def draw_stats(context, space_data, font_id, line_height, ui_scale):
+def draw_stats(context, space_data, font_id, longest_digits, line_height, ui_scale):
     # Gather up stats...
     mode = context.mode
     stats = {}
@@ -50,15 +50,13 @@ def draw_stats(context, space_data, font_id, line_height, ui_scale):
     x_pos = (10 * ui_scale) + toolbar_width
     y_pos = area.height - ((26 * ui_scale) if space_data.show_region_tool_header else 0) - top_offset
 
-    digit_width = blf.dimensions(font_id, "0")[0]
-    longest_digits = digit_width * 10
     longest_title = 0
 
     # Calculate dimensions for each piece of data...
     class Item:
         def __init__(self, text, font_id):
-            self.text = text
-            self.dim_x = blf.dimensions(font_id, text)[0]
+            self.text = text.replace(",", "\u2009")
+            self.dim_x = blf.dimensions(font_id, self.text)[0]
 
     lines = []
     for stat in stats:
@@ -75,7 +73,7 @@ def draw_stats(context, space_data, font_id, line_height, ui_scale):
             if item_index > 0:
                 x += longest_digits
             blf.position(font_id, x - item.dim_x, y_pos, 0)
-            blf.draw(font_id, item.text.replace(",", "\u2009"))
+            blf.draw(font_id, item.text)
 
         if line_index == 0:
             y_pos -= line_height / 2
@@ -107,15 +105,22 @@ def draw_func(ignore):
     blf.shadow(font_id, 5, 0.0, 0.0, 0.0, 0.9)
     blf.shadow_offset(font_id, 1, -1)
 
-    line_height = blf.dimensions(font_id, "M")[1] * 1.55
-
     # Draw all the things...
-    draw_stats(context, space_data, font_id, line_height, ui_scale)
+    longest_digits = draw_settings["longest_digits"]
+    line_height = draw_settings["line_height"]
+    if longest_digits == 0:
+        digit_width = blf.dimensions(font_id, "0")[0] * 10
+        space_width = blf.dimensions(font_id, "\u2009")[0] * 2
+        longest_digits = draw_settings["longest_digits"] = digit_width + space_width
+        line_height = draw_settings["line_height"] = blf.dimensions(font_id, "M")[1] * 1.55
+    draw_stats(context, space_data, font_id, longest_digits, line_height, ui_scale)
 
 
 draw_settings = {
     "font_id": 0,
     "font_size": 11,
+    "longest_digits": 0,
+    "line_height": 0,
     "handler": None
 }
 

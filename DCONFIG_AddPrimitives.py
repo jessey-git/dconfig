@@ -642,7 +642,8 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
     bl_description = "Add curve following a path of connected edges"
     bl_options = {'REGISTER', 'UNDO'}
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.step = 0
         self.should_separate = False
         self.mouse_start_x = 0

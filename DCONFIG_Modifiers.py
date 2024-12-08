@@ -158,7 +158,8 @@ class DCONFIG_OT_mod_linear_array(bpy.types.Operator):
 
     count: bpy.props.IntProperty(name="count", default=3, min=1, max=360)
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.mouse_x = None
         self.array_mod = None
         self.axis = 0
@@ -249,7 +250,8 @@ class DCONFIG_OT_mod_radial_array(bpy.types.Operator):
 
     count: bpy.props.IntProperty(name="count", default=3, min=1, max=360)
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.mouse_x = None
         self.offset_mod = None
         self.radial_mod = None
@@ -444,7 +446,8 @@ class DCONFIG_OT_mod_lattice(bpy.types.Operator):
     def poll(cls, context):
         return dc.active_mesh_selected(context)
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.target = None
         self.lattice = None
         self.mod = None

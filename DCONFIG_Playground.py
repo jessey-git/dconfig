@@ -41,6 +41,7 @@ def load_input_values(mtlx_node, bnode, input_map):
 # NOTE: Need to completely fill out each node as much as possible here in case Edges are not added later but the socket still needs its value set (e.g. The factor on the mix node)
 def getBlenderNode(mtlx_node, bnodes):
     category = mtlx_node.getCategory()
+    print("Found '{}'".format(category))
 
     if category == "oren_nayar_diffuse_bsdf":
         bnode = bnodes.new('ShaderNodeBsdfDiffuse')
@@ -103,7 +104,7 @@ class DCONFIG_OT_node_sandbox(bpy.types.Operator):
         _graphNodes = []
 
         doc = mx.createDocument()
-        mx.readFromXmlFile(doc, "t:/mtlx-disp.mtlx")
+        mx.readFromXmlFile(doc, "t:/mtlx-playground.mtlx")
 
         mat_name = "TEST"
         mat = (bpy.data.materials.get(mat_name) or bpy.data.materials.new(mat_name))
