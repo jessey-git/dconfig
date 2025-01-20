@@ -408,6 +408,84 @@ class DCONFIG_OT_validate(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class DCONFIG_OT_scene_stats(bpy.types.Operator):
+    bl_idname = "dconfig.scene_stats"
+    bl_label = "DC Scene Stats"
+    bl_description = "Scene Stats"
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def execute(self, context):
+        from collections import Counter
+
+        def get_positions_percentils(blender_data, percentiles):
+            position_nums = []
+            for d in blender_data:
+                position_nums.append(len(d.attributes["position"].data))
+
+            if len(position_nums) == 0:
+                return ""
+
+            data = sorted(position_nums)
+            stats = []
+            for d in percentiles:
+                d_offset = int((len(data) - 1) * d)
+                stats.append((int(d * 100), data[d_offset]))
+
+            return stats
+
+        def print_data_pairs(title, pairs, pair_format):
+            tot_data = len(pairs)
+            if tot_data == 0:
+                return
+            cols = min(4, tot_data)
+            rows = tot_data // cols
+
+            if rows * cols < tot_data:
+                rows += 1
+            cols = int(math.ceil(float(tot_data) / rows))
+
+            print("  ", title)
+            for r in range(0, rows):
+                line = "  "
+                for c in range(0, cols):
+                    i_data = r + (c * rows)
+                    if i_data >= tot_data:
+                        continue
+                    line += pair_format.format(pairs[i_data][0], pairs[i_data][1], "|" if c < (cols - 1) else "")
+                print(line)
+
+        percentiles = [0, .5, .68, .8, .85, .9, .95, .975, .99, 1]
+        vert_stats = get_positions_percentils(bpy.data.meshes, percentiles)
+        pointcloud_stats = get_positions_percentils(bpy.data.pointclouds, percentiles)
+
+        tile_buckets=Counter()
+        for i in bpy.data.images:
+            tile_buckets[len(i.tiles)] += 1
+        tile_stats = sorted(tile_buckets.items(), key=lambda pair: pair[0], reverse=False)
+
+        print("========")
+        print("{: <13}: {: >6}".format("Objects", len(bpy.data.objects)))
+        print("{: <13}: {: >6}".format("Meshes", len(bpy.data.meshes)))
+        print_data_pairs("Verts", vert_stats, "{:>4}th: {: 6} {}")
+        print("{: <13}: {: >6}".format("Curves (new)", len(bpy.data.hair_curves)))
+        print("{: <13}: {: >6}".format("Curves (old)", len(bpy.data.curves)))
+        print("{: <13}: {: >6}".format("PointClouds", len(bpy.data.pointclouds)))
+        print_data_pairs("Points", pointcloud_stats, "{:>4}th: {: 6} {}")
+        print("{: <13}: {: >6}".format("Volumes", len(bpy.data.volumes)))
+        print("{: <13}: {: >6}".format("Armatures", len(bpy.data.armatures)))
+        print("{: <13}: {: >6}".format("Materials", len(bpy.data.materials)))
+        print("{: <13}: {: >6}".format("Images", len(bpy.data.images)))
+        print_data_pairs("Tiles", tile_stats, "{:>4}: {: 4} {}")
+        print("{: <13}: {: >6}".format("Lights", len(bpy.data.lights)))
+        print("{: <13}: {: >6}".format("Cameras", len(bpy.data.cameras)))
+        print("========")
+
+        return {'FINISHED'}
+
+
 class DCONFIG_UL_validation_items(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         split = layout.split(factor=0.15, align=True)
@@ -482,6 +560,7 @@ class DCONFIG_ValidationData(bpy.types.PropertyGroup):
 
 def DCONFIG_FN_ui_validate(self, context):
     self.layout.operator("dconfig.validate")
+    self.layout.operator("dconfig.scene_stats")
 
 
 def register():
