@@ -189,9 +189,10 @@ class TopologySubDivCreaseRule(BaseObjectRule):
     rule = Rule('Topology', 'Edge creases')
 
     def execute(self, data):
-        crease = data.bm.edges.layers.crease.verify()
+        edge_count = 0
 
-        edge_count = sum(1 for e in data.bm.edges if e[crease] > 0.0)
+        if "crease_edge" in data.obj.data.attributes:
+            edge_count = sum(1 for d in data.obj.data.attributes["crease_edge"].data if d.value > 0.0)
         is_error = edge_count > 0
         return RuleResult(self.rule, is_error, data.obj, "Object '{}' contains {} edges with creases set".format(data.obj.name, edge_count))
 
@@ -267,18 +268,10 @@ class MaterialUVOverlapRule(BaseCollectionRule):
 #
 
 
-class ObjectAnalyzer:
+class ObjectModeAnalyzer:
     Rules = [
         ObjectNameRule(),
         ObjectDataNameRule(),
-        GeometryIsolatedVertRule(),
-        GeometryCoincidentVertRule(),
-        GeometryInteriorFaceRule(),
-        GeometryNonManifoldRule(),
-        GeometryDistortionRule(),
-        TopologyNGonRule(),
-        TopologyLargeNGonRule(),
-        TopologyPoleRule(),
         TopologySubDivCreaseRule(),
         OrientationTransformRule(),
         MaterialRule(),
@@ -287,12 +280,36 @@ class ObjectAnalyzer:
     ]
 
     def __init__(self, obj):
+        self.rule_data = ObjectRuleData(obj, None)
+
+    def find_problems(self):
+        analysis = []
+        for rule in ObjectModeAnalyzer.Rules:
+            result = rule.execute(self.rule_data)
+            analysis.append(result)
+
+        return analysis
+
+
+class EditModeAnalyzer:
+    Rules = [
+        GeometryIsolatedVertRule(),
+        GeometryCoincidentVertRule(),
+        GeometryInteriorFaceRule(),
+        GeometryNonManifoldRule(),
+        GeometryDistortionRule(),
+        TopologyNGonRule(),
+        TopologyLargeNGonRule(),
+        TopologyPoleRule(),
+    ]
+
+    def __init__(self, obj):
         self.rule_data = ObjectRuleData(obj, bmesh.from_edit_mesh(obj.data))
         self.rule_data.bm.select_mode = {'VERT', 'EDGE', 'FACE'}
 
     def find_problems(self):
         analysis = []
-        for rule in ObjectAnalyzer.Rules:
+        for rule in EditModeAnalyzer.Rules:
             result = rule.execute(self.rule_data)
             analysis.append(result)
 
@@ -355,11 +372,17 @@ class Validator:
         dc.make_active_object(context, obj)
 
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+
+        # Find problems at the object level
+        analyzer = ObjectModeAnalyzer(obj)
+        analysis_results = analyzer.find_problems()
+
+        # Find problems at the edit-mode level
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         bpy.ops.mesh.select_all(action='DESELECT')
+        analyzer = EditModeAnalyzer(obj)
+        analysis_results += analyzer.find_problems()
 
-        analyzer = ObjectAnalyzer(obj)
-        analysis_results = analyzer.find_problems()
         self.process(analysis_results)
 
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
