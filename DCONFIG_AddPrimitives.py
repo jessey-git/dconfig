@@ -351,12 +351,9 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         mod_sphere = quad_sphere.modifiers.new("dc_temp_cast", 'CAST')
         mod_sphere.factor = 1
         mod_sphere.radius = radius
-        if bpy.app.version >= (2, 90, 0):
-            bpy.ops.object.modifier_apply(modifier=mod_subd.name)
-            bpy.ops.object.modifier_apply(modifier=mod_sphere.name)
-        else:
-            bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_subd.name)
-            bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod_sphere.name)
+
+        bpy.ops.object.modifier_apply(modifier=mod_subd.name)
+        bpy.ops.object.modifier_apply(modifier=mod_sphere.name)
 
         if was_edit:
             dc.make_active_object(context, prev_active)
@@ -372,23 +369,25 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         node_group = next((ng for ng in bpy.data.node_groups if ng.name == "dc_circle"), None)
         if node_group is None:
             node_group = bpy.data.node_groups.new("dc_circle", 'GeometryNodeTree')
-            node_group.inputs.new('NodeSocketGeometry', "Geometry")
-            node_group.outputs.new('NodeSocketGeometry', "Geometry")
+
+            if bpy.app.version_file <= (4, 0, 22):
+                node_group.inputs.new('NodeSocketGeometry', "Geometry")
+                node_group.outputs.new('NodeSocketGeometry', "Geometry")
+                self.new_input_link_pre4(node_group, 'NodeSocketInt', "Vertices", "vertices")
+                self.new_input_link_pre4(node_group, 'NodeSocketFloatDistance', "Radius", "radius")
+            else:
+                node_group.interface.new_socket("Geometry", in_out='OUTPUT', socket_type='NodeSocketGeometry')
+                self.new_input_link(node_group, 'NodeSocketInt', 'NONE', "Vertices", "vertices")
+                self.new_input_link(node_group, 'NodeSocketFloat', 'DISTANCE', "Radius", "radius")
 
             node_input = node_group.nodes.new('NodeGroupInput')
             node_output = node_group.nodes.new('NodeGroupOutput')
             node_circle = node_group.nodes.new("GeometryNodeMeshCircle")
             node_circle.fill_type = 'TRIANGLE_FAN'
 
-            self.new_input_link(node_group, 'NodeSocketInt', "Vertices", "vertices")
-            self.new_input_link(node_group, 'NodeSocketFloatDistance', "Radius", "radius")
-
             node_group.links.new(node_input.outputs["Vertices"], node_circle.inputs.get("Vertices"))
             node_group.links.new(node_input.outputs["Radius"], node_circle.inputs.get("Radius"))
-            if bpy.app.version < (3, 0, 0):
-                node_group.links.new(node_circle.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
-            else:
-                node_group.links.new(node_circle.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
+            node_group.links.new(node_circle.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
 
             self.finalize_node_io(node_input, node_output)
         else:
@@ -407,24 +406,26 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         node_group = next((ng for ng in bpy.data.node_groups if ng.name == "dc_cylinder"), None)
         if node_group is None:
             node_group = bpy.data.node_groups.new("dc_cylinder", 'GeometryNodeTree')
-            node_group.inputs.new('NodeSocketGeometry', "Geometry")
-            node_group.outputs.new('NodeSocketGeometry', "Geometry")
+            if bpy.app.version_file <= (4, 0, 22):
+                node_group.inputs.new('NodeSocketGeometry', "Geometry")
+                node_group.outputs.new('NodeSocketGeometry', "Geometry")
+                self.new_input_link_pre4(node_group, 'NodeSocketInt', "Vertices", "vertices")
+                self.new_input_link_pre4(node_group, 'NodeSocketFloatDistance', "Radius", "radius")
+                self.new_input_link_pre4(node_group, 'NodeSocketFloatDistance', "Depth", "depth")
+            else:
+                node_group.interface.new_socket("Geometry", in_out='OUTPUT', socket_type='NodeSocketGeometry')
+                self.new_input_link(node_group, 'NodeSocketInt', 'NONE', "Vertices", "vertices")
+                self.new_input_link(node_group, 'NodeSocketFloat', 'DISTANCE', "Radius", "radius")
+                self.new_input_link(node_group, 'NodeSocketFloat', 'DISTANCE', "Depth", "depth")
 
             node_input = node_group.nodes.new('NodeGroupInput')
             node_output = node_group.nodes.new('NodeGroupOutput')
             node_cylinder = node_group.nodes.new("GeometryNodeMeshCylinder")
 
-            self.new_input_link(node_group, 'NodeSocketInt', "Vertices", "vertices")
-            self.new_input_link(node_group, 'NodeSocketFloatDistance', "Radius", "radius")
-            self.new_input_link(node_group, 'NodeSocketFloatDistance', "Depth", "depth")
-
             node_group.links.new(node_input.outputs["Vertices"], node_cylinder.inputs.get("Vertices"))
             node_group.links.new(node_input.outputs["Radius"], node_cylinder.inputs.get("Radius"))
             node_group.links.new(node_input.outputs["Depth"], node_cylinder.inputs.get("Depth"))
-            if bpy.app.version < (3, 0, 0):
-                node_group.links.new(node_cylinder.outputs.get("Geometry"), node_output.inputs.get("Geometry"))
-            else:
-                node_group.links.new(node_cylinder.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
+            node_group.links.new(node_cylinder.outputs.get("Mesh"), node_output.inputs.get("Geometry"))
 
             self.finalize_node_io(node_input, node_output)
         else:
@@ -443,7 +444,17 @@ class DCONFIG_OT_add_primitive(bpy.types.Operator):
         node_input.location.x = -200 - node_input.width
         node_output.location.x = 200
 
-    def new_input_link(self, node_group, socket_type, socket_name, prop_name):
+    def new_input_link(self, node_group, socket_type, socket_subtype, socket_name, prop_name):
+        prop = self.rna_type.properties[prop_name]
+
+        s_in = node_group.interface.new_socket(socket_name, in_out='INPUT', socket_type=socket_type)
+        s_in.subtype = socket_subtype
+        s_in.default_value = prop.default
+        s_in.min_value = prop.hard_min
+        s_in.max_value = prop.hard_max
+
+
+    def new_input_link_pre4(self, node_group, socket_type, socket_name, prop_name):
         prop = self.rna_type.properties[prop_name]
 
         s_in = node_group.inputs.new(socket_type, socket_name)
@@ -631,7 +642,8 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
     bl_description = "Add curve following a path of connected edges"
     bl_options = {'REGISTER', 'UNDO'}
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.step = 0
         self.should_separate = False
         self.mouse_start_x = 0
@@ -664,10 +676,7 @@ class DCONFIG_OT_add_edge_curve(bpy.types.Operator):
         if self.step == 0:
             bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='VERT')
 
-            if bpy.app.version >= (2, 90, 0):
-                bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', affect='VERTICES', clamp_overlap=True)
-            else:
-                bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', vertex_only=True, clamp_overlap=True)
+            bpy.ops.mesh.bevel('INVOKE_DEFAULT', offset_type='OFFSET', affect='VERTICES', clamp_overlap=True)
 
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}

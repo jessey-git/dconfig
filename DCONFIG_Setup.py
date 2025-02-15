@@ -13,7 +13,6 @@ import shutil
 import threading
 import time
 
-import addon_utils
 import bpy
 
 addon_keymaps = []
@@ -111,15 +110,14 @@ def setup_userpreferences():
     user_prefs.edit.undo_steps = 100
     user_prefs.edit.grease_pencil_eraser_radius = 40
 
-    if bpy.app.version >= (2, 90, 0):
-        user_prefs.edit.collection_instance_empty_size = 0.25
-        user_prefs.view.show_statusbar_version = False
-        user_prefs.view.show_statusbar_stats = False
-        user_prefs.view.show_statusbar_memory = True
-        try:
-            user_prefs.view.show_statusbar_vram = True
-        except AttributeError:
-            pass
+    user_prefs.edit.collection_instance_empty_size = 0.25
+    user_prefs.view.show_statusbar_version = False
+    user_prefs.view.show_statusbar_stats = False
+    user_prefs.view.show_statusbar_memory = True
+    try:
+        user_prefs.view.show_statusbar_vram = True
+    except AttributeError:
+        pass
 
     user_prefs.view.show_tooltips_python = True
     user_prefs.view.show_developer_ui = True
@@ -127,7 +125,7 @@ def setup_userpreferences():
     user_prefs.view.show_splash = False
 
     user_prefs.view.mini_axis_type = 'MINIMAL'
-    user_prefs.view.mini_axis_size = 40
+    user_prefs.view.mini_axis_size = 45
     user_prefs.view.mini_axis_brightness = 10
 
     user_prefs.view.smooth_view = 0
@@ -138,6 +136,9 @@ def setup_userpreferences():
     user_prefs.filepaths.save_version = 0
     user_prefs.filepaths.use_auto_save_temporary_files = False
 
+    if bpy.app.version >= (4, 2, 0):
+        user_prefs.system.use_online_access = True
+
     user_prefs.system.anisotropic_filter = 'FILTER_8'
     user_prefs.system.viewport_aa = '5'
     user_prefs.system.use_overlay_smooth_wire = True
@@ -145,10 +146,24 @@ def setup_userpreferences():
     user_prefs.use_preferences_save = False
 
 
-def setup_addons():
-    addon_utils.enable("mesh_looptools", default_set=True, persistent=True)
-    addon_utils.enable("node_wrangler", default_set=True, persistent=True)
-    addon_utils.enable("space_view3d_copy_attributes", default_set=True, persistent=True)
+class DCONFIG_OT_setup_addons(bpy.types.Operator):
+    bl_idname = "dconfig.setup_addons"
+    bl_label = "DC Setup Addons"
+    bl_description = "Enables important addons"
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        if bpy.app.version < (4, 2, 0):
+            import addon_utils
+            addon_utils.enable("mesh_looptools", default_set=True, persistent=True)
+            addon_utils.enable("node_wrangler", default_set=True, persistent=True)
+            addon_utils.enable("space_view3d_copy_attributes", default_set=True, persistent=True)
+        else:
+            bpy.ops.extensions.package_install(repo_index=0, pkg_id="looptools")
+            bpy.ops.extensions.package_install(repo_index=0, pkg_id="copy_attributes_menu")
+
+            bpy.ops.preferences.addon_enable(module="node_wrangler")
+        return {'FINISHED'}
 
 
 class DCONFIG_OT_install_theme(bpy.types.Operator):
@@ -192,7 +207,6 @@ def register():
     if not bpy.app.background:
         setup_hotkeys()
         setup_userpreferences()
-        setup_addons()
 
 
 def unregister():

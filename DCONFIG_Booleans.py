@@ -307,10 +307,7 @@ class DCONFIG_OT_boolean_immediate(bpy.types.Operator):
             mod_index -= 1
 
         try:
-            if bpy.app.version >= (2, 90, 0):
-                bpy.ops.object.modifier_apply(modifier=mod.name)
-            else:
-                bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+            bpy.ops.object.modifier_apply(modifier=mod.name)
         except RuntimeError as e:
             dc.trace(2, "Failed! Applying failed with {}", e)
 
@@ -372,10 +369,7 @@ class DCONFIG_OT_boolean_apply(bpy.types.Operator):
                     orphaned_objects.append(modifier.object)
 
                 try:
-                    if bpy.app.version >= (2, 90, 0):
-                        bpy.ops.object.modifier_apply(modifier=modifier.name)
-                    else:
-                        bpy.ops.object.modifier_apply(apply_as='DATA', modifier=modifier.name)
+                    bpy.ops.object.modifier_apply(modifier=modifier.name)
                 except RuntimeError:
                     bpy.ops.object.modifier_remove(modifier=modifier.name)
 
