@@ -46,7 +46,7 @@ def draw_stats(context, space_data, font_id, longest_digits, line_height, ui_sca
     # Initial positions and offsets to handle tool region and top text...
     area = context.area
     toolbar_width = next((region.width for region in area.regions if region.type == 'TOOLS'), 100)
-    top_offset = line_height * 8
+    top_offset = line_height * 9
     x_pos = (10 * ui_scale) + toolbar_width
     y_pos = area.height - ((26 * ui_scale) if space_data.show_region_tool_header else 0) - top_offset
 
@@ -101,9 +101,13 @@ def draw_func(ignore):
         blf.size(font_id, round(font_size * ui_scale), 72)
     else:
         blf.size(font_id, round(font_size * ui_scale))
+    
     blf.enable(font_id, blf.SHADOW)
-    blf.shadow(font_id, 5, 0.0, 0.0, 0.0, 0.9)
-    blf.shadow_offset(font_id, 1, -1)
+    if bpy.app.version < (4, 5, 0):
+        blf.shadow(font_id, 5, 0.0, 0.0, 0.0, 0.9)
+        blf.shadow_offset(font_id, 1, -1)
+    else:
+        blf.shadow(font_id, 6, 0.0, 0.0, 0.0, 0.75)
 
     # Draw all the things...
     longest_digits = draw_settings["longest_digits"]
@@ -114,6 +118,8 @@ def draw_func(ignore):
         longest_digits = draw_settings["longest_digits"] = digit_width + space_width
         line_height = draw_settings["line_height"] = blf.dimensions(font_id, "M")[1] * 1.55
     draw_stats(context, space_data, font_id, longest_digits, line_height, ui_scale)
+
+    blf.disable(font_id, blf.SHADOW)
 
 
 draw_settings = {

@@ -135,6 +135,7 @@ def setup_userpreferences():
 
     user_prefs.filepaths.save_version = 0
     user_prefs.filepaths.use_auto_save_temporary_files = False
+    user_prefs.filepaths.use_file_compression = True
 
     if bpy.app.version >= (4, 2, 0):
         user_prefs.system.use_online_access = True
