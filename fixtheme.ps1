@@ -67,7 +67,7 @@ $settings.NewLineOnAttributes = $true
 $settings.Indent = $true
 $settings.NewLineChars ="`r`n"
 $settings.Encoding = New-Object System.Text.UTF8Encoding( $false )
-$out = [System.IO.Path]::Join($pwd, "DCONFIG.xml")
+$out = [System.IO.Path]::Join($pwd, "DCONFIG5.xml")
 $w = [System.Xml.XmlWriter]::Create($out, $settings)
 $theme.Save($w)
 $w.Close()

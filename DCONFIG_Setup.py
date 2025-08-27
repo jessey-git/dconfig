@@ -175,7 +175,10 @@ class DCONFIG_OT_install_theme(bpy.types.Operator):
 
     def execute(self, context):
         script_path = bpy.utils.user_resource('SCRIPTS')
-        source_path = os.path.join(script_path, "addons", "dconfig", "DCONFIG.xml")
+        if bpy.app.version < (5, 0, 0):
+            source_path = os.path.join(script_path, "addons", "dconfig", "DCONFIG.xml")
+        else:
+            source_path = os.path.join(script_path, "addons", "dconfig", "DCONFIG5.xml")
         target_path = os.path.join(script_path, "presets", "interface_theme")
 
         self.makedir(target_path)
