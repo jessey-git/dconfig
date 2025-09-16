@@ -18,6 +18,7 @@
         panel_back="#3d3d3dff"
         panel_sub_back="#0000001f"
         panel_outline="#ffffff11"
+        panel_active="#4772b3ff"
         transparent_checker_primary="#333333"
         transparent_checker_secondary="#262626"
         transparent_checker_size="8"
@@ -372,7 +373,21 @@
             channel="#194e8080"
             channel_sub="#0f2c4d80"
             channel_group="#1a332d37"
-            channel_group_active="#216d5b67">
+            channel_group_active="#216d5b67"
+            keyframe="#bfbfbf"
+            keyframe_selected="#ffbe33"
+            keyframe_extreme="#e8b3cc"
+            keyframe_extreme_selected="#f28080"
+            keyframe_breakdown="#b3dbe8"
+            keyframe_breakdown_selected="#54bfed"
+            keyframe_jitter="#94e575"
+            keyframe_jitter_selected="#61c042"
+            keyframe_moving_hold="#808080"
+            keyframe_moving_hold_selected="#ffaf23"
+            keyframe_generated="#585858"
+            keyframe_generated_selected="#a28962"
+            long_key="#ffffff1f"
+            long_key_selected="#ff8c0099">
           </ThemeCommonAnim>
         </anim>
         <curves>
@@ -407,7 +422,6 @@
         text_grease_pencil="#7a9b14"
         object_selected="#f13a00"
         object_active="#ffcc40"
-        text_keyframe="#ddd700"
         camera="#000000"
         empty="#000000"
         light="#00000050"
@@ -598,20 +612,6 @@
         time_scrub_background="#1d1d1dff"
         channels="#1d1d1d99"
         channels_selected="#60c04044"
-        long_key="#ffffff1f"
-        long_key_selected="#ff8c0099"
-        keyframe="#bfbfbf"
-        keyframe_selected="#ffbe33"
-        keyframe_extreme="#e8b3cc"
-        keyframe_extreme_selected="#f28080"
-        keyframe_breakdown="#b3dbe8"
-        keyframe_breakdown_selected="#54bfed"
-        keyframe_jitter="#94e575"
-        keyframe_jitter_selected="#61c042"
-        keyframe_movehold="#808080"
-        keyframe_movehold_selected="#ffaf23"
-        keyframe_generated="#585858"
-        keyframe_generated_selected="#a28962"
         keyframe_border="#000000ff"
         keyframe_border_selected="#000000ff"
         keyframe_scale_factor="1"
@@ -708,14 +708,6 @@
         active_strip="#ffffff"
         selected_strip="#ff8f0d"
         time_scrub_background="#121212ff"
-        keyframe="#bfbfbf"
-        keyframe_selected="#ffbe33"
-        keyframe_breakdown="#b3dbe8"
-        keyframe_breakdown_selected="#54bfed"
-        keyframe_movehold="#808080"
-        keyframe_movehold_selected="#ffaf23"
-        keyframe_generated="#585858"
-        keyframe_generated_selected="#a28962"
         keyframe_border="#000000ff"
         keyframe_border_selected="#000000ff"
         preview_back="#000000"
@@ -723,7 +715,8 @@
         metadatatext="#ffffff"
         row_alternate="#ffffff05"
         text_strip_cursor="#71a8ffff"
-        selected_text="#ffffff4d">
+        selected_text="#ffffff4d"
+        active_modifier="#00000000">
         <space>
           <ThemeSpaceGeneric
             back="#181818"
@@ -753,8 +746,7 @@
     </sequence_editor>
     <properties>
       <ThemeProperties
-        match="#4772b3"
-        active_modifier="#4772b3ff">
+        match="#4772b3">
         <space>
           <ThemeSpaceGeneric
             back="#303030"
@@ -962,10 +954,9 @@
         path_keyframe_before="#ffc4c4"
         path_keyframe_after="#c4c4ff"
         time_scrub_background="#181818ff"
-        strips="#ffffff"
-        strips_selected="#ff8c00"
         metadatabg="#000000"
-        metadatatext="#ffffff">
+        metadatatext="#ffffff"
+        track_selected="#e7f7e74d">
         <space>
           <ThemeSpaceGeneric
             back="#303030"
