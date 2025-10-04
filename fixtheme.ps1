@@ -33,7 +33,6 @@ $theme.bpy.Theme.view_3d.ThemeView3D.edge_mode_select   = $color_edge_select
 $theme.bpy.Theme.view_3d.ThemeView3D.face               = $color_face
 $theme.bpy.Theme.view_3d.ThemeView3D.face_select        = $color_face_select
 $theme.bpy.Theme.view_3d.ThemeView3D.face_mode_select   = $color_face_select
-$theme.bpy.Theme.view_3d.ThemeView3D.face_dot           = $color_vertex_select
 $theme.bpy.Theme.view_3d.ThemeView3D.editmesh_active    = $color_edit_active
 $theme.bpy.Theme.view_3d.ThemeView3D.space.ThemeSpaceGradient.gradients.ThemeGradientColors.background_type = "SINGLE_COLOR"
 
@@ -49,7 +48,6 @@ $theme.bpy.Theme.image_editor.ThemeImageEditor.vertex_select    = $color_vertex_
 $theme.bpy.Theme.image_editor.ThemeImageEditor.edge_select      = $color_edge_select
 $theme.bpy.Theme.image_editor.ThemeImageEditor.face             = $color_face
 $theme.bpy.Theme.image_editor.ThemeImageEditor.face_select      = $color_face_select
-$theme.bpy.Theme.image_editor.ThemeImageEditor.face_dot         = $color_vertex_select
 $theme.bpy.Theme.image_editor.ThemeImageEditor.editmesh_active  = $color_edit_active
 
 

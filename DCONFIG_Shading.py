@@ -37,6 +37,7 @@ def set_viewport_defaults(space_data):
     space_data.shading.xray_alpha_wireframe = 0
 
     space_data.overlay.display_handle = 'SELECTED'
+    space_data.overlay.show_cursor = False
     space_data.overlay.show_curve_normals = False
     space_data.overlay.show_stats = False
     space_data.overlay.show_fade_inactive = False
