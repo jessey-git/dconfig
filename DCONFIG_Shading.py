@@ -95,16 +95,20 @@ def set_engine_defaults(scene):
         scene.render.use_high_quality_normals = True
         scene.render.preview_pixel_size = '1'
 
+    if bpy.app.version >= (5, 0, 0):
+        scene.render.hair_type = 'CYLINDER'
+
     # Cycles
     cyclespref = bpy.context.preferences.addons["cycles"]
     cyclespref.preferences.get_devices()
     if len(cyclespref.preferences.get_device_types(None)) <= 2:
         cyclespref.preferences.compute_device_type = "NONE"
 
-    scene.cycles.preview_samples = 32
+    scene.cycles.preview_samples = 8
     scene.cycles.preview_adaptive_threshold = 0.03
-    scene.cycles.samples = 1024
+    scene.cycles.samples = 32
     scene.cycles.adaptive_threshold = 0.01
+    scene.cycles.use_denoising = False
 
     scene.cycles.max_bounces = 180
     scene.cycles.diffuse_bounces = 10
@@ -123,6 +127,7 @@ def set_engine_defaults(scene):
 
     scene.cycles.blur_glossy = 0.1
 
+    scene.render.resolution_percentage = 50
     scene.render.engine = 'CYCLES'
     scene.cycles.device = 'GPU'
 

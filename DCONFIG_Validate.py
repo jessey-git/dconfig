@@ -488,14 +488,14 @@ class DCONFIG_OT_scene_stats(bpy.types.Operator):
         pointcloud_stats = get_positions_percentils(bpy.data.pointclouds, percentiles)
 
         tile_buckets = Counter()
-        res_buckets = Counter()
+        #res_buckets = Counter()
         for i in bpy.data.images:
             tile_buckets[len(i.tiles)] += 1
-            for t in i.tiles:
-                res = "{}x{}".format(t.size[0], t.size[1])
-                res_buckets[res] += 1
+            #for t in i.tiles:
+            #    res = "{}x{}".format(t.size[0], t.size[1])
+            #    res_buckets[res] += 1
         tile_stats = sorted(tile_buckets.items(), key=lambda pair: pair[0], reverse=False)
-        res_stats = sorted(res_buckets.items(), key=lambda pair: pair[0], reverse=False)
+        #res_stats = sorted(res_buckets.items(), key=lambda pair: pair[0], reverse=False)
 
         print("========")
         print("{: <13}: {: >6}".format("Objects", len(bpy.data.objects)))
@@ -510,7 +510,7 @@ class DCONFIG_OT_scene_stats(bpy.types.Operator):
         print("{: <13}: {: >6}".format("Materials", len(bpy.data.materials)))
         print("{: <13}: {: >6}".format("Images", len(bpy.data.images)))
         print_data_pairs("Tiles", tile_stats, "{:>4}: {: 4} {}")
-        print_data_pairs("Resolution", res_stats, "{:>10}: {: 5} {}")
+        #print_data_pairs("Resolution", res_stats, "{:>10}: {: 5} {}")
         print("{: <13}: {: >6}".format("Lights", len(bpy.data.lights)))
         print("{: <13}: {: >6}".format("Cameras", len(bpy.data.cameras)))
         print("========")

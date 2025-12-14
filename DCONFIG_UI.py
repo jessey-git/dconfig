@@ -49,6 +49,8 @@ def draw_stats(context, space_data, font_id, longest_digits, line_height, ui_sca
     top_offset = line_height * 9
     x_pos = (10 * ui_scale) + toolbar_width
     y_pos = area.height - ((26 * ui_scale) if space_data.show_region_tool_header else 0) - top_offset
+    if bpy.app.version >= (5, 1, 0):
+        y_pos = y_pos - (48 if space_data.overlay.show_performance else 0)
 
     longest_title = 0
 
