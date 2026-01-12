@@ -137,6 +137,40 @@ def set_engine_defaults(scene):
     else:
         scene.view_settings.look = 'None'
 
+
+def set_outliner_height(window, screen, factor=0.65):
+    outliner_area = None
+    for area in screen.areas:
+        if area.type == 'OUTLINER':
+            outliner_area = area
+            break
+
+    join_target = None
+    for area in screen.areas:
+        if area.type == 'PROPERTIES':
+            join_target = area
+            break
+
+    if outliner_area is None or join_target is None:
+        return
+
+    try:
+        with bpy.context.temp_override(window=window, screen=screen, area=join_target, region=join_target.regions[-1]):
+            bpy.ops.screen.area_join(source_xy=(outliner_area.x, outliner_area.y), target_xy=(join_target.x, join_target.y))
+    except Exception as e:
+        print(f"Error joining areas: {e}")
+        return
+
+    try:
+        with bpy.context.temp_override(window=window, screen=screen, area=outliner_area, region=outliner_area.regions[-1]):
+            bpy.ops.screen.area_split(direction='HORIZONTAL', factor=factor)
+    except Exception as e:
+        print(f"Error splitting area: {e}")
+        return
+
+    outliner_area.type = 'PROPERTIES'
+
+
 class DCONFIG_OT_viewport_defaults(bpy.types.Operator):
     bl_idname = "dconfig.viewport_defaults"
     bl_label = "DC Viewport Defaults"
@@ -207,6 +241,8 @@ def load_handler(filepath):
             for area in (a for a in screen.areas if a.type == 'VIEW_3D'):
                 set_viewport_defaults(area.spaces.active)
 
+            if screen.name in ("Layout"):
+                set_outliner_height(window, screen)
 
 def register():
     bpy.types.VIEW3D_MT_view.prepend(menu_func)

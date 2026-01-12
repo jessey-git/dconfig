@@ -137,6 +137,10 @@ def setup_userpreferences():
     user_prefs.filepaths.use_auto_save_temporary_files = False
     user_prefs.filepaths.use_file_compression = True
 
+    user_prefs.filepaths.temporary_directory = "t:/temp"
+    if hasattr(user_prefs.filepaths, "texture_cache_directory"):
+        user_prefs.filepaths.texture_cache_directory = "t:/temp-tx"
+
     if bpy.app.version >= (4, 2, 0):
         user_prefs.system.use_online_access = True
 

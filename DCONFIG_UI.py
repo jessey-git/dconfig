@@ -36,6 +36,8 @@ def draw_stats(context, space_data, font_id, longest_digits, line_height, ui_sca
         stats = [stats["Objects"], stats["Verts"]]
     elif mode == 'EDIT_LATTICE':
         stats = [stats["Objects"], stats["Verts"]]
+    elif mode == 'EDIT_POINTCLOUD':
+        stats = [stats["Objects"], stats["Points"]]
     elif mode == 'EDIT_ARMATURE':
         stats = [stats["Objects"], stats["Joints"], stats["Bones"]]
     elif mode == 'SCULPT':
